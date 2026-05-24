@@ -144,6 +144,25 @@ class FSMEngine:
                 return CandidateState.NEW
             return CandidateState(row.state)
 
+    async def force_set_state(
+        self,
+        candidate_id: str,
+        target_state: CandidateState,
+        actor: str = "founder",
+        reason: str = "",
+    ) -> CandidateState:
+        """
+        Founder override — write state directly, bypassing transition table and predicates.
+        Logs the action and returns the previous state.
+        """
+        previous = await self._get_current_state(candidate_id)
+        await self._set_state(candidate_id, target_state)
+        log.info(
+            "FSM force-override %s: %s → %s (actor=%s reason=%r)",
+            candidate_id, previous, target_state, actor, reason,
+        )
+        return previous
+
     async def _set_state(self, candidate_id: str, state: CandidateState) -> None:
         from datetime import datetime as _dt
         from sqlalchemy import update as _update

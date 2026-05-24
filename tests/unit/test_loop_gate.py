@@ -302,10 +302,13 @@ def test_gate_decide_success():
 
 
 def test_gate_override_valid():
-    candidate_id = "cand-gate-override"
-    asyncio.get_event_loop().run_until_complete(
-        _store_evaluation(candidate_id, composite=7.5)
-    )
+    # Create candidate first so the override 404-check passes
+    intake = client.post("/candidates/intake", json={
+        "name": "Override Test", "email": "override-test-unit@example.com",
+        "source": "founder_added",
+    })
+    candidate_id = intake.json()["candidate_id"]
+
     response = client.post(f"/gate/{candidate_id}/override", json={
         "target_state": "WARM_HOLD",
         "reviewer": "founder",
@@ -313,7 +316,7 @@ def test_gate_override_valid():
     })
     assert response.status_code == 200
     data = response.json()
-    assert data["target_state"] == "WARM_HOLD"
+    assert data["current_state"] == "WARM_HOLD"
     assert data["reviewer"] == "founder"
 
 

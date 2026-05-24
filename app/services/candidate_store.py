@@ -2,6 +2,7 @@ from datetime import datetime
 from typing import Dict, List, Optional
 
 from sqlalchemy import func, select, update
+from sqlalchemy.exc import IntegrityError
 
 from app.database import AsyncSessionLocal
 from app.fsm import CandidateState
@@ -26,6 +27,7 @@ def _row_to_model(row: CandidateRow) -> CandidateModel:
 class CandidateStore:
     @staticmethod
     async def add(candidate: CandidateModel) -> str:
+        from fastapi import HTTPException
         async with AsyncSessionLocal() as session:
             row = CandidateRow(
                 id=candidate.id,
@@ -39,7 +41,11 @@ class CandidateStore:
                 updated_at=candidate.updated_at,
             )
             session.add(row)
-            await session.commit()
+            try:
+                await session.commit()
+            except IntegrityError:
+                await session.rollback()
+                raise HTTPException(status_code=409, detail=f"Candidate with email {candidate.email!r} already exists.")
         return candidate.id
 
     @staticmethod

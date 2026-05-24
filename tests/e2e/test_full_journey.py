@@ -356,6 +356,6 @@ def test_journey_d_founder_override():
     })
     assert response.status_code == 200
     data = response.json()
-    assert data["target_state"] == "WARM_HOLD"
+    assert data["current_state"] == "WARM_HOLD"
     assert data["reviewer"] == "founder"
-    assert "transitioned" in data
+    assert "previous_state" in data

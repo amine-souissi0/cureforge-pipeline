@@ -83,58 +83,43 @@ async def decide_gate(candidate_id: str, payload: DecideRequest) -> Dict[str, An
 @router.post("/{candidate_id}/override")
 async def override_gate(candidate_id: str, payload: OverrideRequest) -> Dict[str, Any]:
     """
-    Founder override — force a specific FSM state for a candidate.
-    Allowed targets: HIRE_RECOMMENDED, WARM_HOLD, WITHDRAWN, AWAITING_RESUBMISSION.
+    Founder override — force-write any valid FSM state, bypassing transition predicates.
+    Intended for manual pipeline corrections. Every override is audit-logged.
     """
-    allowed_overrides = {
-        "HIRE_RECOMMENDED": CandidateState.HIRE_RECOMMENDED,
-        "WARM_HOLD": CandidateState.WARM_HOLD,
-        "WITHDRAWN": CandidateState.WITHDRAWN,
-        "AWAITING_RESUBMISSION": CandidateState.AWAITING_RESUBMISSION,
-        "HIRED": CandidateState.HIRED,
-    }
-
-    target = allowed_overrides.get(payload.target_state)
-    if target is None:
+    try:
+        target = CandidateState(payload.target_state)
+    except ValueError:
+        valid = [s.value for s in CandidateState]
         raise HTTPException(
             status_code=400,
-            detail=f"Invalid override target {payload.target_state!r}. "
-                   f"Allowed: {list(allowed_overrides)}",
+            detail=f"Invalid state {payload.target_state!r}. Valid states: {valid}",
         )
 
+    from app.services.candidate_store import CandidateStore
+    candidate = await CandidateStore.get_by_id(candidate_id)
+    if candidate is None:
+        raise HTTPException(status_code=404, detail=f"Candidate {candidate_id!r} not found.")
+
     fsm = FSMEngine()
-    ctx: Dict[str, Any] = {
-        "founder_confirmed": True,
-        "founder_confirmed_hire": True,
-        "offer_sent": payload.target_state == "HIRED",
-    }
-
-    # Attach composite from latest evaluation if available
-    latest = await EvaluationStore.get_latest_by_candidate(candidate_id)
-    if latest:
-        ctx["composite"] = latest.composite
-        ctx["mode"] = "recommend"
-        ctx["rounds"] = await EvaluationStore.get_round_count(candidate_id)
-
-    transitioned = await fsm.transition(
+    previous_state = await fsm.force_set_state(
         candidate_id=candidate_id,
         target_state=target,
-        context=ctx,
         actor=payload.reviewer,
+        reason=payload.reason,
     )
 
     await AuditLog.append("founder_override", {
         "candidate_id": candidate_id,
+        "previous_state": previous_state.value,
         "target_state": payload.target_state,
         "reviewer": payload.reviewer,
         "reason": payload.reason,
-        "transitioned": transitioned,
     })
 
     return {
         "candidate_id": candidate_id,
-        "target_state": payload.target_state,
-        "transitioned": transitioned,
+        "previous_state": previous_state.value,
+        "current_state": payload.target_state,
         "reviewer": payload.reviewer,
     }
 
