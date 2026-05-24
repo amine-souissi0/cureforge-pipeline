@@ -1,48 +1,84 @@
+from datetime import datetime
 from typing import Dict, List, Optional
 
+from sqlalchemy import func, select, update
+
+from app.database import AsyncSessionLocal
 from app.fsm import CandidateState
 from app.models import CandidateModel
-from app.schemas import AuditLog
+from app.orm_models import CandidateRow
 
-_candidates: Dict[str, CandidateModel] = {}
+
+def _row_to_model(row: CandidateRow) -> CandidateModel:
+    return CandidateModel(
+        id=row.id,
+        name=row.name,
+        email=row.email,
+        github_handle=row.github_handle,
+        source=row.source,  # type: ignore[arg-type]
+        state=CandidateState(row.state),
+        round=row.round,
+        created_at=row.created_at,
+        updated_at=row.updated_at,
+    )
 
 
 class CandidateStore:
     @staticmethod
     async def add(candidate: CandidateModel) -> str:
-        _candidates[candidate.id] = candidate
-        await AuditLog.append("candidate_stored", {
-            "candidate_id": candidate.id,
-            "email": candidate.email,
-        })
+        async with AsyncSessionLocal() as session:
+            row = CandidateRow(
+                id=candidate.id,
+                name=candidate.name,
+                email=candidate.email,
+                github_handle=candidate.github_handle,
+                source=candidate.source,
+                state=candidate.state.value,
+                round=candidate.round,
+                created_at=candidate.created_at,
+                updated_at=candidate.updated_at,
+            )
+            session.add(row)
+            await session.commit()
         return candidate.id
 
     @staticmethod
-    def get_by_id(candidate_id: str) -> Optional[CandidateModel]:
-        return _candidates.get(candidate_id)
+    async def get_by_id(candidate_id: str) -> Optional[CandidateModel]:
+        async with AsyncSessionLocal() as session:
+            row = await session.get(CandidateRow, candidate_id)
+            return _row_to_model(row) if row else None
 
     @staticmethod
-    def get_by_email(email: str) -> Optional[CandidateModel]:
-        email = email.lower()
-        return next((c for c in _candidates.values() if c.email == email), None)
+    async def get_by_email(email: str) -> Optional[CandidateModel]:
+        async with AsyncSessionLocal() as session:
+            result = await session.execute(
+                select(CandidateRow).where(CandidateRow.email == email.lower())
+            )
+            row = result.scalar_one_or_none()
+            return _row_to_model(row) if row else None
 
     @staticmethod
-    def list_all() -> List[CandidateModel]:
-        return list(_candidates.values())
+    async def list_all() -> List[CandidateModel]:
+        async with AsyncSessionLocal() as session:
+            result = await session.execute(select(CandidateRow))
+            return [_row_to_model(r) for r in result.scalars().all()]
 
     @staticmethod
     async def update_state(candidate_id: str, state: CandidateState) -> Optional[CandidateModel]:
-        candidate = _candidates.get(candidate_id)
-        if candidate is None:
-            return None
-        updated = candidate.model_copy(update={"state": state})
-        _candidates[candidate_id] = updated
-        return updated
+        async with AsyncSessionLocal() as session:
+            await session.execute(
+                update(CandidateRow)
+                .where(CandidateRow.id == candidate_id)
+                .values(state=state.value, updated_at=datetime.utcnow())
+            )
+            await session.commit()
+            row = await session.get(CandidateRow, candidate_id)
+            return _row_to_model(row) if row else None
 
     @staticmethod
-    def count_by_state() -> Dict[str, int]:
-        counts: Dict[str, int] = {}
-        for c in _candidates.values():
-            key = c.state.value
-            counts[key] = counts.get(key, 0) + 1
-        return counts
+    async def count_by_state() -> Dict[str, int]:
+        async with AsyncSessionLocal() as session:
+            result = await session.execute(
+                select(CandidateRow.state, func.count()).group_by(CandidateRow.state)
+            )
+            return {state: count for state, count in result.all()}

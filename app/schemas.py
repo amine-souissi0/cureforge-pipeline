@@ -3,12 +3,24 @@ from pydantic import BaseModel, field_validator
 
 
 class AuditLog:
-    """In-memory audit log for Claude API calls and routing events."""
+    """
+    Audit log — writes to DB for persistence and keeps an in-memory list
+    for the current session (used by /health/costs and /health/checklist).
+    """
     _log: List[Dict[str, Any]] = []
 
     @staticmethod
     async def append(event_type: str, data: Dict[str, Any]) -> None:
         AuditLog._log.append({"event_type": event_type, "data": data})
+        try:
+            from app.database import AsyncSessionLocal
+            from app.orm_models import AuditLogRow
+            async with AsyncSessionLocal() as session:
+                row = AuditLogRow(event_type=event_type, data=data)
+                session.add(row)
+                await session.commit()
+        except Exception:
+            pass  # DB unavailable during early startup — in-memory log still works
 
 
 class Message(BaseModel):

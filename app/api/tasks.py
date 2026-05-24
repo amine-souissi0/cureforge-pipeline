@@ -108,7 +108,7 @@ async def generate_task(payload: GenerateRequest) -> Dict[str, Any]:
 @router.get("/{task_id}")
 async def get_task(task_id: str) -> TaskResponse:
     """Retrieve a task. internal_spec is never returned."""
-    task = TaskStore.get_by_id(task_id)
+    task = await TaskStore.get_by_id(task_id)
     if task is None:
         raise HTTPException(status_code=404, detail=f"Task {task_id!r} not found.")
     return TaskResponse(
@@ -129,7 +129,7 @@ async def provision_repo(task_id: str, payload: ProvisionRepoRequest) -> Dict[st
     from app.services.github_service import GithubService
     from app.schemas import InternalTaskSpec
 
-    task = TaskStore.get_by_id(task_id)
+    task = await TaskStore.get_by_id(task_id)
     if task is None:
         raise HTTPException(status_code=404, detail=f"Task {task_id!r} not found.")
 
@@ -166,7 +166,7 @@ async def send_brief(task_id: str, payload: SendBriefRequest) -> Dict[str, Any]:
     from app.services.approval_queue import ApprovalQueue, DraftEmail
     from app.services.send_policy import SendMode, get_send_mode
 
-    task = TaskStore.get_by_id(task_id)
+    task = await TaskStore.get_by_id(task_id)
     if task is None:
         raise HTTPException(status_code=404, detail=f"Task {task_id!r} not found.")
 

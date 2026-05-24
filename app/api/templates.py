@@ -123,7 +123,7 @@ async def send_template(payload: SendRequest) -> dict:
 @router.get("/drafts")
 async def list_drafts() -> Dict[str, list]:
     """List all pending drafts awaiting founder approval."""
-    pending = ApprovalQueue.list_pending()
+    pending = await ApprovalQueue.list_pending()
     return {"drafts": [_draft_to_response(d).model_dump() for d in pending]}
 
 

@@ -72,7 +72,7 @@ async def submit_evaluation(payload: SubmitRequest) -> Dict[str, Any]:
     from app.agents.evaluation_agent import EvaluationAgent
     from app.services.sandbox_runner import SandboxRunner
 
-    task = TaskStore.get_by_id(payload.task_id)
+    task = await TaskStore.get_by_id(payload.task_id)
     if task is None:
         raise HTTPException(status_code=404, detail=f"Task {payload.task_id!r} not found.")
 
@@ -93,7 +93,7 @@ async def submit_evaluation(payload: SubmitRequest) -> Dict[str, Any]:
     })
 
     # Determine round number
-    round_number = EvaluationStore.get_round_count(payload.candidate_id) + 1
+    round_number = await EvaluationStore.get_round_count(payload.candidate_id) + 1
 
     # Run sandbox against held-out tests
     held_out_tests: List[Dict[str, Any]] = task.internal_spec.get("held_out_tests", [])
@@ -154,7 +154,7 @@ async def submit_evaluation(payload: SubmitRequest) -> Dict[str, Any]:
 @router.get("/{evaluation_id}")
 async def get_evaluation(evaluation_id: str) -> EvaluationResponse:
     """Get evaluation result — red_flags and dimension_scores never returned."""
-    evaluation = EvaluationStore.get_by_id(evaluation_id)
+    evaluation = await EvaluationStore.get_by_id(evaluation_id)
     if evaluation is None:
         raise HTTPException(status_code=404, detail=f"Evaluation {evaluation_id!r} not found.")
     return _safe_response(evaluation)
@@ -163,7 +163,7 @@ async def get_evaluation(evaluation_id: str) -> EvaluationResponse:
 @router.get("/candidate/{candidate_id}")
 async def list_candidate_evaluations(candidate_id: str) -> Dict[str, Any]:
     """List all evaluation rounds for a candidate."""
-    evaluations = EvaluationStore.list_by_candidate(candidate_id)
+    evaluations = await EvaluationStore.list_by_candidate(candidate_id)
     summaries = [
         EvaluationSummary(
             evaluation_id=e.id,
@@ -183,7 +183,7 @@ async def list_candidate_evaluations(candidate_id: str) -> Dict[str, Any]:
 @router.get("/candidate/{candidate_id}/feedback")
 async def get_candidate_feedback(candidate_id: str) -> Dict[str, Any]:
     """Return only the candidate-facing feedback from the latest evaluation."""
-    evaluation = EvaluationStore.get_latest_by_candidate(candidate_id)
+    evaluation = await EvaluationStore.get_latest_by_candidate(candidate_id)
     if evaluation is None:
         raise HTTPException(status_code=404, detail="No evaluations found for this candidate.")
     return {

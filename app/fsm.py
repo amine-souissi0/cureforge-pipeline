@@ -133,12 +133,26 @@ class FSMEngine:
             return False
     
     async def _get_current_state(self, candidate_id: str) -> CandidateState:
-        """Stub: Replace with actual DB query."""
-        return CandidateState.NEW
-    
+        from app.database import AsyncSessionLocal
+        from app.orm_models import CandidateRow
+        async with AsyncSessionLocal() as session:
+            row = await session.get(CandidateRow, candidate_id)
+            if row is None:
+                return CandidateState.NEW
+            return CandidateState(row.state)
+
     async def _set_state(self, candidate_id: str, state: CandidateState) -> None:
-        """Stub: Replace with actual DB update."""
-        pass
+        from datetime import datetime as _dt
+        from sqlalchemy import update as _update
+        from app.database import AsyncSessionLocal
+        from app.orm_models import CandidateRow
+        async with AsyncSessionLocal() as session:
+            await session.execute(
+                _update(CandidateRow)
+                .where(CandidateRow.id == candidate_id)
+                .values(state=state.value, updated_at=_dt.utcnow())
+            )
+            await session.commit()
     
     def _log_rejected_transition(self, candidate_id: str, from_state: CandidateState, to_state: CandidateState, actor: str, reason: str) -> None:
         """Log a rejected transition."""

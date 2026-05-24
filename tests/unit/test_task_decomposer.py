@@ -168,11 +168,11 @@ async def test_task_store_add_and_retrieve():
     )
     task_id = await TaskStore.add(task)
 
-    by_id = TaskStore.get_by_id(task_id)
+    by_id = await TaskStore.get_by_id(task_id)
     assert by_id is not None
     assert by_id.candidate_id == "cand-store-1"
 
-    by_candidate = TaskStore.get_by_candidate("cand-store-1")
+    by_candidate = await TaskStore.get_by_candidate("cand-store-1")
     assert by_candidate is not None
     assert by_candidate.id == task_id
 
@@ -191,14 +191,15 @@ async def test_task_store_update_repo_url():
     assert updated is not None
     assert updated.repo_url == "https://github.com/org/repo"
 
-    fetched = TaskStore.get_by_id(task_id)
+    fetched = await TaskStore.get_by_id(task_id)
     assert fetched is not None
     assert fetched.repo_url == "https://github.com/org/repo"
 
 
-def test_task_store_get_nonexistent():
-    assert TaskStore.get_by_id("nonexistent-task") is None
-    assert TaskStore.get_by_candidate("nonexistent-candidate") is None
+@pytest.mark.asyncio
+async def test_task_store_get_nonexistent():
+    assert await TaskStore.get_by_id("nonexistent-task") is None
+    assert await TaskStore.get_by_candidate("nonexistent-candidate") is None
 
 
 # ---------------------------------------------------------------------------

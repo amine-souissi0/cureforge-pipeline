@@ -40,11 +40,11 @@ async def run_feedback_loop(
     from app.services.approval_queue import ApprovalQueue, DraftEmail
     from app.services.send_policy import SendMode, get_send_mode
 
-    evaluation = EvaluationStore.get_by_id(evaluation_id)
+    evaluation = await EvaluationStore.get_by_id(evaluation_id)
     if evaluation is None:
         raise ValueError(f"Evaluation {evaluation_id!r} not found.")
 
-    rounds = EvaluationStore.get_round_count(candidate_id)
+    rounds = await EvaluationStore.get_round_count(candidate_id)
 
     await AuditLog.append("feedback_loop_started", {
         "candidate_id": candidate_id,

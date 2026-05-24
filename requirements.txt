@@ -11,3 +11,6 @@ google-api-python-client
 anthropic
 boto3
 mypy
+sqlalchemy[asyncio]
+aiosqlite
+asyncpg

@@ -253,7 +253,7 @@ async def test_evaluation_store_add_and_retrieve():
         feedback_draft="Good work.",
     )
     ev_id = await EvaluationStore.add(ev)
-    fetched = EvaluationStore.get_by_id(ev_id)
+    fetched = await EvaluationStore.get_by_id(ev_id)
     assert fetched is not None
     assert fetched.composite == 8.0
 
@@ -272,16 +272,17 @@ async def test_evaluation_store_multi_round():
         )
         await EvaluationStore.add(ev)
 
-    all_evals = EvaluationStore.list_by_candidate("cand-ev-multi")
+    all_evals = await EvaluationStore.list_by_candidate("cand-ev-multi")
     assert len(all_evals) == 3
-    latest = EvaluationStore.get_latest_by_candidate("cand-ev-multi")
+    latest = await EvaluationStore.get_latest_by_candidate("cand-ev-multi")
     assert latest is not None
     assert latest.round == 3
 
 
-def test_evaluation_store_nonexistent():
-    assert EvaluationStore.get_by_id("nonexistent") is None
-    assert EvaluationStore.get_latest_by_candidate("nonexistent") is None
+@pytest.mark.asyncio
+async def test_evaluation_store_nonexistent():
+    assert await EvaluationStore.get_by_id("nonexistent") is None
+    assert await EvaluationStore.get_latest_by_candidate("nonexistent") is None
 
 
 # ---------------------------------------------------------------------------
@@ -358,7 +359,10 @@ def test_submit_evaluation_success():
 
 def test_get_evaluation_hides_red_flags():
     """Verify red_flags and dimension_scores are not in the API response."""
-    evals = EvaluationStore.list_by_candidate("cand-submit-test")
+    import asyncio
+    evals = asyncio.get_event_loop().run_until_complete(
+        EvaluationStore.list_by_candidate("cand-submit-test")
+    )
     if not evals:
         return
     ev_id = evals[-1].id

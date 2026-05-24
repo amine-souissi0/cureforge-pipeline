@@ -211,7 +211,7 @@ async def test_approval_queue_add_and_list():
         to_email="alice@example.com",
     )
     draft_id = await ApprovalQueue.add(draft)
-    pending = ApprovalQueue.list_pending()
+    pending = await ApprovalQueue.list_pending()
     ids = [d.draft_id for d in pending]
     assert draft_id in ids
 
@@ -249,7 +249,7 @@ async def test_approval_queue_reject():
 
 @pytest.mark.asyncio
 async def test_approval_queue_get_nonexistent():
-    result = ApprovalQueue.get("nonexistent-draft-id")
+    result = await ApprovalQueue.get("nonexistent-draft-id")
     assert result is None
 
 

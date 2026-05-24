@@ -187,7 +187,7 @@ async def test_offer_drafter_agent_constraint_fail_returned():
 @pytest.mark.asyncio
 async def test_candidate_store_add_and_get():
     c = await _add_candidate("Dave", "dave-store")
-    found = CandidateStore.get_by_id(c.id)
+    found = await CandidateStore.get_by_id(c.id)
     assert found is not None
     assert found.name == "Dave"
 
@@ -195,16 +195,16 @@ async def test_candidate_store_add_and_get():
 @pytest.mark.asyncio
 async def test_candidate_store_get_by_email():
     c = await _add_candidate("Eve", "eve-store")
-    found = CandidateStore.get_by_email("eve-store@example.com")
+    found = await CandidateStore.get_by_email("eve-store@example.com")
     assert found is not None
     assert found.id == c.id
 
 
 @pytest.mark.asyncio
 async def test_candidate_store_list_all_includes_new_candidate():
-    before = len(CandidateStore.list_all())
+    before = len(await CandidateStore.list_all())
     await _add_candidate("Frank", "frank-store")
-    after = len(CandidateStore.list_all())
+    after = len(await CandidateStore.list_all())
     assert after == before + 1
 
 
@@ -219,13 +219,14 @@ async def test_candidate_store_update_state():
 @pytest.mark.asyncio
 async def test_candidate_store_count_by_state():
     await _add_candidate("Heidi", "heidi-store")
-    counts = CandidateStore.count_by_state()
+    counts = await CandidateStore.count_by_state()
     assert isinstance(counts, dict)
     assert "HIRE_RECOMMENDED" in counts
 
 
-def test_candidate_store_unknown_id_returns_none():
-    assert CandidateStore.get_by_id("nonexistent-id") is None
+@pytest.mark.asyncio
+async def test_candidate_store_unknown_id_returns_none():
+    assert await CandidateStore.get_by_id("nonexistent-id") is None
 
 
 # ---------------------------------------------------------------------------

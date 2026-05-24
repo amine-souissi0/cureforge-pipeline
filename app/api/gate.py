@@ -48,7 +48,7 @@ async def decide_gate(candidate_id: str, payload: DecideRequest) -> Dict[str, An
     """
     from app.services.feedback_controller import run_feedback_loop
 
-    evaluation = EvaluationStore.get_by_id(payload.evaluation_id)
+    evaluation = await EvaluationStore.get_by_id(payload.evaluation_id)
     if evaluation is None:
         raise HTTPException(
             status_code=404,
@@ -110,11 +110,11 @@ async def override_gate(candidate_id: str, payload: OverrideRequest) -> Dict[str
     }
 
     # Attach composite from latest evaluation if available
-    latest = EvaluationStore.get_latest_by_candidate(candidate_id)
+    latest = await EvaluationStore.get_latest_by_candidate(candidate_id)
     if latest:
         ctx["composite"] = latest.composite
         ctx["mode"] = "recommend"
-        ctx["rounds"] = EvaluationStore.get_round_count(candidate_id)
+        ctx["rounds"] = await EvaluationStore.get_round_count(candidate_id)
 
     transitioned = await fsm.transition(
         candidate_id=candidate_id,
@@ -150,7 +150,7 @@ async def resubmit(candidate_id: str, payload: ResubmitRequest) -> Dict[str, Any
     from app.models import EvaluationModel
     from app.services.sandbox_runner import SandboxRunner
 
-    task = TaskStore.get_by_id(payload.task_id)
+    task = await TaskStore.get_by_id(payload.task_id)
     if task is None:
         raise HTTPException(status_code=404, detail=f"Task {payload.task_id!r} not found.")
 
@@ -170,7 +170,7 @@ async def resubmit(candidate_id: str, payload: ResubmitRequest) -> Dict[str, Any
         "sha": payload.submission_sha,
     })
 
-    round_number = EvaluationStore.get_round_count(candidate_id) + 1
+    round_number = await EvaluationStore.get_round_count(candidate_id) + 1
     held_out_tests = task.internal_spec.get("held_out_tests", [])
 
     sandbox_result = SandboxRunner.run(
@@ -227,8 +227,8 @@ async def resubmit(candidate_id: str, payload: ResubmitRequest) -> Dict[str, Any
 @router.get("/{candidate_id}/status")
 async def gate_status(candidate_id: str) -> Dict[str, Any]:
     """Current gate status — evaluation history and latest decision context."""
-    evaluations = EvaluationStore.list_by_candidate(candidate_id)
-    latest = EvaluationStore.get_latest_by_candidate(candidate_id)
+    evaluations = await EvaluationStore.list_by_candidate(candidate_id)
+    latest = await EvaluationStore.get_latest_by_candidate(candidate_id)
 
     if latest is None:
         return {

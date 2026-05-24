@@ -35,22 +35,22 @@ async def pipeline_overview() -> Dict[str, Any]:
     Pipeline-wide summary: candidate count by FSM state, and a snapshot
     of every candidate with their latest evaluation result.
     """
-    candidates = CandidateStore.list_all()
-    by_state = CandidateStore.count_by_state()
+    candidates = await CandidateStore.list_all()
+    by_state = await CandidateStore.count_by_state()
 
     rows = []
     for c in candidates:
-        latest = EvaluationStore.get_latest_by_candidate(c.id)
+        latest = await EvaluationStore.get_latest_by_candidate(c.id)
         rows.append({
             "candidate_id": c.id,
             "name": c.name,
             "email": c.email,
             "state": c.state.value,
-            "rounds_completed": EvaluationStore.get_round_count(c.id),
+            "rounds_completed": await EvaluationStore.get_round_count(c.id),
             "latest_composite": latest.composite if latest else None,
         })
 
-    pending_drafts = len(ApprovalQueue.list_pending())
+    pending_drafts = len(await ApprovalQueue.list_pending())
 
     return {
         "total_candidates": len(candidates),
@@ -66,11 +66,11 @@ async def candidate_detail(candidate_id: str) -> Dict[str, Any]:
     Per-candidate view: evaluation history, pending drafts,
     and projected next state from the decision engine.
     """
-    candidate = CandidateStore.get_by_id(candidate_id)
+    candidate = await CandidateStore.get_by_id(candidate_id)
     if candidate is None:
         raise HTTPException(status_code=404, detail=f"Candidate {candidate_id!r} not found.")
 
-    evaluations = EvaluationStore.list_by_candidate(candidate_id)
+    evaluations = await EvaluationStore.list_by_candidate(candidate_id)
     pending_drafts = [
         {
             "draft_id": d.draft_id,
@@ -78,7 +78,7 @@ async def candidate_detail(candidate_id: str) -> Dict[str, Any]:
             "subject": d.subject,
             "status": d.status,
         }
-        for d in ApprovalQueue.list_pending()
+        for d in await ApprovalQueue.list_pending()
         if d.candidate_id == candidate_id
     ]
 
@@ -117,7 +117,7 @@ async def pending_drafts() -> Dict[str, Any]:
     """
     Approval queue: all drafts awaiting founder review.
     """
-    drafts = ApprovalQueue.list_pending()
+    drafts = await ApprovalQueue.list_pending()
     return {
         "pending_count": len(drafts),
         "drafts": [
@@ -146,11 +146,11 @@ async def draft_offer(candidate_id: str, payload: DraftOfferRequest) -> Dict[str
     from app.agents.offer_drafter import OfferDrafterAgent
     from app.agents.template_responder import TemplateResponderAgent
 
-    candidate = CandidateStore.get_by_id(candidate_id)
+    candidate = await CandidateStore.get_by_id(candidate_id)
     if candidate is None:
         raise HTTPException(status_code=404, detail=f"Candidate {candidate_id!r} not found.")
 
-    latest_eval = EvaluationStore.get_latest_by_candidate(candidate_id)
+    latest_eval = await EvaluationStore.get_latest_by_candidate(candidate_id)
     if latest_eval is None:
         raise HTTPException(
             status_code=400,
