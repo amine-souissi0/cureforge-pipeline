@@ -1,0 +1,15 @@
+venv/
+__pycache__/
+*.pyc
+*.pyo
+.pytest_cache/
+*.db
+.env
+.git/
+.gitignore
+tests/
+*.md
+PROJECT_SUMMARY.md
+QUICK_REFERENCE.md
+VISUAL_GUIDES.md
+WORKFLOW_GUIDE.md
