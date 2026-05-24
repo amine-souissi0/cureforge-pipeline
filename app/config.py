@@ -1,6 +1,17 @@
 import os
 
 
+def get_api_key() -> str:
+    """
+    Load the pipeline API key used to authenticate all protected endpoints.
+    Production: replace with boto3 Secrets Manager call.
+    """
+    key = os.environ.get("API_KEY", "")
+    if not key:
+        raise RuntimeError("API_KEY environment variable not set")
+    return key
+
+
 def get_anthropic_api_key() -> str:
     """
     Load the Anthropic API key.

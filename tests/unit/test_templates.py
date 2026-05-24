@@ -10,7 +10,8 @@ from app.services.approval_queue import ApprovalQueue, DraftEmail
 from app.services.send_policy import SendMode, get_send_mode, set_candidate_mode
 from app.schemas import TemplateResponderOutput
 
-client = TestClient(app)
+from tests.conftest import TEST_AUTH
+client = TestClient(app, headers=TEST_AUTH)
 
 
 # ---------------------------------------------------------------------------

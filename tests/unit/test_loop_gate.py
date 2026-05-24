@@ -12,7 +12,8 @@ from app.services.evaluation_store import EvaluationStore
 from app.services.task_store import TaskStore
 from config.rubric import HIRE_THRESHOLD, RESUBMIT_THRESHOLD
 
-client = TestClient(app)
+from tests.conftest import TEST_AUTH
+client = TestClient(app, headers=TEST_AUTH)
 
 
 # ---------------------------------------------------------------------------

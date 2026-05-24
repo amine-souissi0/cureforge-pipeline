@@ -10,7 +10,8 @@ from app.services.evaluation_store import EvaluationStore
 from app.models import EvaluationModel
 from config.rubric import compute_composite, HIRE_THRESHOLD, RESUBMIT_THRESHOLD, DIMENSIONS
 
-client = TestClient(app)
+from tests.conftest import TEST_AUTH
+client = TestClient(app, headers=TEST_AUTH)
 
 # ---------------------------------------------------------------------------
 # Helpers

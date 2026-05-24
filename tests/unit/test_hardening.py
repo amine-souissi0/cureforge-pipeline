@@ -20,7 +20,8 @@ from app.models import EvaluationModel
 from app.services.evaluation_store import EvaluationStore
 from app.services.sandbox_runner import SandboxRunner, scan_dangerous_patterns
 
-client = TestClient(app)
+from tests.conftest import TEST_AUTH
+client = TestClient(app, headers=TEST_AUTH)
 
 
 # ---------------------------------------------------------------------------

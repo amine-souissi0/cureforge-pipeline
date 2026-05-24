@@ -9,7 +9,8 @@ from app.schemas import TaskDecomposerOutput, HeldOutTest, InternalTaskSpec
 from app.services.task_store import TaskStore
 from app.models import TaskModel
 
-client = TestClient(app)
+from tests.conftest import TEST_AUTH
+client = TestClient(app, headers=TEST_AUTH)
 
 # ---------------------------------------------------------------------------
 # Helpers

@@ -4,8 +4,12 @@ import os
 # Must be set before any app module is imported so the async engine
 # uses the test database instead of cureforge.db.
 os.environ.setdefault("DATABASE_URL", "sqlite+aiosqlite:///./cureforge_test.db")
+os.environ.setdefault("API_KEY", "test-api-key")
 
 import pytest
+
+# Shared header for all protected TestClient calls
+TEST_AUTH = {"X-API-Key": "test-api-key"}
 
 
 @pytest.fixture(scope="session", autouse=True)

@@ -12,7 +12,8 @@ from app.services.candidate_store import CandidateStore
 from app.services.evaluation_store import EvaluationStore
 from app.services.approval_queue import ApprovalQueue, DraftEmail
 
-client = TestClient(app)
+from tests.conftest import TEST_AUTH
+client = TestClient(app, headers=TEST_AUTH)
 
 
 # ---------------------------------------------------------------------------

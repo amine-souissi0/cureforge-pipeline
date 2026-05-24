@@ -7,7 +7,8 @@ from app.main import app
 from app.agents.reply_classifier import ReplyClassifierAgent
 from app.schemas import ReplyClassifierOutput
 
-client = TestClient(app)
+from tests.conftest import TEST_AUTH
+client = TestClient(app, headers=TEST_AUTH)
 
 
 # ---------------------------------------------------------------------------
