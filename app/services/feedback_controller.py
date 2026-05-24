@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from typing import Any, Dict, Optional
+from typing import Optional
 
 from app.fsm import CandidateState, FSMEngine
 from app.schemas import AuditLog

@@ -1,9 +1,8 @@
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, Optional
 
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
 
-from app.fsm import CandidateState
 from app.schemas import AuditLog
 from app.services.approval_queue import ApprovalQueue, DraftEmail
 from app.services.evaluation_store import EvaluationStore

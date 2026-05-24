@@ -4,7 +4,7 @@ from typing import Optional
 import anthropic
 
 from app.config import get_anthropic_api_key
-from app.schemas import AuditLog, HeldOutTest, InternalTaskSpec, TaskDecomposerOutput
+from app.schemas import AuditLog, TaskDecomposerOutput
 from config.blocklist import BLOCKED_TOPICS
 from config.corpus import PATTERNS, CorpusPattern
 from config.models import MODELS

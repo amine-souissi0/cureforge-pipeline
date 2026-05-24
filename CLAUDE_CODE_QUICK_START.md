@@ -416,3 +416,7 @@ This is a production system, not a prototype. Every component Claude Code genera
 - Security-conscious (secrets in managers, untrusted input sandboxed)
 
 Use Claude Code to accelerate, but treat the Build Brief and Architecture Blueprint as law. No shortcuts.
+
+---
+
+**Ready?** Open Claude Code and ask for Milestone 2.
