@@ -154,6 +154,15 @@ async def _handle_template_response(
         original_subject=message.subject,
     )
 
+    # INTERESTED → kick off task generation in background
+    if intent == "INTERESTED":
+        from app.api.candidates import generate_task_for_candidate
+        generate_task_for_candidate.delay(candidate.id)
+        await AuditLog.append("task_generation_enqueued", {
+            "candidate_id": candidate.id,
+            "trigger": "INTERESTED_reply",
+        })
+
 
 def _intent_to_template(intent: str) -> Optional[str]:
     return {

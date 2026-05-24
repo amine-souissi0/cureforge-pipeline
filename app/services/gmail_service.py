@@ -19,10 +19,20 @@ class GmailService:
         self._service: Any = None
 
     def _build_service(self) -> Any:
+        import os
         from google.oauth2.credentials import Credentials
         from googleapiclient.discovery import build
 
-        creds = Credentials.from_authorized_user_file(GOOGLE_TOKEN_FILE, GMAIL_SCOPES)
+        # Prefer GMAIL_TOKEN_JSON env var (Docker/cloud deployments).
+        # Fall back to token file for local dev.
+        token_json = os.environ.get("GMAIL_TOKEN_JSON", "")
+        if token_json:
+            creds = Credentials.from_authorized_user_info(
+                __import__("json").loads(token_json), GMAIL_SCOPES
+            )
+        else:
+            creds = Credentials.from_authorized_user_file(GOOGLE_TOKEN_FILE, GMAIL_SCOPES)
+
         if not creds.valid:
             if creds.expired and creds.refresh_token:
                 from google.auth.transport.requests import Request

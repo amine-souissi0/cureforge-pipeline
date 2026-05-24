@@ -41,6 +41,49 @@ class ApprovalPayload(BaseModel):
 # ---------------------------------------------------------------------------
 
 @celery_app.task(bind=True, autoretry_for=(Exception,), max_retries=3, default_retry_delay=2)  # type: ignore[misc]
+def generate_task_for_candidate(self: object, candidate_id: str, role: str = "software engineer", level: str = "senior") -> str:  # noqa: ARG001
+    """
+    Async task: run TaskDecomposer and store result in approval queue.
+    Triggered automatically when a candidate replies INTERESTED.
+    """
+    async def _run() -> str:
+        from app.agents.task_decomposer import TaskDecomposerAgent
+        from app.models import TaskModel
+        from app.services.candidate_store import CandidateStore
+        from app.services.task_store import TaskStore
+
+        candidate = await CandidateStore.get_by_id(candidate_id)
+        if candidate is None:
+            return f"candidate_not_found:{candidate_id}"
+
+        output = await TaskDecomposerAgent.decompose(role=role, level=level)
+
+        if not output.success or output.blocklist_check != "PASS":
+            await AuditLog.append("task_generation_rejected", {
+                "candidate_id": candidate_id,
+                "blocklist_check": output.blocklist_check,
+            })
+            return f"task_rejected:{output.blocklist_check}"
+
+        task = TaskModel(
+            candidate_id=candidate_id,
+            candidate_brief=output.candidate_brief,
+            internal_spec=output.internal_spec.model_dump() if output.internal_spec else {},
+            corpus_ref=output.corpus_pattern_selected,
+        )
+        task_id = await TaskStore.add(task)
+
+        await AuditLog.append("task_generated_async", {
+            "candidate_id": candidate_id,
+            "task_id": task_id,
+            "corpus_ref": output.corpus_pattern_selected,
+        })
+        return f"task_generated:{task_id}"
+
+    return asyncio.run(_run())
+
+
+@celery_app.task(bind=True, autoretry_for=(Exception,), max_retries=3, default_retry_delay=2)  # type: ignore[misc]
 def process_email_task(self: object, history_id: str) -> str:  # noqa: ARG001
     """
     Celery task: fetch all Gmail messages added since history_id,

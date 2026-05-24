@@ -1,6 +1,13 @@
+import logging
+import os
 from contextlib import asynccontextmanager
 
 from fastapi import Depends, FastAPI
+
+logging.basicConfig(
+    level=os.environ.get("LOG_LEVEL", "INFO"),
+    format="%(asctime)s %(levelname)s %(name)s %(message)s",
+)
 
 from app.api.candidates import router as candidates_router, oauth_router
 from app.api.templates import router as templates_router

@@ -1,7 +1,10 @@
+import logging
 from datetime import datetime
 from enum import Enum
 from typing import Any, Callable, Dict, List, Tuple
 from dataclasses import dataclass
+
+log = logging.getLogger(__name__)
 
 class CandidateState(str, Enum):
     """Finite State Machine states for candidate lifecycle."""
@@ -165,7 +168,7 @@ class FSMEngine:
             "status": "REJECTED",
             "reason": reason,
         })
-        print(f"[REJECTED] {candidate_id}: {from_state} → {to_state} ({reason})")
+        log.warning("FSM rejected %s: %s → %s (%s)", candidate_id, from_state, to_state, reason)
     
     def _log_transition(self, candidate_id: str, from_state: CandidateState, to_state: CandidateState, actor: str, predicate: str, context: Dict[str, Any]) -> None:
         """Log a successful transition."""
@@ -179,4 +182,4 @@ class FSMEngine:
             "status": "SUCCESS",
             "context": context,
         })
-        print(f"[TRANSITION] {candidate_id}: {from_state} → {to_state} (predicate: {predicate})")
+        log.info("FSM transition %s: %s → %s (predicate: %s)", candidate_id, from_state, to_state, predicate)

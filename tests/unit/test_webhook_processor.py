@@ -145,9 +145,11 @@ async def test_interested_queues_acknowledgment_draft():
     ):
         with patch("app.agents.template_responder.get_anthropic_api_key", return_value="test-key"):
             with patch("app.services.send_policy.get_send_mode", return_value=SendMode.DRAFT):
-                result = await process_inbound_message(
-                    _make_message(sender_email=candidate.email)
-                )
+                with patch("app.api.candidates.generate_task_for_candidate") as mock_gen:
+                    mock_gen.delay = MagicMock()
+                    result = await process_inbound_message(
+                        _make_message(sender_email=candidate.email)
+                    )
 
     assert "INTERESTED" in result
     pending = await ApprovalQueue.list_pending()
