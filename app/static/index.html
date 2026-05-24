@@ -123,6 +123,10 @@
       <p id="pageSubtitle" class="text-xs text-purple-400/60 mt-0.5">All candidates by stage</p>
     </div>
     <div class="flex items-center gap-3">
+      <button id="addCandidateBtn" onclick="openAddCandidate()" class="btn btn-primary hidden">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        Add Candidate
+      </button>
       <button onclick="refresh()" class="btn btn-ghost">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
         Refresh
@@ -165,6 +169,44 @@
     </div>
 
   </main>
+</div>
+
+<!-- ── ADD CANDIDATE MODAL ────────────────────────────────────────────────── -->
+<div id="addModal" class="fixed inset-0 z-50 hidden flex items-center justify-center" onclick="closeAddModal(event)">
+  <div class="modal-overlay absolute inset-0"></div>
+  <div class="relative glass rounded-2xl w-full max-w-md mx-4 animate-slide-up" onclick="event.stopPropagation()">
+    <div class="flex items-center justify-between px-6 py-5 border-b border-white/5">
+      <div>
+        <h2 class="font-bold text-white">Add Candidate</h2>
+        <p class="text-xs text-purple-400/60 mt-0.5">Intake a new candidate into the pipeline</p>
+      </div>
+      <button onclick="closeAddModal()" class="w-8 h-8 flex items-center justify-center rounded-lg text-gray-400 hover:text-white hover:bg-white/10 transition text-xl leading-none">&times;</button>
+    </div>
+    <form id="addCandidateForm" onsubmit="submitAddCandidate(event)" class="px-6 py-5 space-y-4">
+      <div>
+        <label class="section-label block mb-1.5">Full Name <span class="text-red-400">*</span></label>
+        <input id="newName" type="text" placeholder="e.g. Jane Smith" class="input" required autocomplete="off" />
+      </div>
+      <div>
+        <label class="section-label block mb-1.5">Email <span class="text-red-400">*</span></label>
+        <input id="newEmail" type="email" placeholder="e.g. jane@example.com" class="input" required autocomplete="off" />
+      </div>
+      <div>
+        <label class="section-label block mb-1.5">GitHub Handle <span class="text-gray-600">(optional)</span></label>
+        <div class="relative">
+          <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 text-sm select-none">@</span>
+          <input id="newGithub" type="text" placeholder="username" class="input pl-7" autocomplete="off" />
+        </div>
+      </div>
+      <div class="pt-2 flex gap-3">
+        <button type="submit" id="addSubmitBtn" class="btn btn-primary flex-1 justify-center">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><line x1="19" y1="8" x2="19" y2="14"/><line x1="22" y1="11" x2="16" y2="11"/></svg>
+          Add to Pipeline
+        </button>
+        <button type="button" onclick="closeAddModal()" class="btn btn-ghost">Cancel</button>
+      </div>
+    </form>
+  </div>
 </div>
 
 <!-- ── CANDIDATE DETAIL PANEL (right slide-in) ─────────────────────────── -->
@@ -269,6 +311,7 @@ function switchTab(tab) {
   document.getElementById('pageTitle').textContent = m.title;
   document.getElementById('pageSubtitle').textContent = m.sub;
   currentTab = tab;
+  document.getElementById('addCandidateBtn').classList.toggle('hidden', tab !== 'pipeline');
   if (tab === 'pipeline') loadPipeline();
   else if (tab === 'approvals') loadApprovals();
   else if (tab === 'costs') loadCosts();
@@ -667,10 +710,54 @@ function relativeTime(iso) {
   return `${Math.floor(h/24)}d ago`;
 }
 
+// ── Add Candidate ──────────────────────────────────────────────────────────
+function openAddCandidate() {
+  document.getElementById('newName').value = '';
+  document.getElementById('newEmail').value = '';
+  document.getElementById('newGithub').value = '';
+  document.getElementById('addModal').classList.remove('hidden');
+  setTimeout(() => document.getElementById('newName').focus(), 50);
+}
+
+function closeAddModal(e) {
+  if (!e || e.target === document.getElementById('addModal')) {
+    document.getElementById('addModal').classList.add('hidden');
+  }
+}
+
+async function submitAddCandidate(e) {
+  e.preventDefault();
+  const name   = document.getElementById('newName').value.trim();
+  const email  = document.getElementById('newEmail').value.trim();
+  const github = document.getElementById('newGithub').value.trim();
+  const btn    = document.getElementById('addSubmitBtn');
+
+  btn.disabled = true;
+  btn.innerHTML = '<div class="spinner" style="width:14px;height:14px;border-width:2px;"></div> Adding…';
+
+  try {
+    const res = await post('/candidates/intake', {
+      name,
+      email,
+      github_handle: github || null,
+      source: 'founder_added',
+    });
+    document.getElementById('addModal').classList.add('hidden');
+    toast(`${name} added to pipeline → ENGAGED`);
+    loadPipeline();
+  } catch(err) {
+    toast(err.message, false);
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><line x1="19" y1="8" x2="19" y2="14"/><line x1="22" y1="11" x2="16" y2="11"/></svg> Add to Pipeline`;
+  }
+}
+
 // ── Init ───────────────────────────────────────────────────────────────────
 document.addEventListener('DOMContentLoaded', () => {
   const saved = sessionStorage.getItem('apiKey');
   if (saved) document.getElementById('apiKey').value = saved;
+  document.getElementById('addCandidateBtn').classList.remove('hidden');
   loadPipeline();
 });
 </script>
