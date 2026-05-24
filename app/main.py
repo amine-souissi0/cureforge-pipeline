@@ -1,8 +1,11 @@
 import logging
 import os
 from contextlib import asynccontextmanager
+from pathlib import Path
 
 from fastapi import Depends, FastAPI
+from fastapi.responses import FileResponse
+from fastapi.staticfiles import StaticFiles
 
 logging.basicConfig(
     level=os.environ.get("LOG_LEVEL", "INFO"),
@@ -51,7 +54,16 @@ app.include_router(dashboard_router, dependencies=_auth)
 app.include_router(health_router)
 app.include_router(oauth_router)
 
+# Founder UI — served at /ui (unprotected path; API calls from the UI use X-Api-Key)
+_static = Path(__file__).parent / "static"
+app.mount("/ui", StaticFiles(directory=str(_static), html=True), name="ui")
+
 
 @app.get("/health")
 async def health() -> dict[str, str]:
     return {"status": "ok", "milestone": "M8"}
+
+
+@app.get("/")
+async def root() -> FileResponse:
+    return FileResponse(str(_static / "index.html"))

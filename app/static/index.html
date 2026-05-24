@@ -1,0 +1,554 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CureForge Pipeline</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            brand: { 600: '#4f46e5', 700: '#4338ca', 800: '#3730a3' }
+          }
+        }
+      }
+    }
+  </script>
+</head>
+<body class="bg-gray-950 text-gray-100 min-h-screen font-sans">
+
+<!-- ── NAVBAR ──────────────────────────────────────────────────────────── -->
+<nav class="bg-gray-900 border-b border-gray-800 px-6 py-3 flex items-center justify-between">
+  <div class="flex items-center gap-3">
+    <span class="text-brand-600 font-bold text-xl tracking-tight">CureForge</span>
+    <span class="text-gray-500 text-sm">Pipeline</span>
+  </div>
+  <div class="flex items-center gap-3">
+    <input id="apiKey" type="password" placeholder="API Key"
+      class="bg-gray-800 border border-gray-700 rounded px-3 py-1.5 text-sm w-52 focus:outline-none focus:border-brand-600"
+      oninput="saveKey(this.value)" />
+    <button onclick="refresh()" class="bg-brand-600 hover:bg-brand-700 text-white text-sm px-3 py-1.5 rounded transition">
+      Refresh
+    </button>
+    <span id="connStatus" class="text-xs text-gray-500">—</span>
+  </div>
+</nav>
+
+<!-- ── TABS ────────────────────────────────────────────────────────────── -->
+<div class="border-b border-gray-800 px-6 flex gap-1 bg-gray-900">
+  <button onclick="switchTab('pipeline')" id="tab-pipeline"
+    class="tab-btn px-4 py-2.5 text-sm font-medium border-b-2 border-brand-600 text-brand-600">
+    Pipeline
+  </button>
+  <button onclick="switchTab('approvals')" id="tab-approvals"
+    class="tab-btn px-4 py-2.5 text-sm font-medium border-b-2 border-transparent text-gray-400 hover:text-gray-200">
+    Approvals <span id="approvalsCount" class="ml-1 bg-brand-600 text-white text-xs px-1.5 py-0.5 rounded-full hidden"></span>
+  </button>
+  <button onclick="switchTab('costs')" id="tab-costs"
+    class="tab-btn px-4 py-2.5 text-sm font-medium border-b-2 border-transparent text-gray-400 hover:text-gray-200">
+    Costs
+  </button>
+</div>
+
+<!-- ── MAIN ────────────────────────────────────────────────────────────── -->
+<main class="p-6">
+  <!-- Pipeline tab -->
+  <div id="view-pipeline">
+    <div id="pipelineSummary" class="grid grid-cols-4 gap-4 mb-6"></div>
+    <div id="pipelineBoard" class="space-y-6"></div>
+  </div>
+
+  <!-- Approvals tab -->
+  <div id="view-approvals" class="hidden">
+    <h2 class="text-lg font-semibold mb-4">Pending Approvals</h2>
+    <div id="approvalsList" class="space-y-3"></div>
+    <p id="approvalsEmpty" class="hidden text-gray-500 text-sm">No drafts awaiting approval.</p>
+  </div>
+
+  <!-- Costs tab -->
+  <div id="view-costs" class="hidden">
+    <h2 class="text-lg font-semibold mb-4">Claude API Costs</h2>
+    <div id="costsView" class="space-y-4"></div>
+  </div>
+</main>
+
+<!-- ── CANDIDATE MODAL ────────────────────────────────────────────────── -->
+<div id="modal" class="fixed inset-0 bg-black/70 flex items-center justify-center z-50 hidden" onclick="closeModal(event)">
+  <div class="bg-gray-900 border border-gray-700 rounded-xl w-full max-w-2xl mx-4 max-h-[90vh] overflow-y-auto" onclick="event.stopPropagation()">
+    <div class="flex items-center justify-between px-6 py-4 border-b border-gray-700">
+      <h2 id="modalTitle" class="text-lg font-semibold"></h2>
+      <button onclick="document.getElementById('modal').classList.add('hidden')" class="text-gray-400 hover:text-white text-2xl leading-none">&times;</button>
+    </div>
+    <div id="modalBody" class="px-6 py-4 space-y-5"></div>
+  </div>
+</div>
+
+<!-- ── TOAST ──────────────────────────────────────────────────────────── -->
+<div id="toast" class="fixed bottom-6 right-6 hidden">
+  <div id="toastMsg" class="bg-gray-800 border border-gray-700 rounded-lg px-4 py-3 text-sm shadow-xl"></div>
+</div>
+
+<script>
+// ── State ────────────────────────────────────────────────────────────────
+const BASE = '';
+let currentTab = 'pipeline';
+let pipelineData = null;
+
+const STATE_GROUPS = {
+  'Active':     ['NEW','ENGAGED','TASK_ASSIGNED','AWAITING_SUBMISSION'],
+  'Evaluation': ['UNDER_EVALUATION','FEEDBACK_SENT','AWAITING_RESUBMISSION'],
+  'Decision':   ['HIRE_RECOMMENDED','OFFER_DRAFTED'],
+  'Closed':     ['HIRED','WARM_HOLD','WITHDRAWN'],
+};
+
+const STATE_COLORS = {
+  NEW: 'bg-gray-700',
+  ENGAGED: 'bg-blue-700',
+  TASK_ASSIGNED: 'bg-indigo-700',
+  AWAITING_SUBMISSION: 'bg-violet-700',
+  UNDER_EVALUATION: 'bg-yellow-700',
+  FEEDBACK_SENT: 'bg-orange-700',
+  AWAITING_RESUBMISSION: 'bg-amber-700',
+  HIRE_RECOMMENDED: 'bg-green-700',
+  OFFER_DRAFTED: 'bg-emerald-700',
+  HIRED: 'bg-teal-700',
+  WARM_HOLD: 'bg-sky-700',
+  WITHDRAWN: 'bg-red-800',
+};
+
+// ── API Key ──────────────────────────────────────────────────────────────
+function saveKey(v) { sessionStorage.setItem('apiKey', v); }
+function getKey() { return document.getElementById('apiKey').value || sessionStorage.getItem('apiKey') || ''; }
+
+function headers() {
+  return { 'Content-Type': 'application/json', 'X-Api-Key': getKey() };
+}
+
+// ── Fetch helpers ────────────────────────────────────────────────────────
+async function api(path, opts = {}) {
+  const res = await fetch(BASE + path, { headers: headers(), ...opts });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({ detail: res.statusText }));
+    throw new Error(err.detail || res.statusText);
+  }
+  return res.json();
+}
+
+async function post(path, body) {
+  return api(path, { method: 'POST', body: JSON.stringify(body) });
+}
+
+// ── Toast ────────────────────────────────────────────────────────────────
+function toast(msg, ok = true) {
+  const el = document.getElementById('toast');
+  const msg_el = document.getElementById('toastMsg');
+  msg_el.textContent = msg;
+  msg_el.className = `rounded-lg px-4 py-3 text-sm shadow-xl border ${ok ? 'bg-gray-800 border-gray-700 text-green-400' : 'bg-red-900 border-red-700 text-red-200'}`;
+  el.classList.remove('hidden');
+  setTimeout(() => el.classList.add('hidden'), 3500);
+}
+
+// ── Tabs ─────────────────────────────────────────────────────────────────
+function switchTab(tab) {
+  document.querySelectorAll('.tab-btn').forEach(b => {
+    b.classList.replace('border-brand-600', 'border-transparent');
+    b.classList.replace('text-brand-600', 'text-gray-400');
+  });
+  const btn = document.getElementById('tab-' + tab);
+  btn.classList.replace('border-transparent', 'border-brand-600');
+  btn.classList.replace('text-gray-400', 'text-brand-600');
+
+  ['pipeline','approvals','costs'].forEach(v => {
+    document.getElementById('view-' + v).classList.toggle('hidden', v !== tab);
+  });
+  currentTab = tab;
+  if (tab === 'pipeline') loadPipeline();
+  else if (tab === 'approvals') loadApprovals();
+  else if (tab === 'costs') loadCosts();
+}
+
+function refresh() {
+  if (currentTab === 'pipeline') loadPipeline();
+  else if (currentTab === 'approvals') loadApprovals();
+  else if (currentTab === 'costs') loadCosts();
+}
+
+// ── Pipeline ─────────────────────────────────────────────────────────────
+async function loadPipeline() {
+  setStatus('loading…');
+  try {
+    pipelineData = await api('/dashboard/pipeline');
+    renderSummary(pipelineData);
+    renderBoard(pipelineData);
+    setStatus('ok');
+  } catch(e) { setStatus('error: ' + e.message, false); }
+}
+
+function setStatus(msg, ok = true) {
+  const el = document.getElementById('connStatus');
+  el.textContent = msg;
+  el.className = 'text-xs ' + (ok ? 'text-green-500' : 'text-red-400');
+}
+
+function renderSummary(data) {
+  const el = document.getElementById('pipelineSummary');
+  const active = Object.entries(data.by_state || {})
+    .filter(([s]) => !['WITHDRAWN','HIRED'].includes(s))
+    .reduce((a,[,n]) => a + n, 0);
+
+  el.innerHTML = [
+    stat('Total Candidates', data.total_candidates),
+    stat('Active', active, 'text-blue-400'),
+    stat('Pending Approvals', data.pending_drafts, data.pending_drafts > 0 ? 'text-yellow-400' : ''),
+    stat('Hired', data.by_state?.HIRED || 0, 'text-green-400'),
+  ].join('');
+
+  // update approvals badge
+  const badge = document.getElementById('approvalsCount');
+  if (data.pending_drafts > 0) {
+    badge.textContent = data.pending_drafts;
+    badge.classList.remove('hidden');
+  } else {
+    badge.classList.add('hidden');
+  }
+}
+
+function stat(label, value, colorClass = '') {
+  return `
+    <div class="bg-gray-900 border border-gray-800 rounded-lg p-4">
+      <div class="text-2xl font-bold ${colorClass}">${value ?? '—'}</div>
+      <div class="text-gray-400 text-xs mt-1">${label}</div>
+    </div>`;
+}
+
+function renderBoard(data) {
+  const el = document.getElementById('pipelineBoard');
+  const candidates = data.candidates || [];
+
+  // Group by state
+  const byState = {};
+  candidates.forEach(c => {
+    (byState[c.state] = byState[c.state] || []).push(c);
+  });
+
+  el.innerHTML = Object.entries(STATE_GROUPS).map(([group, states]) => {
+    const grouped = states.flatMap(s => byState[s] || []);
+    if (grouped.length === 0) return '';
+    return `
+      <div>
+        <h3 class="text-xs font-semibold text-gray-500 uppercase tracking-widest mb-3">${group}</h3>
+        <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
+          ${grouped.map(candidateCard).join('')}
+        </div>
+      </div>`;
+  }).join('');
+
+  if (candidates.length === 0) {
+    el.innerHTML = '<p class="text-gray-500 text-sm">No candidates yet. Add one via POST /candidates/intake</p>';
+  }
+}
+
+function candidateCard(c) {
+  const color = STATE_COLORS[c.state] || 'bg-gray-700';
+  const score = c.latest_composite != null ? c.latest_composite.toFixed(1) : '—';
+  return `
+    <div onclick="openCandidate('${c.candidate_id}')"
+      class="bg-gray-900 border border-gray-800 rounded-lg p-4 cursor-pointer hover:border-gray-600 transition">
+      <div class="flex items-start justify-between mb-2">
+        <span class="font-medium text-sm truncate flex-1">${esc(c.name)}</span>
+        ${c.latest_composite != null ? `<span class="text-xs font-bold ml-2 ${scoreColor(c.latest_composite)}">${score}</span>` : ''}
+      </div>
+      <div class="text-xs text-gray-400 truncate mb-2">${esc(c.email)}</div>
+      <div class="flex items-center justify-between">
+        <span class="text-xs px-2 py-0.5 rounded-full ${color} text-white/90">${c.state}</span>
+        ${c.rounds_completed > 0 ? `<span class="text-xs text-gray-500">R${c.rounds_completed}</span>` : ''}
+      </div>
+    </div>`;
+}
+
+function scoreColor(n) {
+  if (n >= 7.5) return 'text-green-400';
+  if (n >= 5.0) return 'text-yellow-400';
+  return 'text-red-400';
+}
+
+// ── Approvals ─────────────────────────────────────────────────────────────
+async function loadApprovals() {
+  setStatus('loading…');
+  try {
+    const data = await api('/dashboard/drafts');
+    renderApprovals(data.drafts || []);
+    setStatus('ok');
+  } catch(e) { setStatus('error: ' + e.message, false); }
+}
+
+function renderApprovals(drafts) {
+  const list = document.getElementById('approvalsList');
+  const empty = document.getElementById('approvalsEmpty');
+  if (drafts.length === 0) {
+    list.innerHTML = '';
+    empty.classList.remove('hidden');
+    return;
+  }
+  empty.classList.add('hidden');
+  list.innerHTML = drafts.map(d => `
+    <div class="bg-gray-900 border border-gray-800 rounded-lg p-4" id="draft-${d.draft_id}">
+      <div class="flex items-start justify-between gap-4">
+        <div class="flex-1 min-w-0">
+          <div class="text-sm font-medium truncate">${esc(d.subject)}</div>
+          <div class="text-xs text-gray-400 mt-1">
+            To: ${esc(d.to_email)} &nbsp;·&nbsp; Template: ${esc(d.template_id)}
+            &nbsp;·&nbsp; ${relativeTime(d.created_at)}
+          </div>
+        </div>
+        <div class="flex gap-2 shrink-0">
+          <button onclick="approveDraft('${d.draft_id}')"
+            class="bg-green-700 hover:bg-green-600 text-white text-xs px-3 py-1.5 rounded transition">
+            Approve
+          </button>
+          <button onclick="rejectDraft('${d.draft_id}')"
+            class="bg-red-800 hover:bg-red-700 text-white text-xs px-3 py-1.5 rounded transition">
+            Reject
+          </button>
+        </div>
+      </div>
+    </div>`).join('');
+}
+
+async function approveDraft(id) {
+  try {
+    await post(`/templates/drafts/${id}/approve`, {});
+    document.getElementById('draft-' + id)?.remove();
+    toast('Draft approved and sent.');
+    loadPipeline();
+  } catch(e) { toast('Approve failed: ' + e.message, false); }
+}
+
+async function rejectDraft(id) {
+  try {
+    await post(`/templates/drafts/${id}/reject`, {});
+    document.getElementById('draft-' + id)?.remove();
+    toast('Draft rejected.');
+  } catch(e) { toast('Reject failed: ' + e.message, false); }
+}
+
+// ── Costs ─────────────────────────────────────────────────────────────────
+async function loadCosts() {
+  setStatus('loading…');
+  try {
+    const data = await api('/health/costs');
+    renderCosts(data);
+    setStatus('ok');
+  } catch(e) { setStatus('error: ' + e.message, false); }
+}
+
+function renderCosts(data) {
+  const el = document.getElementById('costsView');
+
+  const totalCost = data.total_cost_usd ?? data.total ?? 0;
+  const byAgent = data.by_agent || {};
+  const callCount = data.total_calls ?? 0;
+
+  el.innerHTML = `
+    <div class="grid grid-cols-3 gap-4">
+      ${stat('Total Spend', '$' + Number(totalCost).toFixed(4), 'text-yellow-400')}
+      ${stat('Total API Calls', callCount)}
+      ${stat('This Month', '$' + Number(data.month_cost_usd ?? totalCost).toFixed(4))}
+    </div>
+    ${Object.keys(byAgent).length > 0 ? `
+    <div class="bg-gray-900 border border-gray-800 rounded-lg overflow-hidden">
+      <table class="w-full text-sm">
+        <thead class="bg-gray-800">
+          <tr>
+            <th class="text-left px-4 py-2.5 text-gray-400 font-medium">Agent</th>
+            <th class="text-right px-4 py-2.5 text-gray-400 font-medium">Calls</th>
+            <th class="text-right px-4 py-2.5 text-gray-400 font-medium">Tokens In</th>
+            <th class="text-right px-4 py-2.5 text-gray-400 font-medium">Tokens Out</th>
+            <th class="text-right px-4 py-2.5 text-gray-400 font-medium">Cost</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-gray-800">
+          ${Object.entries(byAgent).map(([agent, d]) => `
+          <tr class="hover:bg-gray-800/50">
+            <td class="px-4 py-2.5 font-medium">${esc(agent)}</td>
+            <td class="px-4 py-2.5 text-right text-gray-300">${d.calls ?? '—'}</td>
+            <td class="px-4 py-2.5 text-right text-gray-400">${(d.tokens_in ?? 0).toLocaleString()}</td>
+            <td class="px-4 py-2.5 text-right text-gray-400">${(d.tokens_out ?? 0).toLocaleString()}</td>
+            <td class="px-4 py-2.5 text-right text-yellow-400">$${Number(d.cost_usd ?? 0).toFixed(4)}</td>
+          </tr>`).join('')}
+        </tbody>
+      </table>
+    </div>` : '<p class="text-gray-500 text-sm">No cost data yet.</p>'}`;
+}
+
+// ── Candidate Modal ───────────────────────────────────────────────────────
+async function openCandidate(id) {
+  document.getElementById('modalTitle').textContent = 'Loading…';
+  document.getElementById('modalBody').innerHTML = '<div class="text-gray-400 text-sm">Fetching…</div>';
+  document.getElementById('modal').classList.remove('hidden');
+
+  try {
+    const d = await api(`/dashboard/candidate/${id}`);
+    renderModal(d);
+  } catch(e) {
+    document.getElementById('modalBody').innerHTML = `<p class="text-red-400 text-sm">${esc(e.message)}</p>`;
+  }
+}
+
+function renderModal(d) {
+  document.getElementById('modalTitle').textContent = d.name + ' — ' + d.email;
+
+  const stateColor = STATE_COLORS[d.current_state] || 'bg-gray-700';
+
+  const evalsHtml = d.evaluations.length > 0
+    ? `<table class="w-full text-sm">
+        <thead><tr class="text-gray-400 text-xs">
+          <th class="text-left py-1">Round</th>
+          <th class="text-right py-1">Composite</th>
+          <th class="text-right py-1">Date</th>
+        </tr></thead>
+        <tbody class="divide-y divide-gray-800">
+          ${d.evaluations.map(e => `
+          <tr>
+            <td class="py-1.5">R${e.round}</td>
+            <td class="py-1.5 text-right font-medium ${scoreColor(e.composite)}">${e.composite.toFixed(2)}</td>
+            <td class="py-1.5 text-right text-gray-400">${relativeTime(e.created_at)}</td>
+          </tr>`).join('')}
+        </tbody>
+      </table>`
+    : '<p class="text-gray-500 text-sm">No evaluations yet.</p>';
+
+  const draftsHtml = d.pending_drafts.length > 0
+    ? d.pending_drafts.map(dr => `
+        <div class="flex items-center justify-between gap-3 bg-gray-800 rounded p-2 text-sm">
+          <span class="truncate text-gray-300">${esc(dr.subject)}</span>
+          <div class="flex gap-2 shrink-0">
+            <button onclick="approveDraft('${dr.draft_id}'); document.getElementById('modal').classList.add('hidden');"
+              class="bg-green-700 hover:bg-green-600 text-white text-xs px-2 py-1 rounded">Approve</button>
+            <button onclick="rejectDraft('${dr.draft_id}'); document.getElementById('modal').classList.add('hidden');"
+              class="bg-red-800 hover:bg-red-700 text-white text-xs px-2 py-1 rounded">Reject</button>
+          </div>
+        </div>`).join('')
+    : '<p class="text-gray-500 text-sm">No pending drafts.</p>';
+
+  const VALID_OVERRIDE_STATES = [
+    'ENGAGED','TASK_ASSIGNED','AWAITING_SUBMISSION','UNDER_EVALUATION',
+    'FEEDBACK_SENT','AWAITING_RESUBMISSION','HIRE_RECOMMENDED',
+    'OFFER_DRAFTED','HIRED','WARM_HOLD','WITHDRAWN'
+  ];
+
+  document.getElementById('modalBody').innerHTML = `
+    <!-- State row -->
+    <div class="flex items-center gap-3">
+      <span class="text-xs px-2.5 py-1 rounded-full ${stateColor} text-white/90 font-medium">${d.current_state}</span>
+      ${d.projected_next_state ? `<span class="text-gray-500 text-xs">→ projected: <span class="text-gray-300">${d.projected_next_state}</span></span>` : ''}
+      <span class="text-gray-500 text-xs ml-auto">${d.rounds_completed} round(s)</span>
+    </div>
+
+    <!-- Evaluations -->
+    <div>
+      <h4 class="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">Evaluations</h4>
+      ${evalsHtml}
+    </div>
+
+    <!-- Pending drafts -->
+    <div>
+      <h4 class="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">Pending Drafts</h4>
+      ${draftsHtml}
+    </div>
+
+    <!-- Override state -->
+    <div class="border-t border-gray-700 pt-4">
+      <h4 class="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3">Override State</h4>
+      <div class="flex gap-2">
+        <select id="overrideState" class="bg-gray-800 border border-gray-700 rounded px-3 py-1.5 text-sm flex-1 focus:outline-none focus:border-brand-600">
+          ${VALID_OVERRIDE_STATES.map(s => `<option value="${s}" ${s === d.current_state ? 'selected' : ''}>${s}</option>`).join('')}
+        </select>
+        <input id="overrideReason" type="text" placeholder="Reason (optional)"
+          class="bg-gray-800 border border-gray-700 rounded px-3 py-1.5 text-sm flex-1 focus:outline-none focus:border-brand-600" />
+        <button onclick="doOverride('${d.candidate_id}')"
+          class="bg-gray-700 hover:bg-gray-600 text-white text-sm px-4 py-1.5 rounded transition">
+          Override
+        </button>
+      </div>
+    </div>
+
+    <!-- Offer drafting (only for HIRE_RECOMMENDED) -->
+    ${d.current_state === 'HIRE_RECOMMENDED' ? `
+    <div class="border-t border-gray-700 pt-4">
+      <h4 class="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3">Draft Offer</h4>
+      <div class="grid grid-cols-2 gap-2">
+        <input id="offerRole" type="text" placeholder="Role (e.g. Senior Engineer)"
+          class="bg-gray-800 border border-gray-700 rounded px-3 py-1.5 text-sm col-span-2 focus:outline-none focus:border-brand-600" />
+        <input id="offerComp" type="text" placeholder="Compensation (e.g. $180k)"
+          class="bg-gray-800 border border-gray-700 rounded px-3 py-1.5 text-sm focus:outline-none focus:border-brand-600" />
+        <input id="offerEquity" type="text" placeholder="Equity (e.g. 0.5%)"
+          class="bg-gray-800 border border-gray-700 rounded px-3 py-1.5 text-sm focus:outline-none focus:border-brand-600" />
+        <input id="offerEmail" type="email" placeholder="Candidate email" value="${esc(d.email)}"
+          class="bg-gray-800 border border-gray-700 rounded px-3 py-1.5 text-sm col-span-2 focus:outline-none focus:border-brand-600" />
+        <button onclick="draftOffer('${d.candidate_id}')"
+          class="col-span-2 bg-green-700 hover:bg-green-600 text-white text-sm px-4 py-2 rounded transition font-medium">
+          Generate Offer Draft
+        </button>
+      </div>
+    </div>` : ''}
+  `;
+}
+
+async function doOverride(candidateId) {
+  const target_state = document.getElementById('overrideState').value;
+  const reason = document.getElementById('overrideReason').value;
+  try {
+    await post(`/gate/${candidateId}/override`, { target_state, reason, reviewer: 'founder' });
+    toast(`State overridden → ${target_state}`);
+    document.getElementById('modal').classList.add('hidden');
+    loadPipeline();
+  } catch(e) { toast('Override failed: ' + e.message, false); }
+}
+
+async function draftOffer(candidateId) {
+  const role = document.getElementById('offerRole').value;
+  const compensation = document.getElementById('offerComp').value;
+  const equity = document.getElementById('offerEquity').value;
+  const to_email = document.getElementById('offerEmail').value;
+  if (!role || !compensation || !to_email) { toast('Role, compensation, and email are required.', false); return; }
+  try {
+    const res = await post(`/dashboard/offer/${candidateId}`, { role, compensation, equity, to_email });
+    toast(`Offer draft created — draft ID ${res.draft_id}`);
+    document.getElementById('modal').classList.add('hidden');
+    switchTab('approvals');
+  } catch(e) { toast('Offer draft failed: ' + e.message, false); }
+}
+
+function closeModal(e) {
+  if (e.target === document.getElementById('modal')) {
+    document.getElementById('modal').classList.add('hidden');
+  }
+}
+
+// ── Utilities ─────────────────────────────────────────────────────────────
+function esc(s) {
+  return String(s ?? '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+function relativeTime(iso) {
+  const diff = Date.now() - new Date(iso).getTime();
+  const mins = Math.floor(diff / 60000);
+  if (mins < 1) return 'just now';
+  if (mins < 60) return `${mins}m ago`;
+  const hrs = Math.floor(mins / 60);
+  if (hrs < 24) return `${hrs}h ago`;
+  return `${Math.floor(hrs / 24)}d ago`;
+}
+
+// ── Init ──────────────────────────────────────────────────────────────────
+document.addEventListener('DOMContentLoaded', () => {
+  const saved = sessionStorage.getItem('apiKey');
+  if (saved) document.getElementById('apiKey').value = saved;
+  loadPipeline();
+});
+</script>
+</body>
+</html>
