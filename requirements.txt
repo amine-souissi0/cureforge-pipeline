@@ -1,0 +1,13 @@
+pydantic
+pytest
+pytest-asyncio
+fastapi
+uvicorn
+celery
+redis
+google-auth
+google-auth-oauthlib
+google-api-python-client
+anthropic
+boto3
+mypy
