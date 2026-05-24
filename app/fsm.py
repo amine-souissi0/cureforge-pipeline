@@ -1,7 +1,6 @@
-import json
 from datetime import datetime
 from enum import Enum
-from typing import Dict, Tuple
+from typing import Any, Callable, Dict, List, Tuple
 from dataclasses import dataclass
 
 class CandidateState(str, Enum):
@@ -25,7 +24,7 @@ class FSMTransition:
     from_state: CandidateState
     to_state: CandidateState
     predicate_name: str
-    predicate_fn: callable  # (context: dict) -> bool
+    predicate_fn: Callable[[Dict[str, Any]], bool]
 
 class FSMEngine:
     """
@@ -38,7 +37,7 @@ class FSMEngine:
     and context.
     """
     
-    def __init__(self, db_session=None):
+    def __init__(self, db_session: Any = None) -> None:
         """
         Args:
             db_session: SQLAlchemy async session for transaction management.
@@ -46,7 +45,7 @@ class FSMEngine:
         """
         self.db = db_session
         self.transition_table = self._build_transition_table()
-        self.transition_log = []  # In-memory log (replace with DB in production)
+        self.transition_log: List[Dict[str, Any]] = []
     
     @staticmethod
     def _build_transition_table() -> Dict[Tuple[CandidateState, CandidateState], FSMTransition]:
@@ -57,8 +56,7 @@ class FSMEngine:
         Any transition not in this table is rejected and logged.
         """
         
-        # Predicates: pure functions that determine if transition is allowed
-        predicates = {
+        predicates: Dict[str, Callable[[Dict[str, Any]], bool]] = {
             "intake_complete": lambda ctx: ctx.get("intake_complete", False),
             "intent_interested_or_scheduling": lambda ctx: ctx.get("intent") in ["INTERESTED", "SCHEDULING"],
             "task_generated": lambda ctx: bool(ctx.get("task_id")),
@@ -107,8 +105,8 @@ class FSMEngine:
         self,
         candidate_id: str,
         target_state: CandidateState,
-        context: dict,
-        actor: str = "system"
+        context: Dict[str, Any],
+        actor: str = "system",
     ) -> bool:
         """
         Attempt a state transition for a candidate.
@@ -155,7 +153,7 @@ class FSMEngine:
         })
         print(f"[REJECTED] {candidate_id}: {from_state} → {to_state} ({reason})")
     
-    def _log_transition(self, candidate_id: str, from_state: CandidateState, to_state: CandidateState, actor: str, predicate: str, context: dict) -> None:
+    def _log_transition(self, candidate_id: str, from_state: CandidateState, to_state: CandidateState, actor: str, predicate: str, context: Dict[str, Any]) -> None:
         """Log a successful transition."""
         self.transition_log.append({
             "timestamp": datetime.utcnow().isoformat(),

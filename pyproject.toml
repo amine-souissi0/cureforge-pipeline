@@ -1,0 +1,14 @@
+[tool.pytest.ini_options]
+asyncio_mode = "strict"
+pythonpath = ["."]
+
+[tool.mypy]
+strict = true
+ignore_missing_imports = false
+
+[[tool.mypy.overrides]]
+module = "celery.*"
+ignore_missing_imports = true
+
+[tool.ruff]
+line-length = 100
