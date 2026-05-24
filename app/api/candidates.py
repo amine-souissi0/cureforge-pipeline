@@ -8,6 +8,7 @@ from app.celery_app import celery_app
 from app.fsm import CandidateState, FSMEngine
 from app.schemas import AuditLog
 
+
 router = APIRouter(prefix="/candidates", tags=["candidates"])
 oauth_router = APIRouter(prefix="/oauth", tags=["oauth"])
 
@@ -40,42 +41,30 @@ class ApprovalPayload(BaseModel):
 # ---------------------------------------------------------------------------
 
 @celery_app.task(bind=True, autoretry_for=(Exception,), max_retries=3, default_retry_delay=2)  # type: ignore[misc]
-def process_email_task(self: object, gmail_message_id: str) -> str:  # noqa: ARG001
-    from app.agents.reply_classifier import ReplyClassifierAgent, route_classified_email
+def process_email_task(self: object, history_id: str) -> str:  # noqa: ARG001
+    """
+    Celery task: fetch all Gmail messages added since history_id,
+    then run the full classification + routing pipeline for each one.
+    """
     from app.services.gmail_service import GmailService
+    from app.services.webhook_processor import process_inbound_message
 
     async def _run() -> str:
         svc = GmailService()
-        messages = await svc.poll_messages(max_results=1)
+        messages = await svc.list_new_messages(history_id)
 
         if not messages:
-            return f"No message found for {gmail_message_id}"
+            await AuditLog.append("process_email_task_no_messages", {
+                "history_id": history_id,
+            })
+            return f"no_new_messages:history_id={history_id}"
 
-        msg = messages[0]
-        output = await ReplyClassifierAgent.classify_email(
-            email_body=msg.body,
-            candidate_context=msg.candidate_id,
-        )
+        results = []
+        for message in messages:
+            result = await process_inbound_message(message)
+            results.append(result)
 
-        routing = route_classified_email(output, msg.candidate_id)
-        await AuditLog.append("email_routed", {
-            "gmail_message_id": gmail_message_id,
-            "candidate_id": msg.candidate_id,
-            "intent": output.intent,
-            "confidence": output.confidence,
-            "routing": routing,
-        })
-
-        if routing == "fsm_withdrawn":
-            fsm = FSMEngine()
-            await fsm.transition(
-                candidate_id=msg.candidate_id,
-                target_state=CandidateState.WITHDRAWN,
-                context={"intent": "DECLINE"},
-                actor="reply_classifier",
-            )
-
-        return f"Processed {gmail_message_id}: {output.intent} → {routing}"
+        return "; ".join(results)
 
     return asyncio.run(_run())
 
