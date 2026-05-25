@@ -16,6 +16,19 @@ TEMPLATES: dict[str, TemplateDefinition] = {
     t.id: t
     for t in [
         TemplateDefinition(
+            id="initial-outreach",
+            subject_template="Engineering Role — {role}",
+            body_template=(
+                "Hi {candidate_name},\n\n"
+                "I came across your work and think you'd be a strong fit for a {role} "
+                "role we're building toward.\n\n"
+                "{personal_note}\n\n"
+                "Would you be open to learning more? Happy to share details if so.\n\n"
+                "Best,\n{sender_name}"
+            ),
+            required_fields=["candidate_name", "role", "personal_note", "sender_name"],
+        ),
+        TemplateDefinition(
             id="acknowledgment",
             subject_template="Re: {original_subject}",
             body_template=(

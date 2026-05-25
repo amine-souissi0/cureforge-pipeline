@@ -38,6 +38,7 @@ GOOGLE_TOKEN_FILE = os.environ.get(
 GMAIL_OAUTH_REDIRECT_URI = os.environ.get(
     "GMAIL_OAUTH_REDIRECT_URI", "http://localhost:8000/oauth/callback"
 )
+GMAIL_PUBSUB_TOPIC = os.environ.get("GMAIL_PUBSUB_TOPIC", "")
 
 REDIS_URL = os.environ.get("REDIS_URL", "redis://localhost:6379/0")
 

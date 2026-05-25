@@ -154,6 +154,60 @@ async def intake_candidate(payload: IntakeRequest) -> dict:
     return {"candidate_id": candidate.id, "state": "ENGAGED" if transitioned else "NEW"}
 
 
+class InviteRequest(BaseModel):
+    to_email: str
+    role: str = "Senior Software Engineer"
+    personal_note: str = "Your background caught my attention — particularly your systems work."
+    sender_name: str = "CureForge Team"
+
+
+@router.post("/{candidate_id}/invite")
+async def send_invite(candidate_id: str, payload: InviteRequest) -> dict:
+    """
+    Send initial outreach email to a candidate via the template responder.
+    Always drafts for founder approval — never auto-sent.
+    """
+    from app.agents.template_responder import TemplateResponderAgent
+    from app.services.approval_queue import ApprovalQueue, DraftEmail
+    from app.services.candidate_store import CandidateStore
+
+    candidate = await CandidateStore.get_by_id(candidate_id)
+    if candidate is None:
+        raise HTTPException(status_code=404, detail=f"Candidate {candidate_id!r} not found.")
+
+    result = await TemplateResponderAgent.render(
+        template_id="initial-outreach",
+        candidate_context={
+            "candidate_name": candidate.name,
+            "sender_name": payload.sender_name,
+        },
+        extra_context={
+            "role": payload.role,
+            "personal_note": payload.personal_note,
+        },
+    )
+
+    if result.constraint_check == "FAIL":
+        raise HTTPException(status_code=422, detail="Template constraint violation.")
+
+    draft = DraftEmail(
+        candidate_id=candidate_id,
+        template_id="initial-outreach",
+        subject=result.subject,
+        body=result.body,
+        to_email=payload.to_email,
+    )
+    draft_id = await ApprovalQueue.add(draft)
+
+    await AuditLog.append("invite_drafted", {
+        "candidate_id": candidate_id,
+        "role": payload.role,
+        "draft_id": draft_id,
+    })
+
+    return {"status": "draft_queued", "draft_id": draft_id, "subject": result.subject}
+
+
 class ClassifyRequest(BaseModel):
     sender_email: str
     body: str

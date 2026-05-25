@@ -4,7 +4,7 @@ import uuid
 from email.mime.text import MIMEText
 from typing import Any, Dict, List, Optional
 
-from app.config import GOOGLE_CREDENTIALS_FILE, GOOGLE_TOKEN_FILE, GMAIL_OAUTH_REDIRECT_URI
+from app.config import GOOGLE_CREDENTIALS_FILE, GOOGLE_TOKEN_FILE, GMAIL_OAUTH_REDIRECT_URI, GMAIL_PUBSUB_TOPIC
 from app.schemas import AuditLog, Message
 
 GMAIL_SCOPES = [
@@ -78,6 +78,31 @@ class GmailService:
         flow.fetch_token(code=code)
         GmailService._save_token(flow.credentials)
         await AuditLog.append("oauth_completed", {"service": "gmail"})
+
+        # Auto-register Gmail watch if Pub/Sub topic is configured
+        if GMAIL_PUBSUB_TOPIC:
+            try:
+                svc = GmailService()
+                result = await svc.register_watch(GMAIL_PUBSUB_TOPIC)
+                await AuditLog.append("gmail_watch_registered", {
+                    "topic": GMAIL_PUBSUB_TOPIC,
+                    "history_id": result.get("historyId"),
+                    "expiration": result.get("expiration"),
+                })
+            except Exception as e:
+                await AuditLog.append("gmail_watch_failed", {"error": str(e)})
+
+    async def register_watch(self, topic_name: str) -> dict:
+        """
+        Register a Gmail Pub/Sub push watch on INBOX.
+        Must be renewed every 7 days — call this again on token refresh.
+        """
+        service = self._get_service()
+        result = service.users().watch(
+            userId="me",
+            body={"topicName": topic_name, "labelIds": ["INBOX"]},
+        ).execute()
+        return dict(result)
 
     async def poll_messages(
         self, label: str = "INBOX", max_results: int = 10

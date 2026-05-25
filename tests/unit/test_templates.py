@@ -37,9 +37,10 @@ def test_substitute_leaves_unknown_placeholders():
 # TemplateRegistry
 # ---------------------------------------------------------------------------
 
-def test_registry_lists_all_six_templates():
+def test_registry_lists_all_templates():
     ids = TemplateRegistry.list_templates()
     expected = {
+        "initial-outreach",
         "acknowledgment",
         "answer-common-question",
         "task-assignment-cover",
@@ -265,7 +266,8 @@ def test_list_templates_endpoint():
     assert response.status_code == 200
     data = response.json()
     assert "acknowledgment" in data["templates"]
-    assert len(data["templates"]) == 6
+    assert "initial-outreach" in data["templates"]
+    assert len(data["templates"]) == 7
 
 
 def test_list_drafts_endpoint():

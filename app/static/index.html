@@ -718,8 +718,22 @@ function renderPanel(d) {
       <div class="space-y-2">${draftsHtml}</div>
     </div>
 
-    <!-- Assign Task (ENGAGED only) -->
+    <!-- Send Invite (ENGAGED only) -->
     ${d.current_state === 'ENGAGED' ? `
+    <div class="border-t border-white/5 pt-5">
+      <div class="section-label">Send Invite</div>
+      <div class="space-y-2">
+        <input id="inviteRole" type="text" placeholder="Role (e.g. Staff Engineer)" class="input" value="Senior Software Engineer" />
+        <textarea id="inviteNote" class="input text-xs" rows="2" placeholder="Personal note about their background…">Your systems background caught my attention.</textarea>
+        <button id="inviteBtn" onclick="sendInvite('${d.candidate_id}','${esc(d.email)}')" class="btn btn-ghost w-full justify-center">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+          Draft Invite Email
+        </button>
+        <div id="inviteResult" class="hidden text-xs text-green-400 px-1"></div>
+      </div>
+    </div>
+
+    <!-- Assign Task (ENGAGED only) -->
     <div class="border-t border-white/5 pt-5">
       <div class="section-label">Assign Task</div>
       <div class="space-y-2">
@@ -733,7 +747,8 @@ function renderPanel(d) {
         </button>
         <div id="taskResult" class="hidden glass rounded-xl p-3 text-xs text-gray-300 leading-relaxed max-h-40 overflow-y-auto"></div>
       </div>
-    </div>` : ''}
+    </div>
+    ` : ''}
 
     <!-- Gate Decide (has evaluations + actionable state) -->
     ${d.evaluations.length && ['ENGAGED','FEEDBACK_SENT','AWAITING_RESUBMISSION'].includes(d.current_state) ? `
@@ -799,6 +814,32 @@ async function doOverride(candidateId) {
     closePanelDirect();
     loadPipeline();
   } catch(e) { toast('Override failed: ' + e.message, false); }
+}
+
+async function sendInvite(candidateId, email) {
+  const role = document.getElementById('inviteRole')?.value || 'Senior Software Engineer';
+  const note = document.getElementById('inviteNote')?.value || '';
+  const btn  = document.getElementById('inviteBtn');
+  const res  = document.getElementById('inviteResult');
+  btn.disabled = true;
+  btn.innerHTML = '<div class="spinner" style="width:14px;height:14px;border-width:2px;"></div> Drafting…';
+  try {
+    const data = await post(`/candidates/${candidateId}/invite`, {
+      to_email: email,
+      role: role,
+      personal_note: note,
+      sender_name: 'CureForge Team',
+    });
+    res.classList.remove('hidden');
+    res.textContent = `✓ Draft queued — "${data.subject}"`;
+    toast('Invite drafted — review in Approvals');
+    loadPipeline();
+  } catch(e) {
+    toast('Invite failed: ' + e.message, false);
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg> Draft Invite Email';
+  }
 }
 
 async function assignTask(candidateId, email) {
