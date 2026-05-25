@@ -116,10 +116,9 @@ async def test_submission_stores_repo_url():
         "app.agents.reply_classifier.ReplyClassifierAgent.classify_email",
         _mock_classifier("TASK_SUBMISSION", url=submission_url),
     ):
-        with patch("app.agents.template_responder.get_anthropic_api_key", return_value="test-key"):
-            result = await process_inbound_message(
-                _make_message(sender_email=candidate.email)
-            )
+        result = await process_inbound_message(
+            _make_message(sender_email=candidate.email)
+        )
 
     assert "TASK_SUBMISSION" in result
 
@@ -143,13 +142,12 @@ async def test_interested_queues_acknowledgment_draft():
         "app.agents.reply_classifier.ReplyClassifierAgent.classify_email",
         _mock_classifier("INTERESTED"),
     ):
-        with patch("app.agents.template_responder.get_anthropic_api_key", return_value="test-key"):
-            with patch("app.services.send_policy.get_send_mode", return_value=SendMode.DRAFT):
-                with patch("app.api.candidates.generate_task_for_candidate") as mock_gen:
-                    mock_gen.delay = MagicMock()
-                    result = await process_inbound_message(
-                        _make_message(sender_email=candidate.email)
-                    )
+        with patch("app.services.send_policy.get_send_mode", return_value=SendMode.DRAFT):
+            with patch("app.api.candidates.generate_task_for_candidate") as mock_gen:
+                mock_gen.delay = MagicMock()
+                result = await process_inbound_message(
+                    _make_message(sender_email=candidate.email)
+                )
 
     assert "INTERESTED" in result
     pending = await ApprovalQueue.list_pending()

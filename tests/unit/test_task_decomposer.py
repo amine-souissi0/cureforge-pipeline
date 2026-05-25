@@ -7,10 +7,15 @@ from app.main import app
 from app.agents.task_decomposer import TaskDecomposerAgent, validate_no_blocklist_terms, get_pattern
 from app.schemas import TaskDecomposerOutput, HeldOutTest, InternalTaskSpec
 from app.services.task_store import TaskStore
+from app.services.llm_client import LLMResponse
 from app.models import TaskModel
 
 from tests.conftest import TEST_AUTH
 client = TestClient(app, headers=TEST_AUTH)
+
+
+def _llm(text: str) -> AsyncMock:
+    return AsyncMock(return_value=LLMResponse(text=text, input_tokens=300, output_tokens=800))
 
 # ---------------------------------------------------------------------------
 # Helpers
@@ -48,16 +53,6 @@ def _make_valid_output(blocklist_check: str = "PASS", success: bool = True) -> s
     })
 
 
-def _mock_client(response_text: str) -> MagicMock:
-    text_block = MagicMock()
-    text_block.text = response_text
-    mock_response = MagicMock()
-    mock_response.content = [text_block]
-    mock_response.usage.input_tokens = 300
-    mock_response.usage.output_tokens = 800
-    mock_instance = MagicMock()
-    mock_instance.messages.create = AsyncMock(return_value=mock_response)
-    return mock_instance
 
 
 # ---------------------------------------------------------------------------
@@ -66,9 +61,8 @@ def _mock_client(response_text: str) -> MagicMock:
 
 @pytest.mark.asyncio
 async def test_decomposer_success():
-    with patch("anthropic.AsyncAnthropic", return_value=_mock_client(_make_valid_output())):
-        with patch("app.agents.task_decomposer.get_anthropic_api_key", return_value="test-key"):
-            result = await TaskDecomposerAgent.decompose("software engineer", "senior")
+    with patch("app.agents.task_decomposer.call_llm", new=_llm(_make_valid_output())):
+        result = await TaskDecomposerAgent.decompose("software engineer", "senior")
 
     assert result.success is True
     assert result.blocklist_check == "PASS"
@@ -79,9 +73,8 @@ async def test_decomposer_success():
 
 @pytest.mark.asyncio
 async def test_decomposer_blocklist_fail_closes():
-    with patch("anthropic.AsyncAnthropic", return_value=_mock_client(_make_valid_output(blocklist_check="FAIL"))):
-        with patch("app.agents.task_decomposer.get_anthropic_api_key", return_value="test-key"):
-            result = await TaskDecomposerAgent.decompose("software engineer", "senior")
+    with patch("app.agents.task_decomposer.call_llm", new=_llm(_make_valid_output(blocklist_check="FAIL"))):
+        result = await TaskDecomposerAgent.decompose("software engineer", "senior")
 
     assert result.success is False
     assert result.blocklist_check == "FAIL"
@@ -90,34 +83,35 @@ async def test_decomposer_blocklist_fail_closes():
 
 @pytest.mark.asyncio
 async def test_decomposer_blocklist_ambiguous_closes():
-    with patch("anthropic.AsyncAnthropic", return_value=_mock_client(_make_valid_output(blocklist_check="AMBIGUOUS"))):
-        with patch("app.agents.task_decomposer.get_anthropic_api_key", return_value="test-key"):
-            result = await TaskDecomposerAgent.decompose("software engineer", "senior")
+    with patch("app.agents.task_decomposer.call_llm", new=_llm(_make_valid_output(blocklist_check="AMBIGUOUS"))):
+        result = await TaskDecomposerAgent.decompose("software engineer", "senior")
 
     assert result.success is False
 
 
 @pytest.mark.asyncio
 async def test_decomposer_schema_failure_returns_safe_default():
-    with patch("anthropic.AsyncAnthropic", return_value=_mock_client("not valid json at all")):
-        with patch("app.agents.task_decomposer.get_anthropic_api_key", return_value="test-key"):
-            result = await TaskDecomposerAgent.decompose("software engineer", "senior", retries=1)
+    with patch("app.agents.task_decomposer.call_llm", new=_llm("not valid json at all")):
+        result = await TaskDecomposerAgent.decompose("software engineer", "senior", retries=1)
 
     assert result.success is False
     assert result.blocklist_check == "FAIL"
 
 
 @pytest.mark.asyncio
-async def test_decomposer_rate_limit_propagates():
+async def test_decomposer_api_error_returns_safe_default():
+    """API errors are caught and the decomposer returns a fail-closed safe default."""
     import anthropic as _anthropic
-    mock_instance = MagicMock()
-    mock_instance.messages.create = AsyncMock(side_effect=_anthropic.RateLimitError(
-        message="rate limit", response=MagicMock(status_code=429, headers={}), body={}
-    ))
-    with patch("anthropic.AsyncAnthropic", return_value=mock_instance):
-        with patch("app.agents.task_decomposer.get_anthropic_api_key", return_value="test-key"):
-            with pytest.raises(_anthropic.RateLimitError):
-                await TaskDecomposerAgent.decompose("software engineer", "senior")
+    with patch("app.agents.task_decomposer.call_llm", new=AsyncMock(
+        side_effect=_anthropic.RateLimitError(
+            message="rate limit", response=MagicMock(status_code=429, headers={}), body={}
+        )
+    )):
+        result = await TaskDecomposerAgent.decompose("software engineer", "senior")
+
+    assert result.success is False
+    assert result.blocklist_check == "FAIL"
+    assert result.candidate_brief == ""
 
 
 # ---------------------------------------------------------------------------
@@ -214,13 +208,12 @@ def test_health_endpoint_m4():
 
 
 def test_generate_task_success():
-    with patch("app.agents.task_decomposer.get_anthropic_api_key", return_value="test-key"):
-        with patch("anthropic.AsyncAnthropic", return_value=_mock_client(_make_valid_output())):
-            response = client.post("/tasks/generate", json={
-                "candidate_id": "cand-api-1",
-                "candidate_role": "software engineer",
-                "candidate_level": "senior",
-            })
+    with patch("app.agents.task_decomposer.call_llm", new=_llm(_make_valid_output())):
+        response = client.post("/tasks/generate", json={
+            "candidate_id": "cand-api-1",
+            "candidate_role": "software engineer",
+            "candidate_level": "senior",
+        })
 
     assert response.status_code == 200
     data = response.json()
@@ -230,15 +223,14 @@ def test_generate_task_success():
 
 
 def test_generate_task_blocklist_rejected():
-    with patch("app.agents.task_decomposer.get_anthropic_api_key", return_value="test-key"):
-        with patch("anthropic.AsyncAnthropic", return_value=_mock_client(
-            _make_valid_output(blocklist_check="FAIL", success=False)
-        )):
-            response = client.post("/tasks/generate", json={
-                "candidate_id": "cand-api-blocked",
-                "candidate_role": "software engineer",
-                "candidate_level": "senior",
-            })
+    with patch("app.agents.task_decomposer.call_llm", new=_llm(
+        _make_valid_output(blocklist_check="FAIL", success=False)
+    )):
+        response = client.post("/tasks/generate", json={
+            "candidate_id": "cand-api-blocked",
+            "candidate_role": "software engineer",
+            "candidate_level": "senior",
+        })
 
     assert response.status_code == 422
     assert response.json()["detail"]["error"] == "task_rejected"
@@ -250,13 +242,12 @@ def test_get_task_not_found():
 
 
 def test_get_task_hides_internal_spec():
-    with patch("app.agents.task_decomposer.get_anthropic_api_key", return_value="test-key"):
-        with patch("anthropic.AsyncAnthropic", return_value=_mock_client(_make_valid_output())):
-            gen = client.post("/tasks/generate", json={
-                "candidate_id": "cand-api-hidden",
-                "candidate_role": "software engineer",
-                "candidate_level": "senior",
-            })
+    with patch("app.agents.task_decomposer.call_llm", new=_llm(_make_valid_output())):
+        gen = client.post("/tasks/generate", json={
+            "candidate_id": "cand-api-hidden",
+            "candidate_role": "software engineer",
+            "candidate_level": "senior",
+        })
 
     task_id = gen.json()["task_id"]
     response = client.get(f"/tasks/{task_id}")
@@ -272,13 +263,12 @@ def test_provision_repo_not_found():
 
 
 def test_provision_repo_success():
-    with patch("app.agents.task_decomposer.get_anthropic_api_key", return_value="test-key"):
-        with patch("anthropic.AsyncAnthropic", return_value=_mock_client(_make_valid_output())):
-            gen = client.post("/tasks/generate", json={
-                "candidate_id": "cand-repo-test",
-                "candidate_role": "software engineer",
-                "candidate_level": "senior",
-            })
+    with patch("app.agents.task_decomposer.call_llm", new=_llm(_make_valid_output())):
+        gen = client.post("/tasks/generate", json={
+            "candidate_id": "cand-repo-test",
+            "candidate_role": "software engineer",
+            "candidate_level": "senior",
+        })
 
     task_id = gen.json()["task_id"]
 

@@ -11,9 +11,14 @@ from app.schemas import OfferDrafterOutput
 from app.services.candidate_store import CandidateStore
 from app.services.evaluation_store import EvaluationStore
 from app.services.approval_queue import ApprovalQueue, DraftEmail
+from app.services.llm_client import LLMResponse
 
 from tests.conftest import TEST_AUTH
 client = TestClient(app, headers=TEST_AUTH)
+
+
+def _llm(text: str) -> AsyncMock:
+    return AsyncMock(return_value=LLMResponse(text=text, input_tokens=200, output_tokens=300))
 
 
 # ---------------------------------------------------------------------------
@@ -58,28 +63,6 @@ def _valid_offer_payload() -> str:
     })
 
 
-def _mock_sonnet(payload: str) -> MagicMock:
-    block = MagicMock()
-    block.text = payload
-    resp = MagicMock()
-    resp.content = [block]
-    resp.usage.input_tokens = 300
-    resp.usage.output_tokens = 400
-    inst = MagicMock()
-    inst.messages.create = AsyncMock(return_value=resp)
-    return inst
-
-
-def _mock_haiku(payload: str) -> MagicMock:
-    block = MagicMock()
-    block.text = payload
-    resp = MagicMock()
-    resp.content = [block]
-    resp.usage.input_tokens = 80
-    resp.usage.output_tokens = 120
-    inst = MagicMock()
-    inst.messages.create = AsyncMock(return_value=resp)
-    return inst
 
 
 # ---------------------------------------------------------------------------
@@ -126,14 +109,13 @@ def test_offer_drafter_output_rejects_extra_fields():
 async def test_offer_drafter_agent_success():
     from app.agents.offer_drafter import OfferDrafterAgent
 
-    with patch("anthropic.AsyncAnthropic", return_value=_mock_sonnet(_valid_offer_payload())):
-        with patch("app.agents.offer_drafter.get_anthropic_api_key", return_value="test-key"):
-            result = await OfferDrafterAgent.draft(
-                candidate_name="Alice",
-                role="Staff Engineer",
-                compensation="$200,000 base",
-                equity="0.5% options",
-            )
+    with patch("app.agents.offer_drafter.call_llm", new=_llm(_valid_offer_payload())):
+        result = await OfferDrafterAgent.draft(
+            candidate_name="Alice",
+            role="Staff Engineer",
+            compensation="$200,000 base",
+            equity="0.5% options",
+        )
 
     assert result.constraint_check == "PASS"
     assert result.role == "Staff Engineer"
@@ -144,18 +126,14 @@ async def test_offer_drafter_agent_success():
 async def test_offer_drafter_agent_schema_failure_raises():
     from app.agents.offer_drafter import OfferDrafterAgent
 
-    # Both attempts return invalid JSON
-    bad_mock = _mock_sonnet("not valid json at all")
-
-    with patch("anthropic.AsyncAnthropic", return_value=bad_mock):
-        with patch("app.agents.offer_drafter.get_anthropic_api_key", return_value="test-key"):
-            with pytest.raises(RuntimeError, match="OfferDrafter failed"):
-                await OfferDrafterAgent.draft(
-                    candidate_name="Bob",
-                    role="Engineer",
-                    compensation="$150k",
-                    retries=1,
-                )
+    with patch("app.agents.offer_drafter.call_llm", new=_llm("not valid json at all")):
+        with pytest.raises(RuntimeError, match="OfferDrafter failed"):
+            await OfferDrafterAgent.draft(
+                candidate_name="Bob",
+                role="Engineer",
+                compensation="$150k",
+                retries=1,
+            )
 
 
 @pytest.mark.asyncio
@@ -170,13 +148,12 @@ async def test_offer_drafter_agent_constraint_fail_returned():
         "constraint_check": "FAIL",
     })
 
-    with patch("anthropic.AsyncAnthropic", return_value=_mock_sonnet(fail_payload)):
-        with patch("app.agents.offer_drafter.get_anthropic_api_key", return_value="test-key"):
-            result = await OfferDrafterAgent.draft(
-                candidate_name="Carol",
-                role="Staff Engineer",
-                compensation="$180k",
-            )
+    with patch("app.agents.offer_drafter.call_llm", new=_llm(fail_payload)):
+        result = await OfferDrafterAgent.draft(
+            candidate_name="Carol",
+            role="Staff Engineer",
+            compensation="$180k",
+        )
 
     assert result.constraint_check == "FAIL"
 
@@ -410,35 +387,14 @@ def test_dashboard_offer_success():
         "constraint_check": "PASS",
     })
 
-    def _mock_create_factory(offer_payload: str, tmpl_payload: str):
-        call_count = 0
-
-        async def _mock_create(**kwargs):
-            nonlocal call_count
-            call_count += 1
-            payload = offer_payload if call_count == 1 else tmpl_payload
-            block = MagicMock()
-            block.text = payload
-            resp = MagicMock()
-            resp.content = [block]
-            resp.usage.input_tokens = 200
-            resp.usage.output_tokens = 300
-            return resp
-
-        return _mock_create
-
-    mock_inst = MagicMock()
-    mock_inst.messages.create = _mock_create_factory(_valid_offer_payload(), template_payload)
-
-    with patch("anthropic.AsyncAnthropic", return_value=mock_inst):
-        with patch("app.agents.offer_drafter.get_anthropic_api_key", return_value="test-key"):
-            with patch("app.agents.template_responder.get_anthropic_api_key", return_value="test-key"):
-                response = client.post(f"/dashboard/offer/{c.id}", json={
-                    "role": "Staff Engineer",
-                    "compensation": "$200,000 base",
-                    "equity": "0.5%",
-                    "to_email": "peggy@example.com",
-                })
+    with patch("app.agents.offer_drafter.call_llm", new=_llm(_valid_offer_payload())):
+        with patch("app.agents.template_responder.call_llm", new=_llm(template_payload)):
+            response = client.post(f"/dashboard/offer/{c.id}", json={
+                "role": "Staff Engineer",
+                "compensation": "$200,000 base",
+                "equity": "0.5%",
+                "to_email": "peggy@example.com",
+            })
 
     assert response.status_code == 200
     data = response.json()

@@ -207,22 +207,16 @@ def test_gate_decide_excludes_red_flags():
         "fields_used": ["candidate_name", "feedback", "upgrade_ask", "sender_name"],
         "constraint_check": "PASS",
     })
-    from unittest.mock import AsyncMock, MagicMock
-    block = MagicMock()
-    block.text = template_payload
-    resp = MagicMock()
-    resp.content = [block]
-    resp.usage.input_tokens = 80
-    resp.usage.output_tokens = 100
-    mock_inst = MagicMock()
-    mock_inst.messages.create = AsyncMock(return_value=resp)
+    from unittest.mock import AsyncMock
+    from app.services.llm_client import LLMResponse
 
-    with patch("anthropic.AsyncAnthropic", return_value=mock_inst):
-        with patch("app.agents.template_responder.get_anthropic_api_key", return_value="test-key"):
-            response = client.post("/gate/cand-gate-leak/decide", json={
-                "evaluation_id": ev_id,
-                "to_email": "x@example.com",
-            })
+    with patch("app.agents.template_responder.call_llm", new=AsyncMock(
+        return_value=LLMResponse(text=template_payload, input_tokens=80, output_tokens=100)
+    )):
+        response = client.post("/gate/cand-gate-leak/decide", json={
+            "evaluation_id": ev_id,
+            "to_email": "x@example.com",
+        })
 
     assert response.status_code == 200
     data = response.json()

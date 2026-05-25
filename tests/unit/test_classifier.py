@@ -1,23 +1,14 @@
 import json
 import pytest
-from unittest.mock import AsyncMock, MagicMock, patch
+from unittest.mock import AsyncMock, patch
 
 from app.agents.reply_classifier import ReplyClassifierAgent, route_classified_email
 from app.schemas import ReplyClassifierOutput
+from app.services.llm_client import LLMResponse
 
 
-def _mock_client(response_text: str) -> MagicMock:
-    text_block = MagicMock()
-    text_block.text = response_text
-
-    mock_response = MagicMock()
-    mock_response.content = [text_block]
-    mock_response.usage.input_tokens = 50
-    mock_response.usage.output_tokens = 20
-
-    mock_instance = MagicMock()
-    mock_instance.messages.create = AsyncMock(return_value=mock_response)
-    return mock_instance
+def _llm(text: str) -> AsyncMock:
+    return AsyncMock(return_value=LLMResponse(text=text, input_tokens=50, output_tokens=20))
 
 
 @pytest.mark.asyncio
@@ -28,9 +19,8 @@ async def test_interested_classification():
         "extracted": {"questions": [], "submission_url": None},
         "summary": "Candidate is interested",
     })
-    with patch("anthropic.AsyncAnthropic", return_value=_mock_client(payload)):
-        with patch("app.agents.reply_classifier.get_anthropic_api_key", return_value="test-key"):
-            result = await ReplyClassifierAgent.classify_email("I am interested!", "cand1")
+    with patch("app.agents.reply_classifier.call_llm", new=_llm(payload)):
+        result = await ReplyClassifierAgent.classify_email("I am interested!", "cand1")
 
     assert result.intent == "INTERESTED"
     assert result.confidence == 0.95
@@ -45,9 +35,8 @@ async def test_task_submission_with_url():
         "extracted": {"questions": [], "submission_url": "https://github.com/user/repo"},
         "summary": "Submitted repo",
     })
-    with patch("anthropic.AsyncAnthropic", return_value=_mock_client(payload)):
-        with patch("app.agents.reply_classifier.get_anthropic_api_key", return_value="test-key"):
-            result = await ReplyClassifierAgent.classify_email("Here is my repo: https://github.com/user/repo", "cand1")
+    with patch("app.agents.reply_classifier.call_llm", new=_llm(payload)):
+        result = await ReplyClassifierAgent.classify_email("Here is my repo: https://github.com/user/repo", "cand1")
 
     assert result.intent == "TASK_SUBMISSION"
     assert result.extracted is not None
@@ -62,9 +51,8 @@ async def test_decline_classification():
         "extracted": {"questions": [], "submission_url": None},
         "summary": "Candidate declined",
     })
-    with patch("anthropic.AsyncAnthropic", return_value=_mock_client(payload)):
-        with patch("app.agents.reply_classifier.get_anthropic_api_key", return_value="test-key"):
-            result = await ReplyClassifierAgent.classify_email("Not interested, thanks.", "cand1")
+    with patch("app.agents.reply_classifier.call_llm", new=_llm(payload)):
+        result = await ReplyClassifierAgent.classify_email("Not interested, thanks.", "cand1")
 
     assert result.intent == "DECLINE"
     assert result.is_high_confidence()
@@ -78,9 +66,8 @@ async def test_low_confidence_is_not_high_confidence():
         "extracted": {},
         "summary": "Ambiguous",
     })
-    with patch("anthropic.AsyncAnthropic", return_value=_mock_client(payload)):
-        with patch("app.agents.reply_classifier.get_anthropic_api_key", return_value="test-key"):
-            result = await ReplyClassifierAgent.classify_email("Hmm, maybe.", "cand1")
+    with patch("app.agents.reply_classifier.call_llm", new=_llm(payload)):
+        result = await ReplyClassifierAgent.classify_email("Hmm, maybe.", "cand1")
 
     assert result.intent == "OTHER"
     assert not result.is_high_confidence()
@@ -88,9 +75,8 @@ async def test_low_confidence_is_not_high_confidence():
 
 @pytest.mark.asyncio
 async def test_schema_failure_returns_other_after_retries():
-    with patch("anthropic.AsyncAnthropic", return_value=_mock_client("not valid json")):
-        with patch("app.agents.reply_classifier.get_anthropic_api_key", return_value="test-key"):
-            result = await ReplyClassifierAgent.classify_email("Bad response.", "cand1", retries=1)
+    with patch("app.agents.reply_classifier.call_llm", new=_llm("not valid json")):
+        result = await ReplyClassifierAgent.classify_email("Bad response.", "cand1", retries=1)
 
     assert result.intent == "OTHER"
     assert result.confidence == 0.0

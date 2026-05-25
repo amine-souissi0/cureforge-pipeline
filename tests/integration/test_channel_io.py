@@ -101,9 +101,11 @@ async def test_high_confidence_classification():
         "extracted": {"questions": [], "submission_url": None},
         "summary": "Clear interest expressed",
     })
-    with patch("anthropic.AsyncAnthropic", return_value=_mock_anthropic_client(payload)):
-        with patch("app.agents.reply_classifier.get_anthropic_api_key", return_value="test-key"):
-            result = await ReplyClassifierAgent.classify_email("I am interested.", "Cand1")
+    from unittest.mock import AsyncMock
+    from app.services.llm_client import LLMResponse
+    with patch("app.agents.reply_classifier.call_llm",
+               new=AsyncMock(return_value=LLMResponse(text=payload, input_tokens=50, output_tokens=20))):
+        result = await ReplyClassifierAgent.classify_email("I am interested.", "Cand1")
 
     assert result.intent == "INTERESTED"
     assert result.confidence == 0.95
@@ -111,9 +113,11 @@ async def test_high_confidence_classification():
 
 @pytest.mark.asyncio
 async def test_schema_failure_fallback():
-    with patch("anthropic.AsyncAnthropic", return_value=_mock_anthropic_client("Not a json")):
-        with patch("app.agents.reply_classifier.get_anthropic_api_key", return_value="test-key"):
-            result = await ReplyClassifierAgent.classify_email("Bad response.", "Cand1", retries=1)
+    from unittest.mock import AsyncMock
+    from app.services.llm_client import LLMResponse
+    with patch("app.agents.reply_classifier.call_llm",
+               new=AsyncMock(return_value=LLMResponse(text="Not a json", input_tokens=50, output_tokens=20))):
+        result = await ReplyClassifierAgent.classify_email("Bad response.", "Cand1", retries=1)
 
     assert result.intent == "OTHER"
     assert result.confidence == 0.0

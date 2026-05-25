@@ -7,11 +7,16 @@ from app.main import app
 from app.agents.evaluation_agent import EvaluationAgent, _validate_no_rubric_leak, get_dimension_ids
 from app.services.sandbox_runner import SandboxRunner, SandboxResult
 from app.services.evaluation_store import EvaluationStore
+from app.services.llm_client import LLMResponse
 from app.models import EvaluationModel
 from config.rubric import compute_composite, HIRE_THRESHOLD, RESUBMIT_THRESHOLD, DIMENSIONS
 
 from tests.conftest import TEST_AUTH
 client = TestClient(app, headers=TEST_AUTH)
+
+
+def _llm(text: str) -> AsyncMock:
+    return AsyncMock(return_value=LLMResponse(text=text, input_tokens=500, output_tokens=600))
 
 # ---------------------------------------------------------------------------
 # Helpers
@@ -38,16 +43,6 @@ def _valid_agent_payload(composite: float = 8.0) -> str:
     })
 
 
-def _mock_opus_client(payload: str) -> MagicMock:
-    text_block = MagicMock()
-    text_block.text = payload
-    mock_response = MagicMock()
-    mock_response.content = [text_block]
-    mock_response.usage.input_tokens = 500
-    mock_response.usage.output_tokens = 600
-    mock_instance = MagicMock()
-    mock_instance.messages.create = AsyncMock(return_value=mock_response)
-    return mock_instance
 
 
 def _make_sandbox_result(passed: int = 3, total: int = 4) -> SandboxResult:
@@ -178,13 +173,12 @@ def test_sandbox_pass_rate_calculation():
 @pytest.mark.asyncio
 async def test_evaluation_agent_success():
     sandbox = _make_sandbox_result(3, 4)
-    with patch("anthropic.AsyncAnthropic", return_value=_mock_opus_client(_valid_agent_payload(7.9))):
-        with patch("app.agents.evaluation_agent.get_anthropic_api_key", return_value="test-key"):
-            result = await EvaluationAgent.evaluate(
-                source_code="def f(): pass",
-                sandbox_result=sandbox,
-                internal_spec={"expected_behavior": "correct", "held_out_tests": [], "failure_modes": []},
-            )
+    with patch("app.agents.evaluation_agent.call_llm", new=_llm(_valid_agent_payload(7.9))):
+        result = await EvaluationAgent.evaluate(
+            source_code="def f(): pass",
+            sandbox_result=sandbox,
+            internal_spec={"expected_behavior": "correct", "held_out_tests": [], "failure_modes": []},
+        )
 
     assert result.composite > 0
     assert len(result.dimension_scores) == 5
@@ -195,13 +189,12 @@ async def test_evaluation_agent_success():
 async def test_evaluation_agent_composite_recomputed():
     """Model returns composite=9.9 but dimension_scores only support ~8.0 — system recomputes."""
     sandbox = _make_sandbox_result(3, 4)
-    with patch("anthropic.AsyncAnthropic", return_value=_mock_opus_client(_valid_agent_payload(9.9))):
-        with patch("app.agents.evaluation_agent.get_anthropic_api_key", return_value="test-key"):
-            result = await EvaluationAgent.evaluate(
-                source_code="def f(): pass",
-                sandbox_result=sandbox,
-                internal_spec={},
-            )
+    with patch("app.agents.evaluation_agent.call_llm", new=_llm(_valid_agent_payload(9.9))):
+        result = await EvaluationAgent.evaluate(
+            source_code="def f(): pass",
+            sandbox_result=sandbox,
+            internal_spec={},
+        )
 
     expected = compute_composite({
         "correctness_verification": 8.5,
@@ -223,10 +216,9 @@ async def test_evaluation_agent_rubric_leak_raises():
         "candidate_feedback_draft": "Your correctness_verification dimension score was low.",
     })
     sandbox = _make_sandbox_result(1, 4)
-    with patch("anthropic.AsyncAnthropic", return_value=_mock_opus_client(leaky)):
-        with patch("app.agents.evaluation_agent.get_anthropic_api_key", return_value="test-key"):
-            with pytest.raises(RuntimeError):
-                await EvaluationAgent.evaluate("def f(): pass", sandbox, {})
+    with patch("app.agents.evaluation_agent.call_llm", new=_llm(leaky)):
+        with pytest.raises(RuntimeError):
+            await EvaluationAgent.evaluate("def f(): pass", sandbox, {})
 
 
 def test_validate_no_rubric_leak_clean():
@@ -313,13 +305,12 @@ def test_get_candidate_feedback_not_found():
 
 
 def test_submit_evaluation_task_not_found():
-    with patch("app.agents.evaluation_agent.get_anthropic_api_key", return_value="test-key"):
-        response = client.post("/evaluations/submit", json={
-            "candidate_id": "cand-1",
-            "submission_sha": "abc123",
-            "source_code": "def f(): pass",
-            "task_id": "nonexistent-task",
-        })
+    response = client.post("/evaluations/submit", json={
+        "candidate_id": "cand-1",
+        "submission_sha": "abc123",
+        "source_code": "def f(): pass",
+        "task_id": "nonexistent-task",
+    })
     assert response.status_code == 404
 
 
@@ -342,14 +333,13 @@ def test_submit_evaluation_success():
     )
     asyncio.get_event_loop().run_until_complete(TaskStore.add(task))
 
-    with patch("anthropic.AsyncAnthropic", return_value=_mock_opus_client(_valid_agent_payload(8.0))):
-        with patch("app.agents.evaluation_agent.get_anthropic_api_key", return_value="test-key"):
-            response = client.post("/evaluations/submit", json={
-                "candidate_id": "cand-submit-test",
-                "submission_sha": "deadbeef",
-                "source_code": "# correct solution",
-                "task_id": task.id,
-            })
+    with patch("app.agents.evaluation_agent.call_llm", new=_llm(_valid_agent_payload(8.0))):
+        response = client.post("/evaluations/submit", json={
+            "candidate_id": "cand-submit-test",
+            "submission_sha": "deadbeef",
+            "source_code": "# correct solution",
+            "task_id": task.id,
+        })
 
     assert response.status_code == 200
     data = response.json()

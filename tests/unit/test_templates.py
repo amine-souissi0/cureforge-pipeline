@@ -2,6 +2,11 @@ import json
 import pytest
 from unittest.mock import AsyncMock, MagicMock, patch
 from fastapi.testclient import TestClient
+from app.services.llm_client import LLMResponse
+
+
+def _llm(text: str) -> AsyncMock:
+    return AsyncMock(return_value=LLMResponse(text=text, input_tokens=60, output_tokens=30))
 
 from app.main import app
 from app.templates import TemplateRegistry, MissingFieldError, _substitute
@@ -114,15 +119,14 @@ def test_render_direct_acknowledgment():
 
 @pytest.mark.asyncio
 async def test_acknowledgment_renders_without_api_call():
-    with patch("app.agents.template_responder.get_anthropic_api_key", return_value="test-key"):
-        result = await TemplateResponderAgent.render(
-            template_id="acknowledgment",
-            candidate_context={
-                "candidate_name": "Carol",
-                "original_subject": "Role inquiry",
-                "sender_name": "CureForge",
-            },
-        )
+    result = await TemplateResponderAgent.render(
+        template_id="acknowledgment",
+        candidate_context={
+            "candidate_name": "Carol",
+            "original_subject": "Role inquiry",
+            "sender_name": "CureForge",
+        },
+    )
     assert result.constraint_check == "PASS"
     assert "Carol" in result.body
 
@@ -137,23 +141,12 @@ async def test_template_responder_success():
         "constraint_check": "PASS",
     })
 
-    text_block = MagicMock()
-    text_block.text = payload
-    mock_response = MagicMock()
-    mock_response.content = [text_block]
-    mock_response.usage.input_tokens = 80
-    mock_response.usage.output_tokens = 40
-
-    mock_client = MagicMock()
-    mock_client.messages.create = AsyncMock(return_value=mock_response)
-
-    with patch("anthropic.AsyncAnthropic", return_value=mock_client):
-        with patch("app.agents.template_responder.get_anthropic_api_key", return_value="test-key"):
-            result = await TemplateResponderAgent.render(
-                template_id="answer-common-question",
-                candidate_context={"candidate_name": "Dave", "sender_name": "CureForge"},
-                extra_context={"answer": "We use Python 3.11."},
-            )
+    with patch("app.agents.template_responder.call_llm", new=_llm(payload)):
+        result = await TemplateResponderAgent.render(
+            template_id="answer-common-question",
+            candidate_context={"candidate_name": "Dave", "sender_name": "CureForge"},
+            extra_context={"answer": "We use Python 3.11."},
+        )
 
     assert result.constraint_check == "PASS"
     assert result.template_id == "answer-common-question"
@@ -169,22 +162,11 @@ async def test_template_responder_constraint_fail_logged():
         "constraint_check": "FAIL",
     })
 
-    text_block = MagicMock()
-    text_block.text = payload
-    mock_response = MagicMock()
-    mock_response.content = [text_block]
-    mock_response.usage.input_tokens = 60
-    mock_response.usage.output_tokens = 30
-
-    mock_client = MagicMock()
-    mock_client.messages.create = AsyncMock(return_value=mock_response)
-
-    with patch("anthropic.AsyncAnthropic", return_value=mock_client):
-        with patch("app.agents.template_responder.get_anthropic_api_key", return_value="test-key"):
-            result = await TemplateResponderAgent.render(
-                template_id="feedback-delivery",
-                candidate_context={"candidate_name": "Eve"},
-            )
+    with patch("app.agents.template_responder.call_llm", new=_llm(payload)):
+        result = await TemplateResponderAgent.render(
+            template_id="feedback-delivery",
+            candidate_context={"candidate_name": "Eve"},
+        )
 
     assert result.constraint_check == "FAIL"
 
@@ -309,33 +291,31 @@ def test_approve_nonexistent_draft():
 
 
 def test_send_unknown_template_returns_404():
-    with patch("app.agents.template_responder.get_anthropic_api_key", return_value="test-key"):
-        response = client.post("/templates/send", json={
-            "candidate_id": "cand-1",
-            "template_id": "nonexistent",
-            "to_email": "test@example.com",
-            "candidate_context": {"candidate_name": "Test"},
-        })
+    response = client.post("/templates/send", json={
+        "candidate_id": "cand-1",
+        "template_id": "nonexistent",
+        "to_email": "test@example.com",
+        "candidate_context": {"candidate_name": "Test"},
+    })
     assert response.status_code == 404
 
 
 def test_send_acknowledgment_drafts_because_no_gmail():
     """Acknowledgment is AUTO but GmailService fails without credentials — verifies policy wiring."""
-    with patch("app.agents.template_responder.get_anthropic_api_key", return_value="test-key"):
-        with patch("app.services.gmail_service.GmailService") as MockGmail:
-            mock_svc = MockGmail.return_value
-            mock_svc.send_email = AsyncMock(return_value="gmail-msg-id-123")
+    with patch("app.services.gmail_service.GmailService") as MockGmail:
+        mock_svc = MockGmail.return_value
+        mock_svc.send_email = AsyncMock(return_value="gmail-msg-id-123")
 
-            response = client.post("/templates/send", json={
-                "candidate_id": "cand-ack",
-                "template_id": "acknowledgment",
-                "to_email": "candidate@example.com",
-                "candidate_context": {
-                    "candidate_name": "Frank",
-                    "original_subject": "Hello",
-                    "sender_name": "CureForge",
-                },
-            })
+        response = client.post("/templates/send", json={
+            "candidate_id": "cand-ack",
+            "template_id": "acknowledgment",
+            "to_email": "candidate@example.com",
+            "candidate_context": {
+                "candidate_name": "Frank",
+                "original_subject": "Hello",
+                "sender_name": "CureForge",
+            },
+        })
 
     assert response.status_code == 200
     data = response.json()
