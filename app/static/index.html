@@ -101,6 +101,18 @@
     </div>
   </nav>
 
+  <!-- Gmail -->
+  <div class="px-1 space-y-2 mt-4">
+    <div class="section-label px-2">Gmail</div>
+    <div id="gmailStatusRow" class="flex items-center gap-2 px-2">
+      <span class="dot bg-gray-600" id="gmailDot"></span>
+      <span id="gmailText" class="text-xs text-gray-500">Checking…</span>
+    </div>
+    <button id="gmailConnectBtn" onclick="connectGmail()" class="btn btn-ghost w-full text-xs hidden">
+      Connect Gmail
+    </button>
+  </div>
+
   <!-- API Key -->
   <div class="mt-auto px-1 space-y-2">
     <div class="section-label px-2">API Key</div>
@@ -968,6 +980,42 @@ async function submitAddCandidate(e) {
 }
 
 // ── Init ───────────────────────────────────────────────────────────────────
+// ── Gmail OAuth ────────────────────────────────────────────────────────────
+async function checkGmailStatus() {
+  const dot  = document.getElementById('gmailDot');
+  const txt  = document.getElementById('gmailText');
+  const btn  = document.getElementById('gmailConnectBtn');
+  try {
+    const data = await fetch('/oauth/status').then(r => r.json());
+    if (data.connected) {
+      dot.className = 'dot bg-emerald-400';
+      txt.textContent = 'Gmail connected';
+      txt.className = 'text-xs text-emerald-400';
+      btn.classList.add('hidden');
+    } else {
+      dot.className = 'dot bg-yellow-500';
+      txt.textContent = 'Not connected';
+      txt.className = 'text-xs text-yellow-400';
+      btn.classList.remove('hidden');
+    }
+  } catch {
+    dot.className = 'dot bg-gray-600';
+    txt.textContent = 'Unavailable';
+    txt.className = 'text-xs text-gray-500';
+  }
+}
+
+async function connectGmail() {
+  try {
+    const data = await api('/oauth/start');
+    window.open(data.auth_url, '_blank', 'width=600,height=700');
+    // Poll for connection after popup closes
+    setTimeout(checkGmailStatus, 5000);
+  } catch (e) {
+    toast('Gmail connect failed: ' + e.message, false);
+  }
+}
+
 document.addEventListener('DOMContentLoaded', () => {
   const urlKey = new URLSearchParams(window.location.search).get('key');
   if (urlKey) { sessionStorage.setItem('apiKey', urlKey); history.replaceState(null,'','/'); }
@@ -975,6 +1023,7 @@ document.addEventListener('DOMContentLoaded', () => {
   if (saved) document.getElementById('apiKey').value = saved;
   document.getElementById('addCandidateBtn').classList.remove('hidden');
   document.getElementById('simEmailBtn').classList.remove('hidden');
+  checkGmailStatus();
   loadPipeline();
 });
 </script>

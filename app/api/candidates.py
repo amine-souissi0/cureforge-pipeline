@@ -241,3 +241,14 @@ async def oauth_callback(code: str) -> dict:
         return {"status": "authenticated"}
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
+
+
+@oauth_router.get("/status")
+async def oauth_status() -> dict:
+    import os
+    from app.config import GOOGLE_TOKEN_FILE
+    token_json = os.environ.get("GMAIL_TOKEN_JSON", "")
+    if token_json:
+        return {"connected": True, "source": "env"}
+    connected = os.path.exists(GOOGLE_TOKEN_FILE)
+    return {"connected": connected, "source": "file" if connected else None}
