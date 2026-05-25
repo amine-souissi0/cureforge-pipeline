@@ -154,6 +154,49 @@ async def intake_candidate(payload: IntakeRequest) -> dict:
     return {"candidate_id": candidate.id, "state": "ENGAGED" if transitioned else "NEW"}
 
 
+class ClassifyRequest(BaseModel):
+    sender_email: str
+    body: str
+
+
+@router.post("/classify")
+async def classify_email(payload: ClassifyRequest) -> dict:
+    """
+    Classify an inbound email and return the routing decision.
+    Used by the founder UI 'Simulate Email' feature for testing.
+    """
+    from app.agents.reply_classifier import ReplyClassifierAgent, route_classified_email
+    from app.services.candidate_store import CandidateStore
+
+    candidate = await CandidateStore.get_by_email(payload.sender_email)
+    candidate_context = (
+        f"name={candidate.name}, state={candidate.state}"
+        if candidate else "unknown candidate"
+    )
+
+    output = await ReplyClassifierAgent.classify_email(
+        email_body=payload.body,
+        candidate_context=candidate_context,
+    )
+    routing = route_classified_email(output, candidate.id if candidate else "unknown")
+
+    await AuditLog.append("email_classified_manual", {
+        "sender_email": payload.sender_email,
+        "intent": output.intent,
+        "confidence": output.confidence,
+        "routing": routing,
+    })
+
+    return {
+        "intent": output.intent,
+        "confidence": output.confidence,
+        "extracted": output.extracted,
+        "summary": output.summary,
+        "routing": routing,
+        "candidate_found": candidate is not None,
+    }
+
+
 @router.post("/webhook")
 async def gmail_webhook(payload: WebhookPayload) -> dict:
     """Receive Gmail Pub/Sub push notifications."""

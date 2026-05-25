@@ -123,6 +123,10 @@
       <p id="pageSubtitle" class="text-xs text-purple-400/60 mt-0.5">All candidates by stage</p>
     </div>
     <div class="flex items-center gap-3">
+      <button id="simEmailBtn" onclick="openEmailModal()" class="btn btn-ghost hidden">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+        Simulate Email
+      </button>
       <button id="addCandidateBtn" onclick="openAddCandidate()" class="btn btn-primary hidden">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
         Add Candidate
@@ -206,6 +210,37 @@
         <button type="button" onclick="closeAddModal()" class="btn btn-ghost">Cancel</button>
       </div>
     </form>
+  </div>
+</div>
+
+<!-- ── SIMULATE EMAIL MODAL ───────────────────────────────────────────────── -->
+<div id="emailModal" class="fixed inset-0 z-50 hidden modal-overlay flex items-center justify-center p-4" onclick="closeEmailModal(event)">
+  <div class="glass rounded-2xl w-full max-w-lg shadow-2xl" onclick="event.stopPropagation()">
+    <div class="flex items-center justify-between px-6 py-4 border-b border-white/5">
+      <div>
+        <h2 class="font-bold text-white text-sm">Simulate Inbound Email</h2>
+        <p class="text-xs text-gray-500 mt-0.5">Classify + route an email through the pipeline</p>
+      </div>
+      <button onclick="closeEmailModal()" class="w-8 h-8 flex items-center justify-center rounded-lg text-gray-400 hover:text-white hover:bg-white/10 transition text-xl leading-none">&times;</button>
+    </div>
+    <div class="px-6 py-5 space-y-4">
+      <div>
+        <label class="section-label block mb-1.5">Sender Email <span class="text-red-400">*</span></label>
+        <input id="simEmail" type="email" placeholder="candidate@example.com" class="input" autocomplete="off" />
+      </div>
+      <div>
+        <label class="section-label block mb-1.5">Email Body <span class="text-red-400">*</span></label>
+        <textarea id="simBody" rows="5" placeholder="Paste the candidate's email here…" class="input" style="resize:vertical; font-size:13px; line-height:1.5;"></textarea>
+      </div>
+      <div id="simResult" class="hidden glass rounded-xl p-3 text-xs space-y-1"></div>
+      <div class="flex gap-3 pt-1">
+        <button id="simBtn" onclick="simulateEmail()" class="btn btn-primary flex-1 justify-center">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+          Classify &amp; Route
+        </button>
+        <button onclick="closeEmailModal()" class="btn btn-ghost">Cancel</button>
+      </div>
+    </div>
   </div>
 </div>
 
@@ -312,6 +347,7 @@ function switchTab(tab) {
   document.getElementById('pageSubtitle').textContent = m.sub;
   currentTab = tab;
   document.getElementById('addCandidateBtn').classList.toggle('hidden', tab !== 'pipeline');
+  document.getElementById('simEmailBtn').classList.toggle('hidden', tab !== 'pipeline');
   if (tab === 'pipeline') loadPipeline();
   else if (tab === 'approvals') loadApprovals();
   else if (tab === 'costs') loadCosts();
@@ -670,6 +706,36 @@ function renderPanel(d) {
       <div class="space-y-2">${draftsHtml}</div>
     </div>
 
+    <!-- Assign Task (ENGAGED only) -->
+    ${d.current_state === 'ENGAGED' ? `
+    <div class="border-t border-white/5 pt-5">
+      <div class="section-label">Assign Task</div>
+      <div class="space-y-2">
+        <div class="flex gap-2">
+          <input id="taskRole"  type="text" placeholder="Role (e.g. Senior Engineer)" class="input" value="Senior Software Engineer" />
+          <input id="taskLevel" type="text" placeholder="Level (e.g. senior)"         class="input" value="senior" style="max-width:90px;" />
+        </div>
+        <button id="assignTaskBtn" onclick="assignTask('${d.candidate_id}','${esc(d.email)}')" class="btn btn-primary w-full justify-center">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+          Generate Task via AI
+        </button>
+        <div id="taskResult" class="hidden glass rounded-xl p-3 text-xs text-gray-300 leading-relaxed max-h-40 overflow-y-auto"></div>
+      </div>
+    </div>` : ''}
+
+    <!-- Gate Decide (has evaluations + actionable state) -->
+    ${d.evaluations.length && ['ENGAGED','FEEDBACK_SENT','AWAITING_RESUBMISSION'].includes(d.current_state) ? `
+    <div class="border-t border-white/5 pt-5">
+      <div class="section-label">Run Gate Decision</div>
+      <div class="space-y-2">
+        <input id="gateEmail" type="email" placeholder="Candidate email" value="${esc(d.email)}" class="input" />
+        <button id="gateDecideBtn" onclick="runGateDecide('${d.candidate_id}','${d.evaluations[d.evaluations.length-1] ? '' : ''}','${esc(d.email)}')" class="btn btn-primary w-full justify-center">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+          Decide &amp; Send Feedback
+        </button>
+      </div>
+    </div>` : ''}
+
     <!-- Override -->
     <div class="border-t border-white/5 pt-5">
       <div class="section-label">Override State</div>
@@ -723,6 +789,65 @@ async function doOverride(candidateId) {
   } catch(e) { toast('Override failed: ' + e.message, false); }
 }
 
+async function assignTask(candidateId, email) {
+  const role  = document.getElementById('taskRole')?.value  || 'Senior Software Engineer';
+  const level = document.getElementById('taskLevel')?.value || 'senior';
+  const btn   = document.getElementById('assignTaskBtn');
+  const result= document.getElementById('taskResult');
+  btn.disabled = true;
+  btn.innerHTML = '<div class="spinner" style="width:14px;height:14px;border-width:2px;"></div> Generating…';
+  result.classList.add('hidden');
+  try {
+    const res = await post('/tasks/generate', {
+      candidate_id: candidateId,
+      candidate_role: role,
+      candidate_level: level,
+    });
+    result.classList.remove('hidden');
+    result.innerHTML = `<div class="text-green-400 font-semibold mb-1">✓ Task generated · ${esc(res.corpus_ref)}</div><div class="text-gray-400">${esc(res.brief_preview)}…</div>`;
+    toast('Task generated — review in Approvals');
+    loadPipeline();
+  } catch(e) {
+    toast('Task generation failed: ' + e.message, false);
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg> Generate Task via AI';
+  }
+}
+
+async function runGateDecide(candidateId) {
+  const email = document.getElementById('gateEmail')?.value;
+  if (!email) { toast('Email required', false); return; }
+  const btn = document.getElementById('gateDecideBtn');
+
+  // Get latest evaluation id from dashboard
+  let evalId;
+  try {
+    const d = await api(`/dashboard/candidate/${candidateId}`);
+    if (!d.evaluations?.length) { toast('No evaluations found', false); return; }
+    // We need eval id — fetch gate status which returns eval list
+    const gs = await api(`/gate/${candidateId}/status`);
+    // evaluation_id not in status — use evaluations API
+    const evResp = await api(`/evaluations/candidate/${candidateId}`);
+    evalId = evResp.evaluations?.[evResp.evaluations.length - 1]?.evaluation_id;
+    if (!evalId) { toast('No evaluation ID found', false); return; }
+  } catch(e) { toast('Could not fetch evaluation: ' + e.message, false); return; }
+
+  btn.disabled = true;
+  btn.innerHTML = '<div class="spinner" style="width:14px;height:14px;border-width:2px;"></div> Running…';
+  try {
+    const res = await post(`/gate/${candidateId}/decide`, { evaluation_id: evalId, to_email: email });
+    toast(`Decision: ${res.next_state} · composite ${res.composite}`);
+    closePanelDirect();
+    loadPipeline();
+  } catch(e) {
+    toast('Gate decide failed: ' + e.message, false);
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg> Decide & Send Feedback';
+  }
+}
+
 async function draftOffer(candidateId) {
   const role        = document.getElementById('offerRole').value;
   const compensation= document.getElementById('offerComp').value;
@@ -750,6 +875,53 @@ function relativeTime(iso) {
   const h = Math.floor(m/60);
   if (h < 24) return `${h}h ago`;
   return `${Math.floor(h/24)}d ago`;
+}
+
+// ── Simulate Email ─────────────────────────────────────────────────────────
+function openEmailModal() {
+  document.getElementById('simEmail').value = '';
+  document.getElementById('simBody').value = '';
+  document.getElementById('simResult').classList.add('hidden');
+  document.getElementById('emailModal').classList.remove('hidden');
+  setTimeout(() => document.getElementById('simEmail').focus(), 50);
+}
+function closeEmailModal(e) {
+  if (!e || e.target === document.getElementById('emailModal'))
+    document.getElementById('emailModal').classList.add('hidden');
+}
+
+async function simulateEmail() {
+  const email = document.getElementById('simEmail').value.trim();
+  const body  = document.getElementById('simBody').value.trim();
+  const btn   = document.getElementById('simBtn');
+  const result= document.getElementById('simResult');
+  if (!email || !body) { toast('Email and body required', false); return; }
+
+  btn.disabled = true;
+  btn.innerHTML = '<div class="spinner" style="width:14px;height:14px;border-width:2px;"></div> Classifying…';
+  result.classList.add('hidden');
+
+  try {
+    const res = await post('/candidates/classify', { sender_email: email, body });
+    const intentColor = { INTERESTED:'#34d399', QUESTION:'#60a5fa', SCHEDULING:'#a78bfa',
+      TASK_SUBMISSION:'#fbbf24', DECLINE:'#f87171', OTHER:'#9ca3af' };
+    const c = intentColor[res.intent] || '#9ca3af';
+    result.classList.remove('hidden');
+    result.innerHTML = `
+      <div class="flex items-center gap-2 mb-2">
+        <span class="pill text-xs px-2 py-0.5" style="color:${c};background:${c}22;">${esc(res.intent)}</span>
+        <span class="text-gray-500">confidence: <span class="text-gray-300">${(res.confidence*100).toFixed(0)}%</span></span>
+        <span class="pill text-xs px-2 py-0.5 ml-auto" style="color:#a78bfa;background:rgba(167,139,250,0.1);">${esc(res.routing)}</span>
+      </div>
+      ${res.summary ? `<div class="text-gray-400">${esc(res.summary)}</div>` : ''}
+      ${res.extracted?.submission_url ? `<div class="text-yellow-400 mt-1">URL: ${esc(res.extracted.submission_url)}</div>` : ''}`;
+    toast(`Classified: ${res.intent} → ${res.routing}`);
+  } catch(e) {
+    toast('Classification failed: ' + e.message, false);
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg> Classify & Route';
+  }
 }
 
 // ── Add Candidate ──────────────────────────────────────────────────────────
@@ -802,6 +974,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const saved = sessionStorage.getItem('apiKey');
   if (saved) document.getElementById('apiKey').value = saved;
   document.getElementById('addCandidateBtn').classList.remove('hidden');
+  document.getElementById('simEmailBtn').classList.remove('hidden');
   loadPipeline();
 });
 </script>
