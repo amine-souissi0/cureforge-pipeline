@@ -1,7 +1,6 @@
 import json
-import anthropic
-from app.config import get_anthropic_api_key
 from app.schemas import ReplyClassifierOutput, AuditLog
+from app.services.llm_client import call_llm
 from config.models import MODELS
 from app.agents._prompt_loader import load_prompt
 
@@ -17,8 +16,6 @@ class ReplyClassifierAgent:
         candidate_context: str,
         retries: int = 1,
     ) -> ReplyClassifierOutput:
-        client = anthropic.AsyncAnthropic(api_key=get_anthropic_api_key())
-
         user_message = json.dumps({
             "email_body": email_body,
             "candidate_context": candidate_context,
@@ -27,31 +24,23 @@ class ReplyClassifierAgent:
         last_error: str = ""
         for attempt in range(retries + 1):
             try:
-                response = await client.messages.create(
+                resp = await call_llm(
+                    system=SYSTEM_PROMPT,
+                    user=user_message,
                     model=_CONFIG["model"],
                     max_tokens=_CONFIG["max_tokens"],
                     temperature=_CONFIG["temperature"],
-                    system=SYSTEM_PROMPT,
-                    messages=[{"role": "user", "content": user_message}],
                 )
-
-                block = response.content[0]
-                raw = getattr(block, "text", None)
-                if not isinstance(raw, str):
-                    raise ValueError(f"Unexpected content block type: {type(block)}")
-
-                tokens_in = response.usage.input_tokens
-                tokens_out = response.usage.output_tokens
 
                 await AuditLog.append("claude_call_classifier", {
                     "model": _CONFIG["model"],
-                    "tokens_in": tokens_in,
-                    "tokens_out": tokens_out,
-                    "cost_estimate": (tokens_in * 0.25 / 1_000_000) + (tokens_out * 1.25 / 1_000_000),
+                    "tokens_in": resp.input_tokens,
+                    "tokens_out": resp.output_tokens,
+                    "cost_estimate": (resp.input_tokens * 0.25 / 1_000_000) + (resp.output_tokens * 1.25 / 1_000_000),
                     "attempt": attempt,
                 })
 
-                parsed = json.loads(raw)
+                parsed = json.loads(resp.text)
                 output = ReplyClassifierOutput(**parsed)
                 return output
 
@@ -62,14 +51,10 @@ class ReplyClassifierAgent:
                     "error": last_error,
                 })
                 if attempt < retries:
-                    # Retry with stricter prompt reminder
                     user_message = (
                         user_message
                         + f"\n\nPrevious output was invalid: {last_error}. Return ONLY the JSON object."
                     )
-
-            except anthropic.RateLimitError:
-                raise
 
             except Exception as e:
                 last_error = str(e)

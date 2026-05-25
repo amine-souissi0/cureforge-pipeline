@@ -15,11 +15,17 @@ def get_api_key() -> str:
 def get_anthropic_api_key() -> str:
     """
     Load the Anthropic API key.
+    Not required when OLLAMA_BASE_URL is set (local Ollama mode).
     Production: replace with boto3 Secrets Manager call.
     """
+    if os.environ.get("OLLAMA_BASE_URL"):
+        return ""  # Ollama mode — key unused
     key = os.environ.get("ANTHROPIC_API_KEY", "")
     if not key:
-        raise RuntimeError("ANTHROPIC_API_KEY environment variable not set")
+        raise RuntimeError(
+            "ANTHROPIC_API_KEY environment variable not set. "
+            "Set OLLAMA_BASE_URL for local Ollama mode."
+        )
     return key
 
 

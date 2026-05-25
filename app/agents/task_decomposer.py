@@ -1,10 +1,8 @@
 import json
 from typing import Optional
 
-import anthropic
-
-from app.config import get_anthropic_api_key
 from app.schemas import AuditLog, TaskDecomposerOutput
+from app.services.llm_client import call_llm
 from config.blocklist import BLOCKED_TOPICS
 from config.corpus import PATTERNS, CorpusPattern
 from config.models import MODELS
@@ -37,8 +35,6 @@ class TaskDecomposerAgent:
 
         Fail-closed: blocklist_check AMBIGUOUS or FAIL → success=False, route to human.
         """
-        client = anthropic.AsyncAnthropic(api_key=get_anthropic_api_key())
-
         user_message = json.dumps({
             "candidate_role": candidate_role,
             "candidate_level": candidate_level,
@@ -51,31 +47,23 @@ class TaskDecomposerAgent:
 
         for attempt in range(retries + 1):
             try:
-                response = await client.messages.create(
+                resp = await call_llm(
+                    system=system_prompt,
+                    user=user_message,
                     model=_CONFIG["model"],
                     max_tokens=_CONFIG["max_tokens"],
                     temperature=_CONFIG["temperature"],
-                    system=system_prompt,
-                    messages=[{"role": "user", "content": user_message}],
                 )
-
-                block = response.content[0]
-                raw = getattr(block, "text", None)
-                if not isinstance(raw, str):
-                    raise ValueError(f"Unexpected content block: {type(block)}")
-
-                tokens_in = response.usage.input_tokens
-                tokens_out = response.usage.output_tokens
 
                 await AuditLog.append("claude_call_decomposer", {
                     "model": _CONFIG["model"],
-                    "tokens_in": tokens_in,
-                    "tokens_out": tokens_out,
-                    "cost_estimate": (tokens_in * 3.0 / 1_000_000) + (tokens_out * 15.0 / 1_000_000),
+                    "tokens_in": resp.input_tokens,
+                    "tokens_out": resp.output_tokens,
+                    "cost_estimate": (resp.input_tokens * 3.0 / 1_000_000) + (resp.output_tokens * 15.0 / 1_000_000),
                     "attempt": attempt,
                 })
 
-                parsed = json.loads(raw)
+                parsed = json.loads(resp.text)
                 output = TaskDecomposerOutput(**parsed)
 
                 # Fail-closed blocklist enforcement
@@ -106,9 +94,6 @@ class TaskDecomposerAgent:
                         user_message
                         + f"\n\nPrevious output was invalid: {last_error}. Return ONLY the JSON."
                     )
-
-            except anthropic.RateLimitError:
-                raise
 
             except Exception as e:
                 last_error = str(e)

@@ -137,7 +137,7 @@ def test_journey_a_resubmit_path():
     # 4. Gate decide → AWAITING_RESUBMISSION
     feedback_payload = _feedback_template_payload("Journey A")
     with patch("anthropic.AsyncAnthropic", return_value=_mock_haiku(feedback_payload)):
-        with patch("app.agents.template_responder.get_anthropic_api_key", return_value="test-key"):
+        with patch("app.config.get_anthropic_api_key", return_value="test-key"):
             response = client.post(f"/gate/{candidate_id}/decide", json={
                 "evaluation_id": ev_id,
                 "to_email": "journey-a@test.com",
@@ -213,7 +213,7 @@ def test_journey_b_warm_hold_path():
     mock_inst.messages.create = _mock_create
 
     with patch("anthropic.AsyncAnthropic", return_value=mock_inst):
-        with patch("app.agents.template_responder.get_anthropic_api_key", return_value="test-key"):
+        with patch("app.config.get_anthropic_api_key", return_value="test-key"):
             response = client.post(f"/gate/{candidate_id}/decide", json={
                 "evaluation_id": ev_id,
                 "to_email": "journey-b@test.com",
@@ -262,7 +262,7 @@ def test_journey_c_hire_recommended_and_offer():
     # 4. Gate decide (recommend mode) → HIRE_RECOMMENDED
     feedback_payload = _feedback_template_payload("Journey C")
     with patch("anthropic.AsyncAnthropic", return_value=_mock_haiku(feedback_payload)):
-        with patch("app.agents.template_responder.get_anthropic_api_key", return_value="test-key"):
+        with patch("app.config.get_anthropic_api_key", return_value="test-key"):
             response = client.post(f"/gate/{candidate_id}/decide", json={
                 "evaluation_id": ev_id,
                 "to_email": "journey-c@test.com",
@@ -295,8 +295,8 @@ def test_journey_c_hire_recommended_and_offer():
     mock_inst.messages.create = _multi_create
 
     with patch("anthropic.AsyncAnthropic", return_value=mock_inst):
-        with patch("app.agents.offer_drafter.get_anthropic_api_key", return_value="test-key"):
-            with patch("app.agents.template_responder.get_anthropic_api_key", return_value="test-key"):
+        with patch("app.config.get_anthropic_api_key", return_value="test-key"):
+            with patch("app.config.get_anthropic_api_key", return_value="test-key"):
                 response = client.post(f"/dashboard/offer/{candidate_id}", json={
                     "role": "Staff Engineer",
                     "compensation": "$200,000 base",

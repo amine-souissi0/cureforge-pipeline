@@ -1,10 +1,8 @@
 import json
 from typing import Dict
 
-import anthropic
-
-from app.config import get_anthropic_api_key
 from app.schemas import AuditLog, TemplateResponderOutput
+from app.services.llm_client import call_llm
 from app.templates import TemplateRegistry
 from config.models import MODELS
 from config.templates import TEMPLATES
@@ -35,8 +33,6 @@ class TemplateResponderAgent:
         if template_id == "acknowledgment":
             return _render_direct(template_id, candidate_context)
 
-        client = anthropic.AsyncAnthropic(api_key=get_anthropic_api_key())
-
         tmpl = TEMPLATES[template_id]
         user_message = json.dumps({
             "template_id": template_id,
@@ -50,32 +46,24 @@ class TemplateResponderAgent:
         last_error = ""
         for attempt in range(retries + 1):
             try:
-                response = await client.messages.create(
+                resp = await call_llm(
+                    system=SYSTEM_PROMPT,
+                    user=user_message,
                     model=_CONFIG["model"],
                     max_tokens=_CONFIG["max_tokens"],
                     temperature=_CONFIG["temperature"],
-                    system=SYSTEM_PROMPT,
-                    messages=[{"role": "user", "content": user_message}],
                 )
-
-                block = response.content[0]
-                raw = getattr(block, "text", None)
-                if not isinstance(raw, str):
-                    raise ValueError(f"Unexpected content block: {type(block)}")
-
-                tokens_in = response.usage.input_tokens
-                tokens_out = response.usage.output_tokens
 
                 await AuditLog.append("claude_call_templater", {
                     "model": _CONFIG["model"],
                     "template_id": template_id,
-                    "tokens_in": tokens_in,
-                    "tokens_out": tokens_out,
-                    "cost_estimate": (tokens_in * 0.25 / 1_000_000) + (tokens_out * 1.25 / 1_000_000),
+                    "tokens_in": resp.input_tokens,
+                    "tokens_out": resp.output_tokens,
+                    "cost_estimate": (resp.input_tokens * 0.25 / 1_000_000) + (resp.output_tokens * 1.25 / 1_000_000),
                     "attempt": attempt,
                 })
 
-                parsed = json.loads(raw)
+                parsed = json.loads(resp.text)
                 output = TemplateResponderOutput(**parsed)
 
                 if output.constraint_check == "FAIL":
@@ -97,9 +85,6 @@ class TemplateResponderAgent:
                         user_message
                         + f"\n\nPrevious output was invalid: {last_error}. Return ONLY the JSON."
                     )
-
-            except anthropic.RateLimitError:
-                raise
 
             except Exception as e:
                 last_error = str(e)

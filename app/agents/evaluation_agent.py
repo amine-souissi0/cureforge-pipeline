@@ -1,10 +1,8 @@
 import json
 from typing import Any, Dict, List
 
-import anthropic
-
-from app.config import get_anthropic_api_key
 from app.schemas import AuditLog, EvaluationAgentOutput
+from app.services.llm_client import call_llm
 from app.services.sandbox_runner import SandboxResult
 from config.models import MODELS
 from config.rubric import DIMENSIONS, compute_composite
@@ -38,8 +36,6 @@ class EvaluationAgent:
         The composite is always recomputed from dimension_scores to prevent
         the model from inventing a number inconsistent with its own scores.
         """
-        client = anthropic.AsyncAnthropic(api_key=get_anthropic_api_key())
-
         sandbox_summary = _format_sandbox_result(sandbox_result)
         user_message = json.dumps({
             "source_code_preview": source_code[:3000],
@@ -53,32 +49,24 @@ class EvaluationAgent:
 
         for attempt in range(retries + 1):
             try:
-                response = await client.messages.create(
+                resp = await call_llm(
+                    system=system_prompt,
+                    user=user_message,
                     model=_CONFIG["model"],
                     max_tokens=_CONFIG["max_tokens"],
                     temperature=_CONFIG["temperature"],
-                    system=system_prompt,
-                    messages=[{"role": "user", "content": user_message}],
                 )
-
-                block = response.content[0]
-                raw = getattr(block, "text", None)
-                if not isinstance(raw, str):
-                    raise ValueError(f"Unexpected content block: {type(block)}")
-
-                tokens_in = response.usage.input_tokens
-                tokens_out = response.usage.output_tokens
 
                 await AuditLog.append("claude_call_evaluator", {
                     "model": _CONFIG["model"],
-                    "tokens_in": tokens_in,
-                    "tokens_out": tokens_out,
-                    "cost_estimate": (tokens_in * 15.0 / 1_000_000) + (tokens_out * 75.0 / 1_000_000),
+                    "tokens_in": resp.input_tokens,
+                    "tokens_out": resp.output_tokens,
+                    "cost_estimate": (resp.input_tokens * 15.0 / 1_000_000) + (resp.output_tokens * 75.0 / 1_000_000),
                     "attempt": attempt,
                     "round": candidate_round,
                 })
 
-                parsed = json.loads(raw)
+                parsed = json.loads(resp.text)
                 output = EvaluationAgentOutput(**parsed)
 
                 # Always recompute composite from dimension scores — do not trust model's value
@@ -104,9 +92,6 @@ class EvaluationAgent:
                         user_message
                         + f"\n\nPrevious output was invalid: {last_error}. Return ONLY the JSON."
                     )
-
-            except anthropic.RateLimitError:
-                raise
 
             except Exception as e:
                 last_error = str(e)

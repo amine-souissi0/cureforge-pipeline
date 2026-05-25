@@ -164,7 +164,7 @@ async def test_feedback_controller_resubmit_path():
     })
 
     with patch("anthropic.AsyncAnthropic", return_value=_mock_haiku(template_payload)):
-        with patch("app.agents.template_responder.get_anthropic_api_key", return_value="test-key"):
+        with patch("app.config.get_anthropic_api_key", return_value="test-key"):
             from app.services.feedback_controller import run_feedback_loop
             result = await run_feedback_loop(
                 candidate_id=candidate_id,
@@ -217,7 +217,7 @@ async def test_feedback_controller_warm_hold_path():
     mock_instance.messages.create = _mock_create
 
     with patch("anthropic.AsyncAnthropic", return_value=mock_instance):
-        with patch("app.agents.template_responder.get_anthropic_api_key", return_value="test-key"):
+        with patch("app.config.get_anthropic_api_key", return_value="test-key"):
             from app.services.feedback_controller import run_feedback_loop
             result = await run_feedback_loop(
                 candidate_id=candidate_id,
@@ -288,7 +288,7 @@ def test_gate_decide_success():
     })
 
     with patch("anthropic.AsyncAnthropic", return_value=_mock_haiku(template_payload)):
-        with patch("app.agents.template_responder.get_anthropic_api_key", return_value="test-key"):
+        with patch("app.config.get_anthropic_api_key", return_value="test-key"):
             response = client.post(f"/gate/{candidate_id}/decide", json={
                 "evaluation_id": ev_id,
                 "to_email": "cand@example.com",
@@ -346,7 +346,7 @@ def test_gate_resubmit_success():
     )
 
     with patch("anthropic.AsyncAnthropic", return_value=_mock_opus(_valid_eval_payload(8.0))):
-        with patch("app.agents.evaluation_agent.get_anthropic_api_key", return_value="test-key"):
+        with patch("app.config.get_anthropic_api_key", return_value="test-key"):
             response = client.post(f"/gate/{candidate_id}/resubmit", json={
                 "task_id": task.id,
                 "submission_sha": "newsha456",

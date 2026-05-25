@@ -4,10 +4,13 @@ from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_asyn
 from sqlalchemy.orm import DeclarativeBase
 
 # Dev default: SQLite. Production: set DATABASE_URL=postgresql+asyncpg://...
-DATABASE_URL: str = os.environ.get(
-    "DATABASE_URL",
-    "sqlite+aiosqlite:///./cureforge.db",
-)
+# Railway gives postgres:// or postgresql:// — normalise to asyncpg dialect.
+_raw_db_url: str = os.environ.get("DATABASE_URL", "sqlite+aiosqlite:///./cureforge.db")
+if _raw_db_url.startswith("postgres://"):
+    _raw_db_url = _raw_db_url.replace("postgres://", "postgresql+asyncpg://", 1)
+elif _raw_db_url.startswith("postgresql://") and "+asyncpg" not in _raw_db_url:
+    _raw_db_url = _raw_db_url.replace("postgresql://", "postgresql+asyncpg://", 1)
+DATABASE_URL: str = _raw_db_url
 
 engine = create_async_engine(
     DATABASE_URL,
