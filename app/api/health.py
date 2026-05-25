@@ -45,31 +45,60 @@ async def readiness() -> Dict[str, Any]:
 @router.get("/costs")
 async def costs() -> Dict[str, Any]:
     """
-    Per-agent Claude API spend summary computed from the audit log.
-
-    cost_estimate values are set by each agent at call time using published
-    Anthropic token pricing. Use this to track burn per milestone.
+    Per-agent LLM spend summary read from the persistent audit log DB.
+    Falls back to in-memory log if DB is unavailable.
     """
+    from sqlalchemy import select, text
+    from app.database import AsyncSessionLocal
+    from app.orm_models import AuditLogRow
     from app.schemas import AuditLog
 
     breakdown: Dict[str, float] = {}
     call_counts: Dict[str, int] = {}
+    tokens_in: Dict[str, int] = {}
+    tokens_out: Dict[str, int] = {}
     total = 0.0
+    daily: Dict[str, float] = {}  # date-string → cost
 
-    for entry in AuditLog._log:
-        event_type = entry.get("event_type", "")
-        if not event_type.startswith("claude_call_"):
-            continue
-        agent = event_type[len("claude_call_"):]
-        cost = float(entry.get("data", {}).get("cost_estimate", 0.0))
+    try:
+        async with AsyncSessionLocal() as session:
+            result = await session.execute(
+                select(AuditLogRow)
+                .where(AuditLogRow.event_type.like("claude_call_%"))
+                .order_by(AuditLogRow.created_at.desc())
+                .limit(5000)
+            )
+            rows = result.scalars().all()
+    except Exception:
+        rows = []
+
+    # Fall back to in-memory if DB returned nothing
+    sources = rows if rows else [
+        type("R", (), {"event_type": e["event_type"], "data": e.get("data", {}), "created_at": None})()
+        for e in AuditLog._log
+        if e.get("event_type", "").startswith("claude_call_")
+    ]
+
+    for row in sources:
+        agent = row.event_type[len("claude_call_"):]
+        data = row.data or {}
+        cost = float(data.get("cost_estimate", 0.0))
         breakdown[agent] = round(breakdown.get(agent, 0.0) + cost, 8)
         call_counts[agent] = call_counts.get(agent, 0) + 1
+        tokens_in[agent] = tokens_in.get(agent, 0) + int(data.get("tokens_in", 0))
+        tokens_out[agent] = tokens_out.get(agent, 0) + int(data.get("tokens_out", 0))
         total += cost
+        if getattr(row, "created_at", None):
+            day = row.created_at.strftime("%Y-%m-%d")
+            daily[day] = round(daily.get(day, 0.0) + cost, 8)
 
     return {
         "total_estimated_usd": round(total, 6),
         "by_agent": breakdown,
         "call_counts": call_counts,
+        "tokens_in": tokens_in,
+        "tokens_out": tokens_out,
+        "daily": daily,
     }
 
 

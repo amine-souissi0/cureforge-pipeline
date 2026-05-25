@@ -508,18 +508,51 @@ async function loadCosts() {
 
 function renderCosts(data) {
   const el = document.getElementById('costsView');
-  const total = data.total_cost_usd ?? data.total ?? 0;
+  const total = data.total_estimated_usd ?? 0;
   const byAgent = data.by_agent || {};
+  const callCounts = data.call_counts || {};
+  const tokensIn = data.tokens_in || {};
+  const tokensOut = data.tokens_out || {};
+  const daily = data.daily || {};
+
+  const totalCalls = Object.values(callCounts).reduce((a,b) => a+b, 0);
+  const totalTokIn = Object.values(tokensIn).reduce((a,b) => a+b, 0);
+  const totalTokOut = Object.values(tokensOut).reduce((a,b) => a+b, 0);
+
+  // Build sparkline from daily data (last 14 days)
+  const days = Object.keys(daily).sort().slice(-14);
+  const maxVal = Math.max(...days.map(d => daily[d]), 0.0001);
+  const sparkBars = days.map(d => {
+    const h = Math.max(4, Math.round((daily[d] / maxVal) * 48));
+    return `<div title="${d}: $${daily[d].toFixed(6)}" style="width:14px;height:${h}px;background:#7c3aed;border-radius:3px 3px 0 0;opacity:0.8;"></div>`;
+  }).join('');
+
+  const agentColor = {
+    classifier: '#60a5fa', templater: '#34d399', decomposer: '#fbbf24',
+    evaluator: '#f87171', offer_drafter: '#c084fc',
+  };
 
   el.innerHTML = `
     <div class="grid grid-cols-3 gap-4">
-      ${statCard('Total Spend', '$' + Number(total).toFixed(4), '#fbbf24',
+      ${statCard('Total Spend', '$' + Number(total).toFixed(6), '#fbbf24',
         `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>`)}
-      ${statCard('Total API Calls', data.total_calls ?? 0, '#a78bfa',
+      ${statCard('API Calls', totalCalls.toLocaleString(), '#a78bfa',
         `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>`)}
-      ${statCard('Month Cost', '$' + Number(data.month_cost_usd ?? total).toFixed(4), '#34d399',
-        `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>`)}
+      ${statCard('Tokens Used', (totalTokIn + totalTokOut).toLocaleString(), '#34d399',
+        `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>`)}
     </div>
+
+    ${days.length ? `
+    <div class="glass rounded-2xl p-5">
+      <div class="text-sm font-semibold text-white mb-3">Daily Spend (last ${days.length} days)</div>
+      <div style="display:flex;align-items:flex-end;gap:3px;height:52px;">
+        ${sparkBars}
+      </div>
+      <div class="flex justify-between text-xs text-gray-500 mt-1">
+        <span>${days[0] ?? ''}</span><span>${days[days.length-1] ?? ''}</span>
+      </div>
+    </div>` : ''}
+
     ${Object.keys(byAgent).length ? `
     <div class="glass rounded-2xl overflow-hidden">
       <div class="px-5 py-4 border-b border-white/5">
@@ -527,21 +560,30 @@ function renderCosts(data) {
       </div>
       <table>
         <thead><tr>
-          <th>Agent</th><th>Calls</th><th>Tokens In</th><th>Tokens Out</th>
-          <th class="text-right">Cost</th>
+          <th>Agent</th><th class="text-right">Calls</th>
+          <th class="text-right">Tokens In</th><th class="text-right">Tokens Out</th>
+          <th class="text-right">Cost (USD)</th>
         </tr></thead>
         <tbody>
-          ${Object.entries(byAgent).map(([a,d]) => `
+          ${Object.entries(byAgent).map(([a, cost]) => `
           <tr>
-            <td><span class="pill" style="background:rgba(139,92,246,0.1);color:#c4b5fd;">${esc(a)}</span></td>
-            <td>${d.calls ?? '—'}</td>
-            <td class="text-gray-500">${(d.tokens_in ?? 0).toLocaleString()}</td>
-            <td class="text-gray-500">${(d.tokens_out ?? 0).toLocaleString()}</td>
-            <td class="text-right font-semibold" style="color:#fbbf24;">$${Number(d.cost_usd ?? 0).toFixed(4)}</td>
+            <td><span class="pill" style="background:rgba(124,58,237,0.15);color:${agentColor[a]??'#c4b5fd'};">${esc(a)}</span></td>
+            <td class="text-right">${(callCounts[a]??0).toLocaleString()}</td>
+            <td class="text-right text-gray-400">${(tokensIn[a]??0).toLocaleString()}</td>
+            <td class="text-right text-gray-400">${(tokensOut[a]??0).toLocaleString()}</td>
+            <td class="text-right font-semibold" style="color:#fbbf24;">$${Number(cost).toFixed(6)}</td>
           </tr>`).join('')}
         </tbody>
       </table>
-    </div>` : `<div class="flex flex-col items-center py-16 text-gray-500 text-sm">No cost data yet.</div>`}`;
+    </div>
+    <div class="glass rounded-2xl p-4 text-xs text-gray-500">
+      Costs are estimates based on published Anthropic token pricing at time of each call.
+      Ollama (local) calls show $0.00 — no API cost incurred.
+    </div>` : `
+    <div class="flex flex-col items-center py-16 text-gray-500 text-sm gap-2">
+      <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" opacity="0.4"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+      No LLM calls recorded yet. Run a gate decision to generate cost data.
+    </div>`}`;
 }
 
 // ── Candidate Panel ─────────────────────────────────────────────────────────
@@ -755,6 +797,8 @@ async function submitAddCandidate(e) {
 
 // ── Init ───────────────────────────────────────────────────────────────────
 document.addEventListener('DOMContentLoaded', () => {
+  const urlKey = new URLSearchParams(window.location.search).get('key');
+  if (urlKey) { sessionStorage.setItem('apiKey', urlKey); history.replaceState(null,'','/'); }
   const saved = sessionStorage.getItem('apiKey');
   if (saved) document.getElementById('apiKey').value = saved;
   document.getElementById('addCandidateBtn').classList.remove('hidden');
