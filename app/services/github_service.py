@@ -147,6 +147,59 @@ class GithubService:
         _raise_for_status(response, f"create file {path}")
 
 
+    @staticmethod
+    async def fetch_latest_sha(repo_url: str) -> str:
+        """Return the HEAD commit SHA from a GitHub repo URL."""
+        owner, repo = _parse_github_url(repo_url)
+        token = get_github_token()
+        headers = {
+            "Authorization": f"Bearer {token}",
+            "Accept": "application/vnd.github+json",
+            "X-GitHub-Api-Version": "2022-11-28",
+        }
+        async with httpx.AsyncClient(base_url=GITHUB_API_URL, headers=headers) as client:
+            response = await client.get(f"/repos/{owner}/{repo}/commits/HEAD")
+            _raise_for_status(response, "fetch latest SHA")
+            return str(response.json()["sha"])
+
+    @staticmethod
+    async def fetch_source_code(repo_url: str, sha: str) -> str:
+        """Return concatenated Python source files from a repo at a given SHA."""
+        owner, repo = _parse_github_url(repo_url)
+        token = get_github_token()
+        headers = {
+            "Authorization": f"Bearer {token}",
+            "Accept": "application/vnd.github+json",
+            "X-GitHub-Api-Version": "2022-11-28",
+        }
+        async with httpx.AsyncClient(base_url=GITHUB_API_URL, headers=headers) as client:
+            tree_resp = await client.get(
+                f"/repos/{owner}/{repo}/git/trees/{sha}?recursive=1"
+            )
+            _raise_for_status(tree_resp, "fetch repo tree")
+            items = tree_resp.json().get("tree", [])
+
+            parts = []
+            for item in items:
+                if item.get("type") == "blob" and item["path"].endswith(".py"):
+                    blob_resp = await client.get(
+                        f"/repos/{owner}/{repo}/git/blobs/{item['sha']}"
+                    )
+                    _raise_for_status(blob_resp, f"fetch blob {item['path']}")
+                    raw = blob_resp.json().get("content", "")
+                    content = base64.b64decode(raw).decode("utf-8", errors="replace")
+                    parts.append(f"# File: {item['path']}\n{content}")
+
+            return "\n\n".join(parts)
+
+
+def _parse_github_url(url: str) -> tuple[str, str]:
+    match = re.search(r"github\.com/([^/]+)/([^/?.#]+)", url)
+    if not match:
+        raise ValueError(f"Cannot parse GitHub URL: {url!r}")
+    return match.group(1), match.group(2).removesuffix(".git")
+
+
 def _make_repo_name(candidate_id: str, task_id: str) -> str:
     safe_id = re.sub(r"[^a-z0-9]", "-", candidate_id[:20].lower())
     safe_task = task_id[:8]

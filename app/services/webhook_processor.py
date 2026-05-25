@@ -124,15 +124,26 @@ async def _handle_submission(
         "candidate_id": candidate.id,
         "submission_url": submission_url,
         "task_id": task.id if task else None,
+        "candidate_state": candidate.state.value,
         "gmail_message_id": message.message_id,
     })
 
-    # Acknowledge receipt — founder will review and trigger evaluation
+    # Acknowledge receipt
     await _queue_template(
         candidate=candidate,
         template_id="acknowledgment",
         original_subject=message.subject,
     )
+
+    # If candidate is awaiting resubmission, auto-trigger round N+1 evaluation
+    if candidate.state == CandidateState.AWAITING_RESUBMISSION and task:
+        from app.api.candidates import run_resubmission_evaluation
+        run_resubmission_evaluation.delay(candidate.id, submission_url)
+        await AuditLog.append("resubmission_evaluation_enqueued", {
+            "candidate_id": candidate.id,
+            "submission_url": submission_url,
+            "task_id": task.id,
+        })
 
 
 async def _handle_template_response(
