@@ -14,5 +14,7 @@ openai
 boto3
 mypy
 sqlalchemy[asyncio]
+alembic
 aiosqlite
 asyncpg
+psycopg2-binary
