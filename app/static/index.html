@@ -810,14 +810,34 @@ async function assignTask(candidateId, email) {
   btn.innerHTML = '<div class="spinner" style="width:14px;height:14px;border-width:2px;"></div> Generating…';
   result.classList.add('hidden');
   try {
+    // 1. Generate task
     const res = await post('/tasks/generate', {
       candidate_id: candidateId,
       candidate_role: role,
       candidate_level: level,
     });
+
+    // 2. Auto-provision GitHub repo
+    let repoUrl = null;
+    try {
+      btn.innerHTML = '<div class="spinner" style="width:14px;height:14px;border-width:2px;"></div> Provisioning repo…';
+      const repoRes = await post(`/tasks/${res.task_id}/provision-repo`, { candidate_id: candidateId });
+      repoUrl = repoRes.repo_url;
+    } catch(repoErr) {
+      // Repo provisioning is best-effort — task still succeeds without it
+      console.warn('Repo provisioning skipped:', repoErr.message);
+    }
+
     result.classList.remove('hidden');
-    result.innerHTML = `<div class="text-green-400 font-semibold mb-1">✓ Task generated · ${esc(res.corpus_ref)}</div><div class="text-gray-400">${esc(res.brief_preview)}…</div>`;
-    toast('Task generated — review in Approvals');
+    result.innerHTML = `
+      <div class="text-green-400 font-semibold mb-1">✓ Task generated · ${esc(res.corpus_ref)}</div>
+      <div class="text-gray-400 text-xs mb-2">${esc(res.brief_preview)}…</div>
+      ${repoUrl ? `<a href="${esc(repoUrl)}" target="_blank" class="text-xs text-purple-400 hover:text-purple-300 flex items-center gap-1">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"/></svg>
+        ${esc(repoUrl)}
+      </a>` : '<div class="text-xs text-yellow-500">⚠ Repo not provisioned — set GITHUB_TOKEN in .env</div>'}
+    `;
+    toast(repoUrl ? 'Task generated + repo provisioned' : 'Task generated — set GITHUB_TOKEN to provision repo');
     loadPipeline();
   } catch(e) {
     toast('Task generation failed: ' + e.message, false);

@@ -51,8 +51,13 @@ class GithubService:
         return repo_url
 
     async def _create_repo(self, client: httpx.AsyncClient, repo_name: str) -> str:
+        # Use org endpoint if GITHUB_ORG is explicitly set, otherwise personal account
+        if GITHUB_ORG and GITHUB_ORG != "cureforge-sandbox":
+            endpoint = f"/orgs/{GITHUB_ORG}/repos"
+        else:
+            endpoint = "/user/repos"
         response = await client.post(
-            f"/orgs/{GITHUB_ORG}/repos",
+            endpoint,
             json={
                 "name": repo_name,
                 "private": True,
