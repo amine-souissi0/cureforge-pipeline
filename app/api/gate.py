@@ -36,6 +36,21 @@ class ResubmitRequest(BaseModel):
     sender_name: str = "CureForge Team"
 
 
+class OfferDraftRequest(BaseModel):
+    to_email: str
+    role: str = "Software Engineer"
+    compensation: str
+    equity: str = ""
+    benefits: str = ""
+    sender_name: str = "CureForge Team"
+    reviewer: str = "founder"
+
+
+class OfferApproveRequest(BaseModel):
+    draft_id: str
+    reviewer: str = "founder"
+
+
 # ---------------------------------------------------------------------------
 # Endpoints
 # ---------------------------------------------------------------------------
@@ -206,6 +221,117 @@ async def resubmit(candidate_id: str, payload: ResubmitRequest) -> Dict[str, Any
         "composite": agent_output.composite,
         "sandbox_pass_rate": sandbox_result.pass_rate,
         "status": "resubmission_evaluated",
+    }
+
+
+@router.post("/{candidate_id}/offer/draft")
+async def draft_offer(candidate_id: str, payload: OfferDraftRequest) -> Dict[str, Any]:
+    """
+    Generate and queue an offer letter for founder approval.
+    FSM: HIRE_RECOMMENDED → OFFER_DRAFTED
+    """
+    from app.agents.offer_drafter import OfferDrafterAgent
+    from app.services.approval_queue import ApprovalQueue, DraftEmail
+    from app.services.candidate_store import CandidateStore
+
+    candidate = await CandidateStore.get_by_id(candidate_id)
+    if candidate is None:
+        raise HTTPException(status_code=404, detail=f"Candidate {candidate_id!r} not found.")
+
+    try:
+        output = await OfferDrafterAgent.draft(
+            candidate_name=candidate.name,
+            role=payload.role,
+            compensation=payload.compensation,
+            equity=payload.equity,
+            benefits=payload.benefits,
+            sender_name=payload.sender_name,
+        )
+    except RuntimeError as e:
+        raise HTTPException(status_code=502, detail=str(e))
+
+    if output.constraint_check == "FAIL":
+        raise HTTPException(status_code=422, detail="Offer drafter constraint violation.")
+
+    subject = f"Offer — {payload.role}"
+    draft = DraftEmail(
+        candidate_id=candidate_id,
+        template_id="offer",
+        subject=subject,
+        body=output.offer_details,
+        to_email=payload.to_email,
+    )
+    draft_id = await ApprovalQueue.add(draft)
+
+    # HIRE_RECOMMENDED → OFFER_DRAFTED
+    fsm = FSMEngine()
+    await fsm.transition(
+        candidate_id=candidate_id,
+        target_state=CandidateState.OFFER_DRAFTED,
+        context={"founder_confirmed_hire": True},
+        actor=payload.reviewer,
+    )
+
+    await AuditLog.append("offer_drafted", {
+        "candidate_id": candidate_id,
+        "draft_id": draft_id,
+        "role": payload.role,
+        "reviewer": payload.reviewer,
+    })
+
+    return {"status": "offer_drafted", "draft_id": draft_id, "subject": subject}
+
+
+@router.post("/{candidate_id}/offer/approve")
+async def approve_offer(candidate_id: str, payload: OfferApproveRequest) -> Dict[str, Any]:
+    """
+    Send an approved offer letter via Gmail and mark the candidate as HIRED.
+    FSM: OFFER_DRAFTED → HIRED
+    """
+    from app.services.approval_queue import ApprovalQueue
+    from app.services.gmail_service import GmailService
+
+    draft = await ApprovalQueue.approve(payload.draft_id, payload.reviewer)
+    if draft is None:
+        raise HTTPException(status_code=404, detail=f"Draft {payload.draft_id!r} not found.")
+    if draft.status != "approved":
+        raise HTTPException(
+            status_code=409,
+            detail=f"Draft is not pending (status: {draft.status}).",
+        )
+    if draft.candidate_id != candidate_id:
+        raise HTTPException(status_code=400, detail="Draft does not belong to this candidate.")
+
+    svc = GmailService()
+    gmail_id = await svc.send_email(
+        to=draft.to_email,
+        subject=draft.subject,
+        body=draft.body,
+    )
+    await ApprovalQueue.mark_sent(payload.draft_id)
+
+    # OFFER_DRAFTED → HIRED
+    fsm = FSMEngine()
+    transitioned = await fsm.transition(
+        candidate_id=candidate_id,
+        target_state=CandidateState.HIRED,
+        context={"founder_sent_offer": True},
+        actor=payload.reviewer,
+    )
+
+    await AuditLog.append("offer_sent_and_hired", {
+        "candidate_id": candidate_id,
+        "draft_id": payload.draft_id,
+        "gmail_id": gmail_id,
+        "reviewer": payload.reviewer,
+        "fsm_transitioned": transitioned,
+    })
+
+    return {
+        "status": "hired",
+        "candidate_id": candidate_id,
+        "gmail_id": gmail_id,
+        "fsm_transitioned": transitioned,
     }
 
 

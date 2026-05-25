@@ -135,14 +135,16 @@ async def _handle_submission(
         original_subject=message.subject,
     )
 
-    # If candidate is awaiting resubmission, auto-trigger round N+1 evaluation
-    if candidate.state == CandidateState.AWAITING_RESUBMISSION and task:
-        from app.api.candidates import run_resubmission_evaluation
-        run_resubmission_evaluation.delay(candidate.id, submission_url)
-        await AuditLog.append("resubmission_evaluation_enqueued", {
+    # Auto-trigger evaluation whenever a submission arrives and we have a task ready
+    submission_states = {CandidateState.AWAITING_SUBMISSION, CandidateState.AWAITING_RESUBMISSION}
+    if candidate.state in submission_states and task:
+        from app.api.candidates import run_submission_evaluation
+        run_submission_evaluation.delay(candidate.id, submission_url)
+        await AuditLog.append("submission_evaluation_enqueued", {
             "candidate_id": candidate.id,
             "submission_url": submission_url,
             "task_id": task.id,
+            "state": candidate.state.value,
         })
 
 

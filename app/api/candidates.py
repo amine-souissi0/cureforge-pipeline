@@ -84,11 +84,11 @@ def generate_task_for_candidate(self: object, candidate_id: str, role: str = "so
 
 
 @celery_app.task(bind=True, autoretry_for=(Exception,), max_retries=3, default_retry_delay=2)  # type: ignore[misc]
-def run_resubmission_evaluation(self: object, candidate_id: str, submission_url: str) -> str:  # noqa: ARG001
+def run_submission_evaluation(self: object, candidate_id: str, submission_url: str) -> str:  # noqa: ARG001
     """
-    Async task: fetch latest SHA from GitHub, run sandbox + evaluation agent,
-    execute FSM transitions AWAITING_RESUBMISSION → UNDER_EVALUATION → FEEDBACK_SENT.
-    Triggered automatically when a resubmission is detected via Gmail webhook.
+    Async task: fetch latest SHA + source from GitHub, run sandbox + Evaluation Agent,
+    walk FSM through UNDER_EVALUATION → FEEDBACK_SENT.
+    Works for both first submissions (AWAITING_SUBMISSION) and resubmissions (AWAITING_RESUBMISSION).
     """
     async def _run() -> str:
         from app.agents.evaluation_agent import EvaluationAgent
@@ -99,16 +99,20 @@ def run_resubmission_evaluation(self: object, candidate_id: str, submission_url:
         from app.services.sandbox_runner import SandboxRunner
         from app.services.task_store import TaskStore
 
+        candidate = await CandidateStore.get_by_id(candidate_id)
+        if candidate is None:
+            return f"candidate_not_found:{candidate_id}"
+
         task = await TaskStore.get_by_candidate(candidate_id)
         if task is None:
-            await AuditLog.append("resubmission_task_no_task", {"candidate_id": candidate_id})
+            await AuditLog.append("submission_task_no_task", {"candidate_id": candidate_id})
             return f"task_not_found:{candidate_id}"
 
         try:
             sha = await GithubService.fetch_latest_sha(submission_url)
             source_code = await GithubService.fetch_source_code(submission_url, sha)
         except Exception as e:
-            await AuditLog.append("resubmission_github_fetch_failed", {
+            await AuditLog.append("submission_github_fetch_failed", {
                 "candidate_id": candidate_id,
                 "submission_url": submission_url,
                 "error": str(e),
@@ -117,12 +121,15 @@ def run_resubmission_evaluation(self: object, candidate_id: str, submission_url:
 
         fsm = FSMEngine()
 
-        # AWAITING_RESUBMISSION → UNDER_EVALUATION
+        # Use the right predicate key for whichever state the candidate is in
+        is_resubmission = candidate.state == CandidateState.AWAITING_RESUBMISSION
+        sha_context = {"resubmission_sha": sha} if is_resubmission else {"submission_sha": sha}
+
         transitioned = await fsm.transition(
             candidate_id=candidate_id,
             target_state=CandidateState.UNDER_EVALUATION,
-            context={"resubmission_sha": sha},
-            actor="resubmission_task",
+            context=sha_context,
+            actor="submission_task",
         )
         if transitioned:
             await CandidateStore.update_state(candidate_id, CandidateState.UNDER_EVALUATION)
@@ -135,9 +142,10 @@ def run_resubmission_evaluation(self: object, candidate_id: str, submission_url:
             held_out_tests=held_out_tests,
         )
 
-        await AuditLog.append("resubmission_sandbox_complete", {
+        await AuditLog.append("submission_sandbox_complete", {
             "candidate_id": candidate_id,
             "round": round_number,
+            "is_resubmission": is_resubmission,
             "pass_rate": sandbox_result.pass_rate,
         })
 
@@ -149,7 +157,7 @@ def run_resubmission_evaluation(self: object, candidate_id: str, submission_url:
                 candidate_round=round_number,
             )
         except RuntimeError as e:
-            await AuditLog.append("resubmission_evaluation_failed", {
+            await AuditLog.append("submission_evaluation_failed", {
                 "candidate_id": candidate_id,
                 "error": str(e),
             })
@@ -172,19 +180,47 @@ def run_resubmission_evaluation(self: object, candidate_id: str, submission_url:
             candidate_id=candidate_id,
             target_state=CandidateState.FEEDBACK_SENT,
             context={"evaluation_record_id": evaluation_id},
-            actor="resubmission_task",
+            actor="submission_task",
         )
         if transitioned:
             await CandidateStore.update_state(candidate_id, CandidateState.FEEDBACK_SENT)
 
-        await AuditLog.append("resubmission_evaluated_async", {
+        await AuditLog.append("submission_evaluated_async", {
             "candidate_id": candidate_id,
             "evaluation_id": evaluation_id,
             "round": round_number,
+            "is_resubmission": is_resubmission,
             "composite": agent_output.composite,
             "sha": sha,
         })
-        return f"resubmission_evaluated:{evaluation_id}:round={round_number}"
+        return f"submission_evaluated:{evaluation_id}:round={round_number}"
+
+    return asyncio.run(_run())
+
+
+# Keep old name as alias so any already-queued tasks don't break
+run_resubmission_evaluation = run_submission_evaluation
+
+
+@celery_app.task(bind=True, max_retries=2, default_retry_delay=60)  # type: ignore[misc]
+def renew_gmail_watch(self: object) -> str:  # noqa: ARG001
+    """
+    Periodic task: renew Gmail Pub/Sub watch before the 7-day expiry.
+    Scheduled every 6 days via Celery beat.
+    """
+    async def _run() -> str:
+        from app.config import GMAIL_PUBSUB_TOPIC
+        if not GMAIL_PUBSUB_TOPIC:
+            return "skipped:no_pubsub_topic"
+        from app.services.gmail_service import GmailService
+        svc = GmailService()
+        result = await svc.register_watch(GMAIL_PUBSUB_TOPIC)
+        await AuditLog.append("gmail_watch_renewed", {
+            "topic": GMAIL_PUBSUB_TOPIC,
+            "history_id": result.get("historyId"),
+            "expiration": result.get("expiration"),
+        })
+        return f"watch_renewed:expiration={result.get('expiration')}"
 
     return asyncio.run(_run())
 
