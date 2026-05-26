@@ -112,9 +112,15 @@ async def test_submission_stores_repo_url():
 
     submission_url = "https://github.com/carol/rate-limiter"
 
+    mock_eval_task = MagicMock()
+    mock_eval_task.delay = MagicMock()
+
     with patch(
         "app.agents.reply_classifier.ReplyClassifierAgent.classify_email",
         _mock_classifier("TASK_SUBMISSION", url=submission_url),
+    ), patch(
+        "app.api.candidates.run_submission_evaluation",
+        mock_eval_task,
     ):
         result = await process_inbound_message(
             _make_message(sender_email=candidate.email)

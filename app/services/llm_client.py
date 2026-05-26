@@ -1,12 +1,16 @@
 """
-Unified LLM client — wraps Anthropic API and Ollama interchangeably.
+Unified LLM client — wraps Anthropic API, Groq, and Ollama interchangeably.
 
-Set OLLAMA_BASE_URL (e.g. http://localhost:11434) to route all agent calls
-through a local Ollama instance instead of the Anthropic API.
-Set OLLAMA_MODEL to choose the model (default: llama3.2).
+Provider selection (first match wins):
+  OLLAMA_BASE_URL set  → Ollama  (OLLAMA_MODEL, default: llama3.2)
+  GROQ_API_KEY set     → Groq    (GROQ_MODEL, default: llama-3.3-70b-versatile)
+  Otherwise            → Anthropic (ANTHROPIC_API_KEY required)
 """
 import os
 from dataclasses import dataclass
+
+_GROQ_BASE_URL = "https://api.groq.com/openai/v1"
+_GROQ_DEFAULT_MODEL = "llama-3.3-70b-versatile"
 
 
 @dataclass
@@ -24,10 +28,13 @@ async def call_llm(
     max_tokens: int,
     temperature: float = 0.0,
 ) -> LLMResponse:
-    """Call either Anthropic or Ollama depending on env config."""
+    """Call Anthropic, Groq, or Ollama depending on env config."""
     ollama_url = os.environ.get("OLLAMA_BASE_URL", "").rstrip("/")
     if ollama_url:
         return await _call_ollama(system, user, max_tokens, temperature, ollama_url)
+    groq_key = os.environ.get("GROQ_API_KEY", "")
+    if groq_key:
+        return await _call_groq(system, user, max_tokens, temperature, groq_key)
     return await _call_anthropic(system, user, model, max_tokens, temperature)
 
 
@@ -54,6 +61,35 @@ async def _call_anthropic(
         text=getattr(block, "text", ""),
         input_tokens=response.usage.input_tokens,
         output_tokens=response.usage.output_tokens,
+    )
+
+
+async def _call_groq(
+    system: str,
+    user: str,
+    max_tokens: int,
+    temperature: float,
+    api_key: str,
+) -> LLMResponse:
+    import openai
+
+    groq_model = os.environ.get("GROQ_MODEL", _GROQ_DEFAULT_MODEL)
+    client = openai.AsyncOpenAI(base_url=_GROQ_BASE_URL, api_key=api_key)
+    response = await client.chat.completions.create(
+        model=groq_model,
+        max_tokens=max_tokens,
+        temperature=temperature,
+        messages=[
+            {"role": "system", "content": system},
+            {"role": "user", "content": user},
+        ],
+    )
+    choice = response.choices[0]
+    usage = response.usage
+    return LLMResponse(
+        text=choice.message.content or "",
+        input_tokens=usage.prompt_tokens if usage else 0,
+        output_tokens=usage.completion_tokens if usage else 0,
     )
 
 
