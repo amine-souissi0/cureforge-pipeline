@@ -19,3 +19,4 @@ aiosqlite
 asyncpg
 psycopg2-binary
 httpx
+docker

@@ -61,6 +61,7 @@ services:
       REDIS_URL: redis://redis:6379/0
     volumes:
       - ./config:/app/config
+      - /var/run/docker.sock:/var/run/docker.sock  # sandbox: spawn ephemeral containers
     depends_on:
       db:
         condition: service_healthy
