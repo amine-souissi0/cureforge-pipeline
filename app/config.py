@@ -44,6 +44,7 @@ REDIS_URL = os.environ.get("REDIS_URL", "redis://localhost:6379/0")
 
 GITHUB_TOKEN = os.environ.get("GITHUB_TOKEN", "")
 GITHUB_ORG = os.environ.get("GITHUB_ORG", "cureforge-sandbox")
+GITHUB_ACCOUNT_TYPE = os.environ.get("GITHUB_ACCOUNT_TYPE", "user")  # "user" or "org"
 GITHUB_API_URL = "https://api.github.com"
 
 

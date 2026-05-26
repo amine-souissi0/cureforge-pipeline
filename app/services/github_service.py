@@ -5,7 +5,7 @@ from typing import Any, Dict
 
 import httpx
 
-from app.config import GITHUB_API_URL, GITHUB_ORG, get_github_token
+from app.config import GITHUB_ACCOUNT_TYPE, GITHUB_API_URL, GITHUB_ORG, get_github_token
 from app.schemas import AuditLog, InternalTaskSpec
 
 
@@ -51,11 +51,7 @@ class GithubService:
         return repo_url
 
     async def _create_repo(self, client: httpx.AsyncClient, repo_name: str) -> str:
-        # Use org endpoint if GITHUB_ORG is explicitly set, otherwise personal account
-        if GITHUB_ORG and GITHUB_ORG != "cureforge-sandbox":
-            endpoint = f"/orgs/{GITHUB_ORG}/repos"
-        else:
-            endpoint = "/user/repos"
+        endpoint = "/user/repos" if GITHUB_ACCOUNT_TYPE == "user" else f"/orgs/{GITHUB_ORG}/repos"
         response = await client.post(
             endpoint,
             json={
