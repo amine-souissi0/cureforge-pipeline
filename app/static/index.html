@@ -372,8 +372,8 @@ function refresh() {
 }
 
 // ── Pipeline ───────────────────────────────────────────────────────────────
-async function loadPipeline() {
-  setStatus('pending');
+async function loadPipeline(silent = false) {
+  if (!silent) setStatus('pending');
   try {
     pipelineData = await api('/dashboard/pipeline');
     renderStats(pipelineData);
@@ -1086,6 +1086,9 @@ document.addEventListener('DOMContentLoaded', () => {
   document.getElementById('simEmailBtn').classList.remove('hidden');
   checkGmailStatus();
   loadPipeline();
+
+  // Auto-refresh pipeline every 10 seconds so new candidates and state changes appear without manual refresh
+  setInterval(() => { if (currentTab === 'pipeline') loadPipeline(true); }, 10000);
 });
 </script>
 </body>
