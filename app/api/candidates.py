@@ -224,6 +224,13 @@ def renew_gmail_watch(self: object) -> str:  # noqa: ARG001
         from app.services.gmail_service import GmailService
         svc = GmailService()
         result = await svc.register_watch(GMAIL_PUBSUB_TOPIC)
+        # Keep Redis historyId in sync so the poll task doesn't reprocess old messages
+        try:
+            import os, redis as redis_lib
+            r = redis_lib.from_url(os.environ.get("REDIS_URL", "redis://localhost:6379/0"))
+            r.set("gmail:last_history_id", result["historyId"])
+        except Exception:
+            pass
         await AuditLog.append("gmail_watch_renewed", {
             "topic": GMAIL_PUBSUB_TOPIC,
             "history_id": result.get("historyId"),
@@ -244,8 +251,18 @@ def process_email_task(self: object, history_id: str) -> str:  # noqa: ARG001
     from app.services.webhook_processor import process_inbound_message
 
     async def _run() -> str:
+        import os
+        import redis as redis_lib
         svc = GmailService()
-        messages = await svc.list_new_messages(history_id)
+        messages, latest_hid = await svc.list_new_messages(history_id)
+
+        # Persist latest historyId so the poll task doesn't reprocess these messages
+        if latest_hid:
+            try:
+                r = redis_lib.from_url(os.environ.get("REDIS_URL", "redis://localhost:6379/0"))
+                r.set("gmail:last_history_id", latest_hid)
+            except Exception:
+                pass
 
         if not messages:
             await AuditLog.append("process_email_task_no_messages", {
@@ -258,6 +275,56 @@ def process_email_task(self: object, history_id: str) -> str:  # noqa: ARG001
             result = await process_inbound_message(message)
             results.append(result)
 
+        return "; ".join(results)
+
+    return asyncio.run(_run())
+
+
+@celery_app.task(bind=True, max_retries=1)  # type: ignore[misc]
+def poll_gmail_inbox(self: object) -> str:  # noqa: ARG001
+    """
+    Beat task: poll Gmail every 2 minutes for messages missed by Pub/Sub webhooks.
+    Reads the last processed historyId from Redis; falls back to registering a fresh watch.
+    """
+    import os
+    import redis as redis_lib
+
+    async def _run() -> str:
+        from app.config import GMAIL_PUBSUB_TOPIC
+        from app.services.gmail_service import GmailService
+        from app.services.webhook_processor import process_inbound_message
+
+        r = redis_lib.from_url(os.environ.get("REDIS_URL", "redis://localhost:6379/0"))
+        raw = r.get("gmail:last_history_id")
+
+        svc = GmailService()
+
+        if not raw:
+            # First run — initialize from watch registration
+            if GMAIL_PUBSUB_TOPIC:
+                result = await svc.register_watch(GMAIL_PUBSUB_TOPIC)
+                r.set("gmail:last_history_id", result["historyId"])
+            return "initialized"
+
+        last_hid = raw.decode()
+        messages, latest_hid = await svc.list_new_messages(last_hid)
+
+        if latest_hid:
+            r.set("gmail:last_history_id", latest_hid)
+
+        if not messages:
+            return f"no_new_messages:since={last_hid}"
+
+        results = []
+        for message in messages:
+            result = await process_inbound_message(message)
+            results.append(result)
+
+        await AuditLog.append("poll_gmail_inbox_processed", {
+            "history_id": last_hid,
+            "latest_history_id": latest_hid,
+            "count": len(messages),
+        })
         return "; ".join(results)
 
     return asyncio.run(_run())

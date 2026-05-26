@@ -183,13 +183,15 @@ class GmailService:
             })
             return None
 
-    async def list_new_messages(self, history_id: str) -> List[Message]:
+    async def list_new_messages(self, history_id: str) -> tuple[List[Message], Optional[str]]:
         """
         Use the Gmail history API to find messages added since history_id.
-        Gmail Pub/Sub notifications carry a historyId, not a message ID.
+        Returns (messages, latest_history_id) — caller should persist latest_history_id
+        to avoid reprocessing on the next poll.
         """
         await AuditLog.append("list_new_messages", {"history_id": history_id})
         messages: List[Message] = []
+        latest_history_id: Optional[str] = None
         try:
             service = self._get_service()
             result = (
@@ -202,6 +204,7 @@ class GmailService:
                 )
                 .execute()
             )
+            latest_history_id = str(result.get("historyId", history_id))
             for record in result.get("history", []):
                 for added in record.get("messagesAdded", []):
                     msg_id = added["message"]["id"]
@@ -213,7 +216,7 @@ class GmailService:
                 "history_id": history_id,
                 "error": str(e),
             })
-        return messages
+        return messages, latest_history_id
 
     def _extract_body(self, payload: Dict[str, Any]) -> str:
         data = payload.get("body", {}).get("data", "")

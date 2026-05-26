@@ -46,5 +46,9 @@ celery_app.conf.update(
             "task": "app.api.candidates.renew_gmail_watch",
             "schedule": 6 * 24 * 60 * 60,  # every 6 days (watch expires at 7)
         },
+        "poll-gmail-inbox": {
+            "task": "app.api.candidates.poll_gmail_inbox",
+            "schedule": 120,  # every 2 minutes — catches messages missed by Pub/Sub
+        },
     },
 )
