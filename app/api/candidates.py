@@ -448,3 +448,29 @@ async def oauth_status() -> dict:
         return {"connected": True, "source": "env"}
     connected = os.path.exists(GOOGLE_TOKEN_FILE)
     return {"connected": connected, "source": "file" if connected else None}
+
+
+# ---------------------------------------------------------------------------
+# /auth/google/callback — matches the redirect URI registered in Google Cloud Console
+# ---------------------------------------------------------------------------
+
+auth_google_router = APIRouter(prefix="/auth/google", tags=["oauth"])
+
+
+@auth_google_router.get("/callback")
+async def google_oauth_callback(code: str) -> dict:
+    """
+    Google redirects here after the user approves the OAuth consent screen.
+    Mirrors /oauth/callback — same handler, different path to match the
+    registered redirect URI in google_credentials.json.
+    """
+    from app.services.gmail_service import GmailService
+    from fastapi.responses import HTMLResponse
+    try:
+        await GmailService.complete_oauth(code)
+        return HTMLResponse(
+            content="<html><body><h2>Gmail connected successfully.</h2>"
+                    "<p>You can close this tab.</p></body></html>"
+        )
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))

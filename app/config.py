@@ -36,7 +36,7 @@ GOOGLE_TOKEN_FILE = os.environ.get(
     "GOOGLE_TOKEN_FILE", "config/google_token.json"
 )
 GMAIL_OAUTH_REDIRECT_URI = os.environ.get(
-    "GMAIL_OAUTH_REDIRECT_URI", "http://localhost:8000/oauth/callback"
+    "GMAIL_OAUTH_REDIRECT_URI", "http://localhost:8000/auth/google/callback"
 )
 GMAIL_PUBSUB_TOPIC = os.environ.get("GMAIL_PUBSUB_TOPIC", "")
 
