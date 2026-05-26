@@ -2,7 +2,7 @@ from enum import Enum
 from typing import Dict
 
 # Templates that may auto-send without founder approval
-_AUTO_SEND_TEMPLATES = {"acknowledgment", "initial-outreach"}
+_AUTO_SEND_TEMPLATES = {"acknowledgment"}
 
 
 class SendMode(str, Enum):

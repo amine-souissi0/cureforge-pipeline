@@ -512,8 +512,9 @@ function renderApprovals(drafts) {
             <span class="pill text-purple-300" style="background:rgba(139,92,246,0.1);">${esc(d.template_id)}</span>
             <span class="text-xs text-gray-600">${relativeTime(d.created_at)}</span>
           </div>
+          <div class="mt-3 rounded-xl p-3 text-xs text-gray-300 whitespace-pre-wrap leading-relaxed" style="background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.07); max-height:180px; overflow-y:auto;">${esc(d.body)}</div>
         </div>
-        <div class="flex gap-2 shrink-0">
+        <div class="flex flex-col gap-2 shrink-0">
           <button onclick="approveDraft('${d.draft_id}')" class="btn btn-success">
             <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
             Approve
