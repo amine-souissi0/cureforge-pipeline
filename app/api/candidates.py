@@ -57,6 +57,14 @@ def generate_task_for_candidate(self: object, candidate_id: str, role: str = "so
         if candidate is None:
             return f"candidate_not_found:{candidate_id}"
 
+        existing = await TaskStore.get_by_candidate(candidate_id)
+        if existing is not None:
+            await AuditLog.append("task_generation_skipped", {
+                "candidate_id": candidate_id,
+                "existing_task_id": existing.id,
+            })
+            return f"task_already_exists:{existing.id}"
+
         output = await TaskDecomposerAgent.decompose(candidate_role=role, candidate_level=level)
 
         if not output.success or output.blocklist_check != "PASS":

@@ -52,7 +52,10 @@ class TaskStore:
     async def get_by_candidate(candidate_id: str) -> Optional[TaskModel]:
         async with AsyncSessionLocal() as session:
             result = await session.execute(
-                select(TaskRow).where(TaskRow.candidate_id == candidate_id)
+                select(TaskRow)
+                .where(TaskRow.candidate_id == candidate_id)
+                .order_by(TaskRow.created_at.desc())
+                .limit(1)
             )
             row = result.scalar_one_or_none()
             return _row_to_model(row) if row else None

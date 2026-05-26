@@ -170,10 +170,14 @@ async def send_brief(task_id: str, payload: SendBriefRequest) -> Dict[str, Any]:
     if task is None:
         raise HTTPException(status_code=404, detail=f"Task {task_id!r} not found.")
 
+    from app.services.candidate_store import CandidateStore
+    candidate = await CandidateStore.get_by_id(payload.candidate_id)
+    candidate_name = candidate.name if candidate else payload.candidate_id
+
     result = await TemplateResponderAgent.render(
         template_id="task-assignment-cover",
         candidate_context={
-            "candidate_name": payload.candidate_id,
+            "candidate_name": candidate_name,
             "sender_name": payload.sender_name,
         },
         extra_context={"task_brief": task.candidate_brief},
