@@ -13,6 +13,15 @@ _GROQ_BASE_URL = "https://api.groq.com/openai/v1"
 _GROQ_DEFAULT_MODEL = "llama-3.3-70b-versatile"
 
 
+def _strip_markdown(text: str) -> str:
+    """Strip markdown code fences that open-source models add around JSON output."""
+    text = text.strip()
+    if text.startswith("```"):
+        text = text.split("\n", 1)[-1]  # drop the opening ```json line
+        text = text.rsplit("```", 1)[0]  # drop the closing ```
+    return text.strip()
+
+
 @dataclass
 class LLMResponse:
     text: str
@@ -87,7 +96,7 @@ async def _call_groq(
     choice = response.choices[0]
     usage = response.usage
     return LLMResponse(
-        text=choice.message.content or "",
+        text=_strip_markdown(choice.message.content or ""),
         input_tokens=usage.prompt_tokens if usage else 0,
         output_tokens=usage.completion_tokens if usage else 0,
     )
@@ -116,7 +125,7 @@ async def _call_ollama(
     choice = response.choices[0]
     usage = response.usage
     return LLMResponse(
-        text=choice.message.content or "",
+        text=_strip_markdown(choice.message.content or ""),
         input_tokens=usage.prompt_tokens if usage else 0,
         output_tokens=usage.completion_tokens if usage else 0,
     )
