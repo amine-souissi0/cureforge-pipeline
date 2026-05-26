@@ -12,24 +12,27 @@ from app.schemas import AuditLog, Message, ReplyClassifierOutput
 
 async def process_inbound_message(message: Message) -> str:
     """
-    Full pipeline for one inbound Gmail message:
-    1. Look up candidate by sender email — skip if unknown
-    2. Classify intent with ReplyClassifierAgent
-    3. Execute routing action
-    4. Audit every step
+    Full pipeline for one inbound Gmail message.
+
+    §5.1: trigger is "founder adds a candidate OR forwards the candidate's first email."
+    When an email arrives from an unknown address we auto-intake the candidate (NEW state)
+    and queue an invite draft — their name appears in the UI immediately.
 
     Returns a short result string for the Celery task log.
     """
     from app.agents.reply_classifier import ReplyClassifierAgent, route_classified_email
     from app.services.candidate_store import CandidateStore
+    from app.config import PIPELINE_EMAIL
+
+    # Skip messages sent BY the pipeline itself (appear in history for same-thread events)
+    if message.sender_email == PIPELINE_EMAIL:
+        return f"skip_own:{message.message_id}"
 
     candidate = await CandidateStore.get_by_email(message.sender_email)
     if candidate is None:
-        await AuditLog.append("webhook_unknown_sender", {
-            "sender_email": message.sender_email,
-            "gmail_message_id": message.message_id,
-        })
-        return f"unknown_sender:{message.sender_email}"
+        candidate = await _auto_intake_candidate(message)
+        if candidate is None:
+            return f"intake_failed:{message.sender_email}"
 
     await AuditLog.append("webhook_candidate_matched", {
         "candidate_id": candidate.id,
@@ -183,6 +186,51 @@ def _intent_to_template(intent: str) -> Optional[str]:
         "SCHEDULING": "acknowledgment",
         "QUESTION": "answer-common-question",
     }.get(intent)
+
+
+async def _auto_intake_candidate(message: Message) -> Optional[CandidateModel]:
+    """
+    Create a NEW-state candidate from an inbound email by an unknown sender.
+
+    Returns the created (or already-existing) CandidateModel, or None on failure.
+    """
+    from fastapi import HTTPException
+
+    from app.services.candidate_store import CandidateStore
+    from app.services.send_policy import SendMode, set_candidate_mode
+
+    candidate = CandidateModel(
+        name=message.sender_name,
+        email=message.sender_email,
+        source="email_forwarded",
+    )
+    try:
+        await CandidateStore.add(candidate)
+    except HTTPException as exc:
+        if exc.status_code == 409:
+            # Race condition: another worker already created this candidate.
+            candidate = await CandidateStore.get_by_email(message.sender_email)
+            if candidate is None:
+                return None
+        else:
+            return None
+
+    await AuditLog.append("candidate_auto_intaked", {
+        "candidate_id": candidate.id,
+        "sender_email": message.sender_email,
+        "sender_name": message.sender_name,
+        "gmail_message_id": message.message_id,
+    })
+
+    # Force draft so founder reviews before anything goes out to this new candidate.
+    set_candidate_mode(candidate.id, SendMode.DRAFT)
+    await _queue_template(
+        candidate=candidate,
+        template_id="acknowledgment",
+        original_subject=message.subject,
+    )
+
+    return candidate
 
 
 async def _queue_template(

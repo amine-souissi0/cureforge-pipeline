@@ -36,7 +36,7 @@ services:
     # Run migrations then start the API server
     command: >
       sh -c "alembic upgrade head &&
-             uvicorn app.main:app --host 0.0.0.0 --port 8000"
+             uvicorn app.main:app --host 0.0.0.0 --port 8000 --proxy-headers --forwarded-allow-ips='*'"
     ports:
       - "8000:8000"
     env_file: .env

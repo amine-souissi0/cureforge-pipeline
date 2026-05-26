@@ -148,17 +148,23 @@ class GmailService:
         subject = headers.get("subject", "")
         from_header = headers.get("from", "")
 
-        # Extract plain email address from "Name <email>" format
+        # Extract plain email address and display name from "Name <email>" format
         if "<" in from_header:
+            sender_name = from_header.split("<")[0].strip().strip('"')
             sender_email = from_header.split("<")[-1].rstrip(">").strip().lower()
         else:
             sender_email = from_header.strip().lower()
+            sender_name = sender_email.split("@")[0]
+
+        if not sender_name:
+            sender_name = sender_email.split("@")[0]
 
         body = self._extract_body(raw.get("payload", {}))
 
         return Message(
             id=str(uuid.uuid4()),
             sender_email=sender_email,
+            sender_name=sender_name,
             subject=subject,
             body=body,
             message_id=raw["id"],

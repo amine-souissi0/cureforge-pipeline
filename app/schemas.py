@@ -26,7 +26,8 @@ class AuditLog:
 class Message(BaseModel):
     """Inbound email message DTO from Gmail."""
     id: str
-    sender_email: str   # raw From: address — used to look up candidate
+    sender_email: str   # plain address — used to look up candidate
+    sender_name: str    # display name from From: header (e.g. "Sairam")
     subject: str
     body: str
     message_id: str     # Gmail message ID

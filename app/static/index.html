@@ -308,7 +308,7 @@ let toastTimer = null;
 // ── Auth / API ─────────────────────────────────────────────────────────────
 function saveKey(v) { sessionStorage.setItem('apiKey', v); setStatus('pending'); }
 function getKey() { return document.getElementById('apiKey').value || sessionStorage.getItem('apiKey') || ''; }
-function headers() { return { 'Content-Type':'application/json', 'X-Api-Key': getKey() }; }
+function headers() { return { 'Content-Type':'application/json', 'X-Api-Key': getKey(), 'ngrok-skip-browser-warning': 'true' }; }
 
 async function api(path, opts = {}) {
   const res = await fetch(path, { headers: headers(), ...opts });

@@ -65,7 +65,10 @@ class RateLimiterMiddleware(BaseHTTPMiddleware):
         self._counter = SlidingWindowCounter(limit=limit, window_seconds=window_seconds)
 
     async def dispatch(self, request: Request, call_next) -> Response:
-        client_ip = request.client.host if request.client else "unknown"
+        client_ip = (
+            request.headers.get("x-forwarded-for", "").split(",")[0].strip()
+            or (request.client.host if request.client else "unknown")
+        )
 
         if not self._counter.is_allowed(client_ip):
             return JSONResponse(
