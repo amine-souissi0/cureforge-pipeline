@@ -1,6 +1,7 @@
 FROM python:3.11-slim
 
 WORKDIR /app
+ENV PYTHONPATH=/app
 
 # System deps: gcc + libpq for asyncpg compilation
 RUN apt-get update && apt-get install -y --no-install-recommends \

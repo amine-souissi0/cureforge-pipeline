@@ -11,6 +11,7 @@ from app.schemas import AuditLog
 
 router = APIRouter(prefix="/candidates", tags=["candidates"])
 oauth_router = APIRouter(prefix="/oauth", tags=["oauth"])
+webhook_router = APIRouter(prefix="/candidates", tags=["webhook"])
 
 
 # ---------------------------------------------------------------------------
@@ -56,7 +57,7 @@ def generate_task_for_candidate(self: object, candidate_id: str, role: str = "so
         if candidate is None:
             return f"candidate_not_found:{candidate_id}"
 
-        output = await TaskDecomposerAgent.decompose(role=role, level=level)
+        output = await TaskDecomposerAgent.decompose(candidate_role=role, candidate_level=level)
 
         if not output.success or output.blocklist_check != "PASS":
             await AuditLog.append("task_generation_rejected", {
@@ -393,9 +394,9 @@ async def classify_email(payload: ClassifyRequest) -> dict:
     }
 
 
-@router.post("/webhook")
+@webhook_router.post("/webhook")
 async def gmail_webhook(payload: WebhookPayload) -> dict:
-    """Receive Gmail Pub/Sub push notifications."""
+    """Receive Gmail Pub/Sub push notifications — unprotected, called by Google."""
     from app.services.gmail_service import GmailService
 
     await AuditLog.append("api_webhook_received", {"subscription": payload.subscription})

@@ -271,8 +271,13 @@ class GmailService:
             await AuditLog.append("webhook_no_data", {})
             return
 
-        # Gmail Pub/Sub data is base64url-encoded JSON
-        decoded = base64.urlsafe_b64decode(encoded + "==").decode("utf-8", errors="replace")
+        # Gmail Pub/Sub data is base64url-encoded JSON — pad to multiple of 4
+        padding = 4 - len(encoded) % 4
+        padded = encoded + "=" * (padding % 4)
+        decoded = base64.urlsafe_b64decode(padded).decode("utf-8", errors="replace")
+        if not decoded.strip():
+            await AuditLog.append("webhook_empty_data", {})
+            return
         notification = json.loads(decoded)
         history_id = notification.get("historyId")
 
