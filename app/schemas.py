@@ -54,8 +54,14 @@ class ReplyClassifierOutput(BaseModel):
 class HeldOutTest(BaseModel):
     """Represents a held-out test case."""
     test_id: str
-    input: str
-    expected_output: str
+    input: Any
+    expected_output: Any
+
+    @field_validator("input", "expected_output", mode="before")
+    @classmethod
+    def coerce_to_str(cls, v: Any) -> str:
+        import json
+        return v if isinstance(v, str) else json.dumps(v)
 
 
 class InternalTaskSpec(BaseModel):
