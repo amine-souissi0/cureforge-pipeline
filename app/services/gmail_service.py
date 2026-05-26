@@ -13,6 +13,11 @@ GMAIL_SCOPES = [
     "https://www.googleapis.com/auth/gmail.modify",
 ]
 
+# Holds the flow between get_oauth_url() and complete_oauth() so the
+# PKCE code_verifier generated during authorization_url() is reused
+# in fetch_token(). A new Flow instance would have no verifier and fail.
+_pending_oauth_flow: Optional[Any] = None
+
 
 class GmailService:
     def __init__(self) -> None:
@@ -68,13 +73,17 @@ class GmailService:
 
     @staticmethod
     async def get_oauth_url() -> str:
+        global _pending_oauth_flow
         flow = GmailService.get_oauth_flow()
         auth_url, _ = flow.authorization_url(prompt="consent", access_type="offline")
+        _pending_oauth_flow = flow  # preserve code_verifier for fetch_token
         return auth_url
 
     @staticmethod
     async def complete_oauth(code: str) -> None:
-        flow = GmailService.get_oauth_flow()
+        global _pending_oauth_flow
+        flow = _pending_oauth_flow if _pending_oauth_flow is not None else GmailService.get_oauth_flow()
+        _pending_oauth_flow = None
         flow.fetch_token(code=code)
         GmailService._save_token(flow.credentials)
         await AuditLog.append("oauth_completed", {"service": "gmail"})
