@@ -200,14 +200,26 @@ class GmailService:
                 .list(
                     userId="me",
                     startHistoryId=history_id,
-                    historyTypes=["messageAdded"],
+                    labelId="INBOX",
                 )
                 .execute()
             )
             latest_history_id = str(result.get("historyId", history_id))
+            seen_ids: set = set()
             for record in result.get("history", []):
-                for added in record.get("messagesAdded", []):
-                    msg_id = added["message"]["id"]
+                # Each history record's `messages` list covers the full thread.
+                # Filter to only INBOX-labeled messages to skip SENT/thread members.
+                for msg_ref in record.get("messages", []):
+                    msg_id = msg_ref["id"]
+                    if msg_id in seen_ids:
+                        continue
+                    seen_ids.add(msg_id)
+                    meta = service.users().messages().get(
+                        userId="me", id=msg_id, format="metadata",
+                        metadataHeaders=["From", "Subject"],
+                    ).execute()
+                    if "INBOX" not in meta.get("labelIds", []):
+                        continue
                     msg = await self.fetch_message(msg_id)
                     if msg:
                         messages.append(msg)

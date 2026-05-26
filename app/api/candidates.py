@@ -317,6 +317,12 @@ def poll_gmail_inbox(self: object) -> str:  # noqa: ARG001
 
         results = []
         for message in messages:
+            # Idempotency: skip Gmail message IDs already processed
+            redis_key = f"gmail:processed:{message.message_id}"
+            if r.exists(redis_key):
+                results.append(f"already_processed:{message.message_id}")
+                continue
+            r.set(redis_key, "1", ex=7 * 24 * 3600)  # expire after 7 days
             result = await process_inbound_message(message)
             results.append(result)
 
