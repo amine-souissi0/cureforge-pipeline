@@ -138,8 +138,10 @@ async def _handle_submission(
         original_subject=message.subject,
     )
 
-    # Auto-trigger evaluation whenever a submission arrives and we have a task ready
-    submission_states = {CandidateState.AWAITING_SUBMISSION, CandidateState.AWAITING_RESUBMISSION}
+    # Auto-trigger evaluation whenever a submission arrives and we have a task ready.
+    # Include TASK_ASSIGNED: brief was sent but the AWAITING_SUBMISSION transition may not
+    # have fired yet (e.g. brief was drafted, not auto-sent).
+    submission_states = {CandidateState.AWAITING_SUBMISSION, CandidateState.AWAITING_RESUBMISSION, CandidateState.TASK_ASSIGNED}
     if candidate.state in submission_states and task:
         from app.api.candidates import run_submission_evaluation
         run_submission_evaluation.delay(candidate.id, submission_url)
@@ -221,6 +223,20 @@ async def _auto_intake_candidate(message: Message) -> Optional[CandidateModel]:
         "sender_name": message.sender_name,
         "gmail_message_id": message.message_id,
     })
+
+    # NEW → ENGAGED so all downstream FSM transitions (ENGAGED → TASK_ASSIGNED etc.) work.
+    from app.fsm import FSMEngine, CandidateState as _CS
+    from app.services.candidate_store import CandidateStore as _CS2
+    fsm = FSMEngine()
+    transitioned = await fsm.transition(
+        candidate_id=candidate.id,
+        target_state=_CS.ENGAGED,
+        context={"intake_complete": True},
+        actor="auto_intake",
+    )
+    if transitioned:
+        await _CS2.update_state(candidate.id, _CS.ENGAGED)
+        candidate = candidate.model_copy(update={"state": _CS.ENGAGED})
 
     # Force draft so founder reviews before anything goes out to this new candidate.
     set_candidate_mode(candidate.id, SendMode.DRAFT)

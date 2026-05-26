@@ -157,6 +157,27 @@ async def approve_draft(draft_id: str, payload: DraftDecisionRequest) -> dict:
         "candidate_id": draft.candidate_id,
     })
 
+    # Task brief approved + sent → advance FSM to AWAITING_SUBMISSION
+    if draft.template_id == "task-assignment-cover":
+        from app.fsm import CandidateState, FSMEngine
+        from app.services.candidate_store import CandidateStore
+        from app.services.task_store import TaskStore
+
+        task = await TaskStore.get_by_candidate(draft.candidate_id)
+        fsm = FSMEngine()
+        transitioned = await fsm.transition(
+            candidate_id=draft.candidate_id,
+            target_state=CandidateState.AWAITING_SUBMISSION,
+            context={"task_brief_sent": True, "repo_url": task.repo_url if task else ""},
+            actor="draft_approval",
+        )
+        if transitioned:
+            await CandidateStore.update_state(draft.candidate_id, CandidateState.AWAITING_SUBMISSION)
+            await AuditLog.append("fsm_awaiting_submission", {
+                "candidate_id": draft.candidate_id,
+                "triggered_by": "draft_approval",
+            })
+
     return {"status": "sent", "draft_id": draft_id, "gmail_id": gmail_id}
 
 
