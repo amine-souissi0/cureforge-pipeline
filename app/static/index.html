@@ -314,7 +314,9 @@ async function api(path, opts = {}) {
   const res = await fetch(path, { headers: headers(), ...opts });
   if (!res.ok) {
     const err = await res.json().catch(() => ({ detail: res.statusText }));
-    throw new Error(err.detail || res.statusText);
+    const d = err.detail;
+    const msg = typeof d === 'string' ? d : (d?.error || d?.message || JSON.stringify(d) || res.statusText);
+    throw new Error(msg);
   }
   return res.json();
 }

@@ -101,6 +101,8 @@ class TaskDecomposerAgent:
                     "agent": "decomposer",
                     "error": last_error,
                 })
+                # Don't retry on hard API errors (rate limit, auth) — raise immediately
+                raise
 
         await AuditLog.append("human_routing_triggered", {
             "reason": "task_decomposer_exhausted",

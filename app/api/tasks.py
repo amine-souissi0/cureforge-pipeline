@@ -55,11 +55,14 @@ async def generate_task(payload: GenerateRequest) -> Dict[str, Any]:
     """
     from app.agents.task_decomposer import TaskDecomposerAgent, validate_no_blocklist_terms
 
-    output = await TaskDecomposerAgent.decompose(
-        candidate_role=payload.candidate_role,
-        candidate_level=payload.candidate_level,
-        preferred_pattern_id=payload.preferred_pattern_id,
-    )
+    try:
+        output = await TaskDecomposerAgent.decompose(
+            candidate_role=payload.candidate_role,
+            candidate_level=payload.candidate_level,
+            preferred_pattern_id=payload.preferred_pattern_id,
+        )
+    except Exception as exc:
+        raise HTTPException(status_code=502, detail=str(exc))
 
     if not output.success or output.blocklist_check != "PASS":
         await AuditLog.append("task_generation_rejected", {
