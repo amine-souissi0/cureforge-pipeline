@@ -12,6 +12,43 @@ from app.services.task_store import TaskStore
 router = APIRouter(prefix="/evaluations", tags=["evaluations"])
 
 
+async def _queue_feedback_draft(
+    candidate_id: str,
+    feedback_text: str,
+    upgrade_ask: str,
+    round_number: int,
+) -> None:
+    """Queue a feedback-delivery draft for founder approval after evaluation."""
+    from app.services.approval_queue import ApprovalQueue, DraftEmail
+    from app.services.candidate_store import CandidateStore
+    from app.templates import TemplateRegistry
+
+    candidate = await CandidateStore.get_by_id(candidate_id)
+    if candidate is None:
+        return
+
+    subject, body = TemplateRegistry.render("feedback-delivery", {
+        "candidate_name": candidate.name,
+        "feedback": feedback_text,
+        "upgrade_ask": upgrade_ask or "Please address the gaps above and resubmit.",
+        "sender_name": "CureForge Team",
+    })
+
+    draft = DraftEmail(
+        candidate_id=candidate_id,
+        template_id="feedback-delivery",
+        subject=subject,
+        body=body,
+        to_email=candidate.email,
+    )
+    draft_id = await ApprovalQueue.add(draft)
+    await AuditLog.append("feedback_draft_queued", {
+        "candidate_id": candidate_id,
+        "draft_id": draft_id,
+        "round": round_number,
+    })
+
+
 # ---------------------------------------------------------------------------
 # Request / response models
 # ---------------------------------------------------------------------------
@@ -139,6 +176,14 @@ async def submit_evaluation(payload: SubmitRequest) -> Dict[str, Any]:
         target_state=CandidateState.FEEDBACK_SENT,
         context={"evaluation_record_id": evaluation_id},
         actor="evaluation_api",
+    )
+
+    # Queue feedback draft for founder approval
+    await _queue_feedback_draft(
+        candidate_id=payload.candidate_id,
+        feedback_text=agent_output.candidate_feedback_draft,
+        upgrade_ask="",
+        round_number=round_number,
     )
 
     return {

@@ -202,6 +202,16 @@ def run_submission_evaluation(self: object, candidate_id: str, submission_url: s
             "composite": agent_output.composite,
             "sha": sha,
         })
+
+        # Queue feedback draft for founder approval
+        from app.api.evaluations import _queue_feedback_draft
+        await _queue_feedback_draft(
+            candidate_id=candidate_id,
+            feedback_text=agent_output.candidate_feedback_draft,
+            upgrade_ask="",
+            round_number=round_number,
+        )
+
         return f"submission_evaluated:{evaluation_id}:round={round_number}"
 
     return asyncio.run(_run())
