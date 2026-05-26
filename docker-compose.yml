@@ -68,6 +68,22 @@ services:
       redis:
         condition: service_healthy
 
+  beat:
+    build: .
+    restart: unless-stopped
+    command: celery -A app.celery_app beat --loglevel=info
+    env_file: .env
+    environment:
+      DATABASE_URL: postgresql+asyncpg://cureforge:cureforge@db:5432/cureforge
+      REDIS_URL: redis://redis:6379/0
+    volumes:
+      - ./config:/app/config
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
 volumes:
   postgres_data:
   redis_data:

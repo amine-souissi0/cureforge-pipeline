@@ -2,7 +2,7 @@ import asyncio
 import os
 
 from celery import Celery
-from celery.signals import worker_process_init
+from celery.signals import worker_process_init, worker_ready
 
 _redis_url = os.environ.get("REDIS_URL", "redis://localhost:6379/0")
 
@@ -32,6 +32,13 @@ def reset_db_engine(**kwargs):
         expire_on_commit=False,
         class_=AsyncSession,
     )
+
+@worker_ready.connect
+def on_worker_ready(sender, **kwargs):
+    """Fire an immediate Gmail poll when the worker boots so there's no cold-start gap."""
+    from app.api.candidates import poll_gmail_inbox
+    poll_gmail_inbox.delay()
+
 
 celery_app.conf.update(
     task_serializer="json",
