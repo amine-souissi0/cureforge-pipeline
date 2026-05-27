@@ -30,9 +30,11 @@ async def process_inbound_message(message: Message) -> str:
 
     candidate = await CandidateStore.get_by_email(message.sender_email)
     if candidate is None:
-        candidate = await _auto_intake_candidate(message)
-        if candidate is None:
-            return f"intake_failed:{message.sender_email}"
+        await AuditLog.append("cold_inbound_rejected", {
+            "sender_email": message.sender_email,
+            "gmail_message_id": message.message_id,
+        })
+        return f"cold_inbound_rejected:{message.sender_email}"
 
     await AuditLog.append("webhook_candidate_matched", {
         "candidate_id": candidate.id,
