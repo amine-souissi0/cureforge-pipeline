@@ -30,8 +30,10 @@ class TemplateResponderAgent:
         if template_id not in TEMPLATES:
             raise KeyError(f"Unknown template: {template_id!r}")
 
-        if template_id == "acknowledgment":
-            return _render_direct(template_id, candidate_context)
+        # These templates have all fields known at call time — skip LLM, render directly
+        _DIRECT_RENDER = {"acknowledgment", "task-assignment-cover", "warm-hold", "initial-outreach"}
+        if template_id in _DIRECT_RENDER:
+            return _render_direct(template_id, {**(candidate_context or {}), **(extra_context or {})})
 
         tmpl = TEMPLATES[template_id]
         user_message = json.dumps({

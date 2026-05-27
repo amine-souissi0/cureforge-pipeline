@@ -183,7 +183,10 @@ async def send_brief(task_id: str, payload: SendBriefRequest) -> Dict[str, Any]:
             "candidate_name": candidate_name,
             "sender_name": payload.sender_name,
         },
-        extra_context={"task_brief": task.candidate_brief},
+        extra_context={
+            "task_brief": task.candidate_brief,
+            "repo_url": task.repo_url or "(repo not yet provisioned)",
+        },
     )
 
     if result.constraint_check == "FAIL":

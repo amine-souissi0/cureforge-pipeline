@@ -46,6 +46,10 @@ async def run_feedback_loop(
 
     rounds = await EvaluationStore.get_round_count(candidate_id)
 
+    from app.services.candidate_store import CandidateStore
+    candidate = await CandidateStore.get_by_id(candidate_id)
+    candidate_name = candidate.name if candidate else candidate_id
+
     await AuditLog.append("feedback_loop_started", {
         "candidate_id": candidate_id,
         "evaluation_id": evaluation_id,
@@ -54,15 +58,16 @@ async def run_feedback_loop(
     })
 
     # --- Step 1: Render and queue/send feedback email ---
+    feedback_body, upgrade_ask = _split_feedback(evaluation.feedback_draft)
     feedback_result = await TemplateResponderAgent.render(
         template_id="feedback-delivery",
         candidate_context={
-            "candidate_name": candidate_id,
+            "candidate_name": candidate_name,
             "sender_name": sender_name,
         },
         extra_context={
-            "feedback": evaluation.feedback_draft,
-            "upgrade_ask": _extract_upgrade_ask(evaluation.feedback_draft),
+            "feedback": feedback_body,
+            "upgrade_ask": upgrade_ask,
         },
     )
 
@@ -128,7 +133,7 @@ async def run_feedback_loop(
         warm_hold = await TemplateResponderAgent.render(
             template_id="warm-hold",
             candidate_context={
-                "candidate_name": candidate_id,
+                "candidate_name": candidate_name,
                 "sender_name": sender_name,
             },
         )
@@ -156,12 +161,16 @@ async def run_feedback_loop(
     )
 
 
-def _extract_upgrade_ask(feedback_draft: str) -> str:
+def _split_feedback(feedback_draft: str) -> tuple[str, str]:
     """
-    Pull the last sentence of feedback as the upgrade ask.
-    Falls back to the full draft if sentence splitting fails.
+    Split feedback into (body, upgrade_ask).
+    Looks for an 'Upgrade your delivery' sentence; if found, uses it as the
+    upgrade_ask and strips it from the body to avoid duplication.
     """
-    sentences = [s.strip() for s in feedback_draft.replace("\n", " ").split(".") if s.strip()]
-    if sentences:
-        return sentences[-1] + "."
-    return feedback_draft
+    lines = [l.strip() for l in feedback_draft.strip().splitlines() if l.strip()]
+    upgrade_lines = [l for l in lines if l.lower().startswith("upgrade your delivery")]
+    body_lines = [l for l in lines if not l.lower().startswith("upgrade your delivery")]
+
+    body = " ".join(body_lines).strip()
+    upgrade_ask = upgrade_lines[0] if upgrade_lines else ""
+    return body, upgrade_ask

@@ -123,6 +123,8 @@ class IntakeRequest(BaseModel):
     email: str
     github_handle: Optional[str] = None
     source: str = "founder_added"
+    role: str = "Software Engineer"
+    personal_note: str = "Your background caught our attention — we think you'd be a strong fit."
 
 
 class WebhookPayload(BaseModel):
@@ -188,6 +190,23 @@ def generate_task_for_candidate(self: object, candidate_id: str, role: str = "so
             "corpus_ref": output.corpus_pattern_selected,
         })
 
+        # Provision GitHub repo so the URL is in the brief
+        from app.services.github_service import GithubService
+        from app.schemas import InternalTaskSpec
+        repo_url = ""
+        try:
+            internal_spec = InternalTaskSpec(**task.internal_spec) if task.internal_spec else InternalTaskSpec(
+                expected_behavior="See task spec.", held_out_tests=[], failure_modes=[],
+            )
+            repo_url = await GithubService().provision_repo(
+                candidate_id=candidate_id,
+                task_id=task_id,
+                internal_spec=internal_spec,
+            )
+            await TaskStore.update_repo_url(task_id, repo_url)
+        except Exception as exc:
+            await AuditLog.append("github_provision_failed", {"candidate_id": candidate_id, "error": str(exc)})
+
         # Send (or draft) the task brief immediately after generation
         from app.services.approval_queue import ApprovalQueue, DraftEmail
         from app.services.gmail_service import GmailService
@@ -197,6 +216,7 @@ def generate_task_for_candidate(self: object, candidate_id: str, role: str = "so
         subject, body = TemplateRegistry.render("task-assignment-cover", {
             "candidate_name": candidate.name,
             "task_brief": output.candidate_brief,
+            "repo_url": repo_url or "(repo provisioning failed — contact support)",
             "sender_name": "CureForge Team",
         })
         send_mode = get_send_mode(candidate_id, "task-assignment-cover")
@@ -527,6 +547,32 @@ async def intake_candidate(payload: IntakeRequest) -> dict:
         "email": candidate.email,
         "fsm_transitioned": transitioned,
     })
+
+    # Auto-queue outreach invite draft for founder approval
+    if transitioned:
+        from app.agents.template_responder import TemplateResponderAgent
+        from app.services.approval_queue import ApprovalQueue, DraftEmail
+        try:
+            result = await TemplateResponderAgent.render(
+                template_id="initial-outreach",
+                candidate_context={
+                    "candidate_name": candidate.name,
+                    "role": payload.role,
+                    "personal_note": payload.personal_note,
+                    "sender_name": "CureForge Team",
+                },
+            )
+            draft = DraftEmail(
+                candidate_id=candidate.id,
+                template_id="initial-outreach",
+                subject=result.subject,
+                body=result.body,
+                to_email=candidate.email,
+            )
+            await ApprovalQueue.add(draft)
+            await AuditLog.append("outreach_draft_queued", {"candidate_id": candidate.id})
+        except Exception as exc:
+            await AuditLog.append("outreach_draft_failed", {"candidate_id": candidate.id, "error": str(exc)})
 
     return {"candidate_id": candidate.id, "state": "ENGAGED" if transitioned else "NEW"}
 

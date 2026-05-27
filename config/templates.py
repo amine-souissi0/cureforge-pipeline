@@ -57,11 +57,13 @@ TEMPLATES: dict[str, TemplateDefinition] = {
                 "Hi {candidate_name},\n\n"
                 "Here's the engineering problem we'd like you to work through:\n\n"
                 "{task_brief}\n\n"
-                "Please submit your work by replying to this email with a link to your "
-                "GitHub repository.\n\n"
+                "We've set up a private GitHub repository for your submission:\n"
+                "{repo_url}\n\n"
+                "Push your solution to the main branch of that repository when you're ready. "
+                "We'll be notified automatically once you push.\n\n"
                 "Best,\n{sender_name}"
             ),
-            required_fields=["candidate_name", "task_brief", "sender_name"],
+            required_fields=["candidate_name", "task_brief", "repo_url", "sender_name"],
         ),
         TemplateDefinition(
             id="feedback-delivery",
