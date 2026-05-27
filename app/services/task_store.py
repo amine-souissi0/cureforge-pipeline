@@ -78,6 +78,15 @@ class TaskStore:
         return _row_to_model(row) if row else None
 
     @staticmethod
+    async def get_by_repo_url(repo_url: str) -> Optional[TaskModel]:
+        async with AsyncSessionLocal() as session:
+            result = await session.execute(
+                select(TaskRow).where(TaskRow.repo_url == repo_url).limit(1)
+            )
+            row = result.scalar_one_or_none()
+            return _row_to_model(row) if row else None
+
+    @staticmethod
     async def list_all() -> List[TaskModel]:
         async with AsyncSessionLocal() as session:
             result = await session.execute(select(TaskRow))

@@ -1,8 +1,10 @@
 from enum import Enum
 from typing import Dict
 
-# Templates that may auto-send without founder approval
-_AUTO_SEND_TEMPLATES = {"acknowledgment"}
+# Per §5.3: only low-stakes templates auto-send by default.
+# Higher-stakes (task assignment, feedback, warm-hold, offer) are draft-for-approval by default;
+# auto-send only if founder enables it via set_candidate_mode(id, SendMode.AUTO).
+_AUTO_SEND_TEMPLATES = {"acknowledgment", "answer-common-question"}
 
 
 class SendMode(str, Enum):

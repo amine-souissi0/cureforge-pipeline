@@ -1,6 +1,9 @@
+import csv
+import io
 from typing import Any, Dict, Optional
 
 from fastapi import APIRouter, HTTPException
+from fastapi.responses import StreamingResponse
 from pydantic import BaseModel
 
 from app.schemas import AuditLog
@@ -47,6 +50,8 @@ async def pipeline_overview() -> Dict[str, Any]:
             "state": c.state.value,
             "rounds_completed": await EvaluationStore.get_round_count(c.id),
             "latest_composite": latest.composite if latest else None,
+            # §10 evaluation table — per-dimension breakdown
+            "dimension_scores": latest.dimension_scores if latest else None,
         })
 
     pending_drafts = len(await ApprovalQueue.list_pending())
@@ -216,3 +221,84 @@ async def draft_offer(candidate_id: str, payload: DraftOfferRequest) -> Dict[str
         "subject": template_output.subject,
         "status": "draft_queued_for_approval",
     }
+
+
+@router.get("/candidate/{candidate_id}/dossier")
+async def candidate_dossier(candidate_id: str) -> Dict[str, Any]:
+    """
+    §9 — Full hire dossier: all evaluation rounds, dimension scores, evidence,
+    red flags, and message transcript. Assembled when HIRE_RECOMMENDED fires;
+    also available on demand here.
+    """
+    from app.services.dossier_service import assemble_dossier
+    candidate = await CandidateStore.get_by_id(candidate_id)
+    if candidate is None:
+        raise HTTPException(status_code=404, detail=f"Candidate {candidate_id!r} not found.")
+    return await assemble_dossier(candidate_id)
+
+
+@router.get("/candidate/{candidate_id}/transcript")
+async def candidate_transcript(candidate_id: str) -> Dict[str, Any]:
+    """§11 — Full inbound + outbound message history for a candidate."""
+    from app.services.message_store import MessageStore
+    candidate = await CandidateStore.get_by_id(candidate_id)
+    if candidate is None:
+        raise HTTPException(status_code=404, detail=f"Candidate {candidate_id!r} not found.")
+    messages = await MessageStore.list_by_candidate(candidate_id)
+    return {
+        "candidate_id": candidate_id,
+        "name": candidate.name,
+        "total_messages": len(messages),
+        "messages": [
+            {
+                "direction": m.direction,
+                "template_id": m.template_id,
+                "subject": m.subject,
+                "body": m.body,
+                "sent_by_agent": m.sent_by_agent,
+                "approved_by": m.approved_by,
+                "gmail_id": m.gmail_id,
+                "ts": m.created_at.isoformat(),
+            }
+            for m in messages
+        ],
+    }
+
+
+@router.get("/export.csv")
+async def export_evaluation_table() -> StreamingResponse:
+    """
+    §10 — Export evaluation table as CSV.
+    One row per candidate: composite, per-dimension scores, rounds, state.
+    """
+    from config.rubric import DIMENSIONS
+    candidates = await CandidateStore.list_all()
+
+    buf = io.StringIO()
+    dim_ids = list(DIMENSIONS.keys())
+    fieldnames = ["candidate_id", "name", "email", "state", "rounds", "composite"] + dim_ids
+    writer = csv.DictWriter(buf, fieldnames=fieldnames)
+    writer.writeheader()
+
+    for c in candidates:
+        latest = await EvaluationStore.get_latest_by_candidate(c.id)
+        rounds = await EvaluationStore.get_round_count(c.id)
+        dim_scores = latest.dimension_scores if latest else {}
+        row: Dict[str, Any] = {
+            "candidate_id": c.id,
+            "name": c.name,
+            "email": c.email,
+            "state": c.state.value,
+            "rounds": rounds,
+            "composite": latest.composite if latest else "",
+        }
+        for dim_id in dim_ids:
+            row[dim_id] = dim_scores.get(dim_id, "")
+        writer.writerow(row)
+
+    buf.seek(0)
+    return StreamingResponse(
+        iter([buf.getvalue()]),
+        media_type="text/csv",
+        headers={"Content-Disposition": "attachment; filename=evaluation_table.csv"},
+    )

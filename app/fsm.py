@@ -68,7 +68,11 @@ class FSMEngine:
             "repo_provisioned": lambda ctx: bool(ctx.get("repo_url")),
             "submission_sha_pinned": lambda ctx: bool(ctx.get("submission_sha")),
             "evaluation_complete": lambda ctx: ctx.get("evaluation_record_id") is not None,
-            "composite_7_to_8_4": lambda ctx: 7.0 <= ctx.get("composite", 0) < 8.5,
+            # Resubmit: score below hire bar AND not yet at warm-hold threshold
+            "needs_resubmission": lambda ctx: (
+                ctx.get("composite", 0) < 8.5
+                and not (ctx.get("composite", 0) < 7.0 and ctx.get("rounds", 0) >= 2)
+            ),
             "composite_below_7_no_improvement": lambda ctx: ctx.get("composite", 0) < 7.0 and ctx.get("rounds", 0) >= 2,
             "composite_above_8_5_recommend": lambda ctx: ctx.get("composite", 0) >= 8.5 and ctx.get("mode") == "recommend",
             "composite_above_8_5_autonomous": lambda ctx: ctx.get("composite", 0) >= 8.5 and ctx.get("mode") == "autonomous",
@@ -86,7 +90,7 @@ class FSMEngine:
                          predicates["task_brief_sent"]),
             FSMTransition(CandidateState.AWAITING_SUBMISSION, CandidateState.UNDER_EVALUATION, "submission_sha_pinned", predicates["submission_sha_pinned"]),
             FSMTransition(CandidateState.UNDER_EVALUATION, CandidateState.FEEDBACK_SENT, "evaluation_complete", predicates["evaluation_complete"]),
-            FSMTransition(CandidateState.FEEDBACK_SENT, CandidateState.AWAITING_RESUBMISSION, "composite_7_to_8_4", predicates["composite_7_to_8_4"]),
+            FSMTransition(CandidateState.FEEDBACK_SENT, CandidateState.AWAITING_RESUBMISSION, "needs_resubmission", predicates["needs_resubmission"]),
             FSMTransition(CandidateState.FEEDBACK_SENT, CandidateState.WARM_HOLD, "composite_below_7_no_improvement", predicates["composite_below_7_no_improvement"]),
             FSMTransition(CandidateState.FEEDBACK_SENT, CandidateState.HIRE_RECOMMENDED, "composite_above_8_5_recommend", predicates["composite_above_8_5_recommend"]),
             FSMTransition(CandidateState.FEEDBACK_SENT, CandidateState.HIRED, "composite_above_8_5_autonomous", predicates["composite_above_8_5_autonomous"]),
@@ -177,7 +181,6 @@ class FSMEngine:
             await session.commit()
     
     def _log_rejected_transition(self, candidate_id: str, from_state: CandidateState, to_state: CandidateState, actor: str, reason: str) -> None:
-        """Log a rejected transition."""
         self.transition_log.append({
             "timestamp": datetime.utcnow().isoformat(),
             "candidate_id": candidate_id,
@@ -188,9 +191,9 @@ class FSMEngine:
             "reason": reason,
         })
         log.warning("FSM rejected %s: %s → %s (%s)", candidate_id, from_state, to_state, reason)
-    
+        self._persist_transition(candidate_id, from_state, to_state, reason, actor, "REJECTED")
+
     def _log_transition(self, candidate_id: str, from_state: CandidateState, to_state: CandidateState, actor: str, predicate: str, context: Dict[str, Any]) -> None:
-        """Log a successful transition."""
         self.transition_log.append({
             "timestamp": datetime.utcnow().isoformat(),
             "candidate_id": candidate_id,
@@ -202,3 +205,40 @@ class FSMEngine:
             "context": context,
         })
         log.info("FSM transition %s: %s → %s (predicate: %s)", candidate_id, from_state, to_state, predicate)
+        self._persist_transition(candidate_id, from_state, to_state, predicate, actor, "SUCCESS")
+
+    @staticmethod
+    def _persist_transition(
+        candidate_id: str,
+        from_state: CandidateState,
+        to_state: CandidateState,
+        predicate: str,
+        actor: str,
+        status: str,
+    ) -> None:
+        """Fire-and-forget write to the transitions table."""
+        import asyncio
+        async def _write() -> None:
+            try:
+                from app.database import AsyncSessionLocal
+                from app.orm_models import TransitionRow
+                async with AsyncSessionLocal() as session:
+                    session.add(TransitionRow(
+                        candidate_id=candidate_id,
+                        from_state=from_state.value,
+                        to_state=to_state.value,
+                        predicate=predicate,
+                        actor=actor,
+                        status=status,
+                    ))
+                    await session.commit()
+            except Exception:
+                pass  # never block FSM on DB write
+        try:
+            loop = asyncio.get_event_loop()
+            if loop.is_running():
+                asyncio.ensure_future(_write())
+            else:
+                loop.run_until_complete(_write())
+        except Exception:
+            pass

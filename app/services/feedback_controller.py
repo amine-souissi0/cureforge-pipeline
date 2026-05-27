@@ -118,7 +118,12 @@ async def run_feedback_loop(
         actor="feedback_controller",
     )
 
-    # --- Step 4: Warm-hold email ---
+    # --- Step 4a: Assemble dossier when hire recommended (§9) ---
+    if decision.next_state == CandidateState.HIRE_RECOMMENDED and transitioned:
+        from app.services.dossier_service import assemble_dossier
+        await assemble_dossier(candidate_id)
+
+    # --- Step 4b: Warm-hold email ---
     if decision.next_state == CandidateState.WARM_HOLD and transitioned:
         warm_hold = await TemplateResponderAgent.render(
             template_id="warm-hold",

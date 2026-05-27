@@ -13,6 +13,7 @@ logging.basicConfig(
 )
 
 from app.api.candidates import router as candidates_router, oauth_router, auth_google_router, webhook_router
+from app.api.github_webhook import router as github_webhook_router
 from app.api.templates import router as templates_router
 from app.api.tasks import router as tasks_router
 from app.api.evaluations import router as evaluations_router
@@ -50,11 +51,12 @@ app.include_router(evaluations_router, dependencies=_auth)
 app.include_router(gate_router, dependencies=_auth)
 app.include_router(dashboard_router, dependencies=_auth)
 
-# Unprotected — health probes, OAuth redirect, and Gmail Pub/Sub webhook
+# Unprotected — health probes, OAuth redirect, Gmail Pub/Sub webhook, GitHub push webhook
 app.include_router(health_router)
 app.include_router(oauth_router)
 app.include_router(auth_google_router)
 app.include_router(webhook_router)
+app.include_router(github_webhook_router)
 
 # Founder UI — served at /ui (unprotected path; API calls from the UI use X-Api-Key)
 _static = Path(__file__).parent / "static"

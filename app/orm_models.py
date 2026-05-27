@@ -64,6 +64,36 @@ class DraftEmailRow(Base):
     reviewed_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
 
 
+class MessageRow(Base):
+    """§11 messages table — every inbound and outbound email."""
+    __tablename__ = "messages"
+
+    id: Mapped[str] = mapped_column(String, primary_key=True)
+    candidate_id: Mapped[str] = mapped_column(String, nullable=False, index=True)
+    direction: Mapped[str] = mapped_column(String, nullable=False)   # "inbound" | "outbound"
+    template_id: Mapped[str | None] = mapped_column(String, nullable=True)
+    subject: Mapped[str | None] = mapped_column(String, nullable=True)
+    body: Mapped[str] = mapped_column(Text, nullable=False)
+    sent_by_agent: Mapped[bool] = mapped_column(default=True)
+    approved_by: Mapped[str | None] = mapped_column(String, nullable=True)
+    gmail_id: Mapped[str | None] = mapped_column(String, nullable=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
+
+
+class TransitionRow(Base):
+    """§11 transitions table — every FSM state change."""
+    __tablename__ = "transitions"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    candidate_id: Mapped[str] = mapped_column(String, nullable=False, index=True)
+    from_state: Mapped[str] = mapped_column(String, nullable=False)
+    to_state: Mapped[str] = mapped_column(String, nullable=False)
+    predicate: Mapped[str] = mapped_column(String, nullable=False)
+    actor: Mapped[str] = mapped_column(String, nullable=False)
+    status: Mapped[str] = mapped_column(String, nullable=False)  # "SUCCESS" | "REJECTED"
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
+
+
 class AuditLogRow(Base):
     __tablename__ = "audit_log"
 

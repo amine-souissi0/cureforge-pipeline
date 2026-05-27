@@ -178,13 +178,17 @@ async def submit_evaluation(payload: SubmitRequest) -> Dict[str, Any]:
         actor="evaluation_api",
     )
 
-    # Queue feedback draft for founder approval
-    await _queue_feedback_draft(
-        candidate_id=payload.candidate_id,
-        feedback_text=agent_output.candidate_feedback_draft,
-        upgrade_ask="",
-        round_number=round_number,
-    )
+    # Feedback loop: send feedback draft, run decision engine, advance FSM
+    from app.services.candidate_store import CandidateStore as _CS
+    from app.services.feedback_controller import run_feedback_loop
+    _candidate = await _CS.get_by_id(payload.candidate_id)
+    if _candidate:
+        await run_feedback_loop(
+            candidate_id=payload.candidate_id,
+            evaluation_id=evaluation_id,
+            to_email=_candidate.email,
+            mode="recommend",
+        )
 
     return {
         "evaluation_id": evaluation_id,

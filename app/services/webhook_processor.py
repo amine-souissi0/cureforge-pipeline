@@ -41,6 +41,15 @@ async def process_inbound_message(message: Message) -> str:
         "gmail_message_id": message.message_id,
     })
 
+    # §11 messages table — log every inbound email
+    from app.services.message_store import MessageStore
+    await MessageStore.log_inbound(
+        candidate_id=candidate.id,
+        body=message.body,
+        subject=message.subject,
+        gmail_id=message.message_id,
+    )
+
     output = await ReplyClassifierAgent.classify_email(
         email_body=message.body,
         candidate_context=candidate.name,
@@ -199,7 +208,6 @@ async def _auto_intake_candidate(message: Message) -> Optional[CandidateModel]:
     from fastapi import HTTPException
 
     from app.services.candidate_store import CandidateStore
-    from app.services.send_policy import SendMode, set_candidate_mode
 
     candidate = CandidateModel(
         name=message.sender_name,
@@ -238,8 +246,6 @@ async def _auto_intake_candidate(message: Message) -> Optional[CandidateModel]:
         await _CS2.update_state(candidate.id, _CS.ENGAGED)
         candidate = candidate.model_copy(update={"state": _CS.ENGAGED})
 
-    # Force draft so founder reviews before anything goes out to this new candidate.
-    set_candidate_mode(candidate.id, SendMode.DRAFT)
     await _queue_template(
         candidate=candidate,
         template_id="acknowledgment",
@@ -279,6 +285,7 @@ async def _queue_template(
 
     if send_mode == SendMode.AUTO:
         from app.services.gmail_service import GmailService
+        from app.services.message_store import MessageStore
         svc = GmailService()
         try:
             gmail_id = await svc.send_email(
@@ -291,6 +298,13 @@ async def _queue_template(
                 "template_id": template_id,
                 "gmail_id": gmail_id,
             })
+            await MessageStore.log_outbound(
+                candidate_id=candidate.id,
+                body=result.body,
+                subject=result.subject,
+                template_id=template_id,
+                gmail_id=gmail_id,
+            )
         except Exception as e:
             await AuditLog.append("template_send_failed", {
                 "candidate_id": candidate.id,

@@ -14,6 +14,106 @@ oauth_router = APIRouter(prefix="/oauth", tags=["oauth"])
 webhook_router = APIRouter(prefix="/candidates", tags=["webhook"])
 
 
+async def fsm_advance_to_awaiting(candidate_id: str, task_id: str) -> None:
+    """ENGAGED → TASK_ASSIGNED → AWAITING_SUBMISSION after brief auto-sent."""
+    from app.services.candidate_store import CandidateStore
+    fsm = FSMEngine()
+    transitioned = await fsm.transition(
+        candidate_id=candidate_id,
+        target_state=CandidateState.TASK_ASSIGNED,
+        context={"intent": "INTERESTED", "task_id": task_id},
+        actor="task_celery",
+    )
+    if transitioned:
+        await CandidateStore.update_state(candidate_id, CandidateState.TASK_ASSIGNED)
+    fsm2 = FSMEngine()
+    transitioned2 = await fsm2.transition(
+        candidate_id=candidate_id,
+        target_state=CandidateState.AWAITING_SUBMISSION,
+        context={"task_brief_sent": True},
+        actor="task_celery",
+    )
+    if transitioned2:
+        await CandidateStore.update_state(candidate_id, CandidateState.AWAITING_SUBMISSION)
+
+
+async def dispatch_outcome_email(
+    candidate_id: str,
+    composite: float,
+    round_number: int,
+    feedback_text: str,
+) -> None:
+    """Fire outcome FSM transition and send the appropriate email to the candidate."""
+    from app.services.approval_queue import ApprovalQueue, DraftEmail
+    from app.services.candidate_store import CandidateStore
+    from app.services.gmail_service import GmailService
+    from app.services.send_policy import SendMode, get_send_mode
+    from app.templates import TemplateRegistry
+
+    candidate = await CandidateStore.get_by_id(candidate_id)
+    if candidate is None:
+        return
+
+    fsm = FSMEngine()
+    next_state: Optional[CandidateState] = None
+
+    # Try outcome transitions in priority order
+    for target, ctx in [
+        (CandidateState.HIRE_RECOMMENDED, {"composite": composite, "mode": "recommend"}),
+        (CandidateState.WARM_HOLD, {"composite": composite, "rounds": round_number}),
+        (CandidateState.AWAITING_RESUBMISSION, {"composite": composite}),
+    ]:
+        if await fsm.transition(candidate_id, target, ctx, "outcome_engine"):
+            await CandidateStore.update_state(candidate_id, target)
+            next_state = target
+            break
+
+    # composite < 7 on round 1: no FSM rule covers it — give one resubmission chance
+    if next_state is None and composite < 7.0 and round_number < 2:
+        await fsm.force_set_state(candidate_id, CandidateState.AWAITING_RESUBMISSION,
+                                  "outcome_engine", f"round={round_number} composite={composite}")
+        await CandidateStore.update_state(candidate_id, CandidateState.AWAITING_RESUBMISSION)
+        next_state = CandidateState.AWAITING_RESUBMISSION
+
+    if next_state == CandidateState.HIRE_RECOMMENDED:
+        # Don't email candidate yet — founder must confirm hire before offer
+        await AuditLog.append("hire_recommended_pending_founder", {
+            "candidate_id": candidate_id, "composite": composite,
+        })
+        return
+
+    if next_state == CandidateState.WARM_HOLD:
+        template_id = "warm-hold"
+        fields = {"candidate_name": candidate.name, "sender_name": "CureForge Team"}
+    else:
+        template_id = "feedback-delivery"
+        fields = {
+            "candidate_name": candidate.name,
+            "feedback": feedback_text,
+            "upgrade_ask": "Please address the gaps above and resubmit your solution.",
+            "sender_name": "CureForge Team",
+        }
+
+    subject, body = TemplateRegistry.render(template_id, fields)
+    send_mode = get_send_mode(candidate_id, template_id)
+
+    if send_mode == SendMode.AUTO:
+        svc = GmailService()
+        gmail_id = await svc.send_email(to=candidate.email, subject=subject, body=body)
+        await AuditLog.append("outcome_email_auto_sent", {
+            "candidate_id": candidate_id, "template_id": template_id,
+            "next_state": next_state.value if next_state else None, "gmail_id": gmail_id,
+        })
+    else:
+        draft = DraftEmail(candidate_id=candidate_id, template_id=template_id,
+                           subject=subject, body=body, to_email=candidate.email)
+        await ApprovalQueue.add(draft)
+        await AuditLog.append("outcome_email_draft_queued", {
+            "candidate_id": candidate_id, "template_id": template_id,
+            "next_state": next_state.value if next_state else None,
+        })
+
+
 # ---------------------------------------------------------------------------
 # Request / response models
 # ---------------------------------------------------------------------------
@@ -87,6 +187,49 @@ def generate_task_for_candidate(self: object, candidate_id: str, role: str = "so
             "task_id": task_id,
             "corpus_ref": output.corpus_pattern_selected,
         })
+
+        # Send (or draft) the task brief immediately after generation
+        from app.services.approval_queue import ApprovalQueue, DraftEmail
+        from app.services.gmail_service import GmailService
+        from app.services.send_policy import SendMode, get_send_mode
+        from app.templates import TemplateRegistry
+
+        subject, body = TemplateRegistry.render("task-assignment-cover", {
+            "candidate_name": candidate.name,
+            "task_brief": output.candidate_brief,
+            "sender_name": "CureForge Team",
+        })
+        send_mode = get_send_mode(candidate_id, "task-assignment-cover")
+
+        if send_mode == SendMode.AUTO:
+            svc = GmailService()
+            gmail_id = await svc.send_email(to=candidate.email, subject=subject, body=body)
+            await AuditLog.append("task_brief_auto_sent", {
+                "candidate_id": candidate_id, "task_id": task_id, "gmail_id": gmail_id,
+            })
+            # Advance FSM: ENGAGED → TASK_ASSIGNED → AWAITING_SUBMISSION
+            await fsm_advance_to_awaiting(candidate_id, task_id)
+        else:
+            draft = DraftEmail(
+                candidate_id=candidate_id,
+                template_id="task-assignment-cover",
+                subject=subject,
+                body=body,
+                to_email=candidate.email,
+            )
+            await ApprovalQueue.add(draft)
+            await AuditLog.append("task_brief_draft_queued", {"candidate_id": candidate_id, "task_id": task_id})
+            # ENGAGED → TASK_ASSIGNED only (brief not yet sent, so not AWAITING_SUBMISSION)
+            fsm = FSMEngine()
+            transitioned = await fsm.transition(
+                candidate_id=candidate_id,
+                target_state=CandidateState.TASK_ASSIGNED,
+                context={"intent": "INTERESTED", "task_id": task_id},
+                actor="task_celery",
+            )
+            if transitioned:
+                await CandidateStore.update_state(candidate_id, CandidateState.TASK_ASSIGNED)
+
         return f"task_generated:{task_id}"
 
     return asyncio.run(_run())
@@ -203,13 +346,13 @@ def run_submission_evaluation(self: object, candidate_id: str, submission_url: s
             "sha": sha,
         })
 
-        # Queue feedback draft for founder approval
-        from app.api.evaluations import _queue_feedback_draft
-        await _queue_feedback_draft(
+        # Feedback loop: send feedback draft, run decision engine, advance FSM
+        from app.services.feedback_controller import run_feedback_loop
+        await run_feedback_loop(
             candidate_id=candidate_id,
-            feedback_text=agent_output.candidate_feedback_draft,
-            upgrade_ask="",
-            round_number=round_number,
+            evaluation_id=evaluation_id,
+            to_email=candidate.email,
+            mode="recommend",
         )
 
         return f"submission_evaluated:{evaluation_id}:round={round_number}"
