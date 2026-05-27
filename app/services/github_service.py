@@ -6,6 +6,10 @@ from typing import Any, Dict
 import httpx
 
 from app.config import GITHUB_ACCOUNT_TYPE, GITHUB_API_URL, GITHUB_ORG, get_github_token
+import os
+
+_GITHUB_WEBHOOK_SECRET = os.environ.get("GITHUB_WEBHOOK_SECRET", "")
+_WEBHOOK_URL = os.environ.get("WEBHOOK_URL", "")
 from app.schemas import AuditLog, InternalTaskSpec
 
 
@@ -42,6 +46,8 @@ class GithubService:
             repo_url = await self._create_repo(client, repo_name)
             await self._push_readme(client, repo_name)
             await self._push_internal_spec(client, repo_name, internal_spec)
+            if _GITHUB_WEBHOOK_SECRET and _WEBHOOK_URL:
+                await self._register_webhook(client, repo_name)
 
         await AuditLog.append("github_repo_provisioned", {
             "candidate_id": candidate_id,
@@ -125,6 +131,23 @@ class GithubService:
             json={"ref": f"refs/heads/{branch}", "sha": sha},
         )
         _raise_for_status(response, f"create branch {branch}")
+
+    async def _register_webhook(self, client: httpx.AsyncClient, repo_name: str) -> None:
+        response = await client.post(
+            f"/repos/{GITHUB_ORG}/{repo_name}/hooks",
+            json={
+                "name": "web",
+                "active": True,
+                "events": ["push"],
+                "config": {
+                    "url": f"{_WEBHOOK_URL}/webhook/github",
+                    "content_type": "json",
+                    "secret": _GITHUB_WEBHOOK_SECRET,
+                    "insecure_ssl": "0",
+                },
+            },
+        )
+        _raise_for_status(response, "register webhook")
 
     async def _create_file(
         self,
