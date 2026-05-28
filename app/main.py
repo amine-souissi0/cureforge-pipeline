@@ -30,7 +30,7 @@ async def _seed_admin() -> None:
     from app.auth import hash_password
     from app.services.user_store import UserStore
     if await UserStore.count() == 0:
-        email = os.environ.get("ADMIN_EMAIL", "admin@cureforge.com")
+        email = os.environ.get("ADMIN_EMAIL", "admin@longevityintime.com")
         password = os.environ.get("ADMIN_PASSWORD", "admin123")
         await UserStore.create(
             email=email,
@@ -50,7 +50,7 @@ async def lifespan(app: FastAPI):
 
 
 app = FastAPI(
-    title="CureForge Pipeline Agent",
+    title="LongevityInTime Pipeline Agent",
     description="AI-powered recruiting pipeline — M9 Auth",
     version="0.9.0",
     lifespan=lifespan,

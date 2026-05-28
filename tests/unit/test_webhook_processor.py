@@ -31,6 +31,7 @@ client = TestClient(app, headers=TEST_AUTH)
 
 def _make_message(
     sender_email: str = "alice@example.com",
+    sender_name: str = "Alice",
     subject: str = "Re: Engineering Role",
     body: str = "I'm very interested!",
     message_id: str = "gmail-msg-001",
@@ -38,6 +39,7 @@ def _make_message(
     return Message(
         id="msg-uuid",
         sender_email=sender_email,
+        sender_name=sender_name,
         subject=subject,
         body=body,
         message_id=message_id,

@@ -22,7 +22,7 @@ async def run_feedback_loop(
     candidate_id: str,
     evaluation_id: str,
     to_email: str,
-    sender_name: str = "CureForge Team",
+    sender_name: str = "LongevityInTime Team",
     mode: str = "recommend",
 ) -> FeedbackResult:
     """

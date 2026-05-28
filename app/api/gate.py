@@ -20,7 +20,7 @@ router = APIRouter(prefix="/gate", tags=["gate"])
 class DecideRequest(BaseModel):
     evaluation_id: str
     to_email: str
-    sender_name: str = "CureForge Team"
+    sender_name: str = "LongevityInTime Team"
     mode: str = "recommend"   # "recommend" | "autonomous"
 
 
@@ -35,7 +35,15 @@ class ResubmitRequest(BaseModel):
     submission_sha: str
     source_code: str
     to_email: str
-    sender_name: str = "CureForge Team"
+    sender_name: str = "LongevityInTime Team"
+
+
+class CeoDecisionRequest(BaseModel):
+    evaluation_id: str
+    action: str          # "accept" | "reject" | "resubmit"
+    to_email: str
+    sender_name: str = "LongevityInTime Team"
+    note: str = ""       # optional CEO note included in feedback
 
 
 class OfferDraftRequest(BaseModel):
@@ -44,7 +52,7 @@ class OfferDraftRequest(BaseModel):
     compensation: str
     equity: str = ""
     benefits: str = ""
-    sender_name: str = "CureForge Team"
+    sender_name: str = "LongevityInTime Team"
     reviewer: str = "founder"
 
 
@@ -56,6 +64,93 @@ class OfferApproveRequest(BaseModel):
 # ---------------------------------------------------------------------------
 # Endpoints
 # ---------------------------------------------------------------------------
+
+@router.post("/{candidate_id}/ceo-decision")
+async def ceo_decision(candidate_id: str, payload: CeoDecisionRequest, _: UserRow = Depends(require_admin)) -> Dict[str, Any]:
+    """
+    CEO reviews the evaluation score and takes an action:
+      accept   → send feedback + move to HIRE_RECOMMENDED (score ≥ 8.5) or FEEDBACK_SENT
+      resubmit → send feedback + move to AWAITING_RESUBMISSION
+      reject   → send warm-hold email + move to WARM_HOLD
+    """
+    from app.services.candidate_store import CandidateStore
+    from app.services.feedback_controller import run_feedback_loop
+    from app.services.approval_queue import ApprovalQueue, DraftEmail
+    from app.agents.template_responder import TemplateResponderAgent
+
+    if payload.action not in ("accept", "reject", "resubmit"):
+        raise HTTPException(status_code=400, detail="action must be accept | reject | resubmit")
+
+    evaluation = await EvaluationStore.get_by_id(payload.evaluation_id)
+    if evaluation is None:
+        raise HTTPException(status_code=404, detail=f"Evaluation {payload.evaluation_id!r} not found.")
+    if evaluation.candidate_id != candidate_id:
+        raise HTTPException(status_code=400, detail="Evaluation does not belong to this candidate.")
+
+    candidate = await CandidateStore.get_by_id(candidate_id)
+    if candidate is None:
+        raise HTTPException(status_code=404, detail=f"Candidate {candidate_id!r} not found.")
+
+    await AuditLog.append("ceo_decision", {
+        "candidate_id": candidate_id,
+        "evaluation_id": payload.evaluation_id,
+        "action": payload.action,
+        "composite": evaluation.composite,
+        "note": payload.note,
+    })
+
+    fsm = FSMEngine()
+
+    if payload.action == "reject":
+        # Send warm-hold email + transition to WARM_HOLD
+        warm_hold = await TemplateResponderAgent.render(
+            template_id="warm-hold",
+            candidate_context={"candidate_name": candidate.name, "sender_name": payload.sender_name},
+        )
+        draft = DraftEmail(
+            candidate_id=candidate_id,
+            template_id="warm-hold",
+            subject=warm_hold.subject,
+            body=warm_hold.body,
+            to_email=payload.to_email,
+        )
+        draft_id = await ApprovalQueue.add(draft)
+
+        await fsm.transition(
+            candidate_id=candidate_id,
+            target_state=CandidateState.WARM_HOLD,
+            context={"ceo_action": "reject"},
+            actor="ceo",
+        )
+        await CandidateStore.update_state(candidate_id, CandidateState.WARM_HOLD)
+
+        return {
+            "candidate_id": candidate_id,
+            "action": "reject",
+            "next_state": "WARM_HOLD",
+            "composite": evaluation.composite,
+            "warm_hold_draft_id": draft_id,
+        }
+
+    # accept or resubmit — run feedback loop
+    mode = "recommend" if payload.action == "accept" else "resubmit"
+    result = await run_feedback_loop(
+        candidate_id=candidate_id,
+        evaluation_id=payload.evaluation_id,
+        to_email=payload.to_email,
+        sender_name=payload.sender_name,
+        mode=mode,
+    )
+
+    return {
+        "candidate_id": candidate_id,
+        "action": payload.action,
+        "composite": result.composite,
+        "next_state": result.decision.next_state.value,
+        "feedback_draft_id": result.feedback_draft_id,
+        "fsm_transitioned": result.fsm_transitioned,
+    }
+
 
 @router.post("/{candidate_id}/decide")
 async def decide_gate(candidate_id: str, payload: DecideRequest, _: UserRow = Depends(require_admin)) -> Dict[str, Any]:

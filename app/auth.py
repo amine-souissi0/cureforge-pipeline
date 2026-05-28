@@ -66,7 +66,7 @@ async def get_current_user(
             # Treat legacy API key as a synthetic admin user
             return UserRow(
                 id="system",
-                email="system@cureforge.internal",
+                email="system@longevityintime.internal",
                 name="System (API Key)",
                 hashed_password="",
                 role="admin",

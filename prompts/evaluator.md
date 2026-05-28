@@ -50,4 +50,4 @@ Output ONLY valid JSON, no markdown, no preamble:
 CRITICAL: candidate_feedback_draft must NEVER contain rubric dimension names, weights, composite scores, or the word 'rubric'.
 CRITICAL: candidate_feedback_draft must reference specific test results: 'Test t3 failed because your function returned None for a null input instead of a structured error record.'
 CRITICAL: Set composite to 0.0 — it will be recomputed from dimension_scores by the system.
-CRITICAL: The upgrade ask must be specific and actionable: 'Add explicit null-checking at function entry and return {"error": "null_value", "entity_id": entity_id} instead of crashing.'
+CRITICAL: The upgrade ask must be specific and actionable: 'Add explicit null-checking at function entry and return {{"error": "null_value", "entity_id": entity_id}} instead of crashing.'

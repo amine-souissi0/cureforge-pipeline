@@ -18,7 +18,7 @@ class OfferDrafterAgent:
         compensation: str,
         equity: str = "",
         benefits: str = "",
-        sender_name: str = "CureForge Team",
+        sender_name: str = "LongevityInTime Team",
         retries: int = 1,
     ) -> OfferDrafterOutput:
         """

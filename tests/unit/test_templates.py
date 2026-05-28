@@ -47,6 +47,10 @@ def test_registry_lists_all_templates():
         "feedback-delivery",
         "warm-hold",
         "offer-cover",
+        "jd-sharing",
+        "background-request",
+        "profile-incomplete",
+        "request-submission-url",
     }
     assert expected == set(ids)
 

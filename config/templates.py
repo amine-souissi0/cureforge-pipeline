@@ -17,13 +17,19 @@ TEMPLATES: dict[str, TemplateDefinition] = {
     for t in [
         TemplateDefinition(
             id="initial-outreach",
-            subject_template="Engineering Role — {role}",
+            subject_template="{role} — LongevityInTime",
             body_template=(
                 "Hi {candidate_name},\n\n"
-                "I came across your work and think you'd be a strong fit for a {role} "
-                "role we're building toward.\n\n"
+                "I came across your work and wanted to reach out directly.\n\n"
+                "I'm building the engineering team at LongevityInTime — we're working on the data "
+                "and AI infrastructure that powers longevity science. Our platform ingests and "
+                "processes millions of biomarker measurements to help researchers understand "
+                "what drives healthy human aging.\n\n"
                 "{personal_note}\n\n"
-                "Would you be open to learning more? Happy to share details if so.\n\n"
+                "We're looking for a {role} who cares about building reliable, well-engineered "
+                "systems in a domain where the work genuinely matters.\n\n"
+                "Would you be open to a quick conversation? Happy to share more about the role "
+                "and what we're building.\n\n"
                 "Best,\n{sender_name}"
             ),
             required_fields=["candidate_name", "role", "personal_note", "sender_name"],
@@ -33,8 +39,9 @@ TEMPLATES: dict[str, TemplateDefinition] = {
             subject_template="Re: {original_subject}",
             body_template=(
                 "Hi {candidate_name},\n\n"
-                "Thanks for reaching out — we received your message and will follow up shortly.\n\n"
-                "Best,\n{sender_name}"
+                "Thanks for getting in touch — we received your message and will follow up shortly.\n\n"
+                "Best,\n{sender_name}\n"
+                "LongevityInTime"
             ),
             required_fields=["candidate_name", "original_subject", "sender_name"],
             auto_send_eligible=True,
@@ -54,15 +61,20 @@ TEMPLATES: dict[str, TemplateDefinition] = {
         ),
         TemplateDefinition(
             id="task-assignment-cover",
-            subject_template="Engineering Problem — Next Steps",
+            subject_template="LongevityInTime — Engineering Problem",
             body_template=(
                 "Hi {candidate_name},\n\n"
-                "Here's the engineering problem we'd like you to work through:\n\n"
+                "Here's the engineering problem we'd like you to work through.\n\n"
+                "This is representative of the kind of work you'd own at LongevityInTime — "
+                "building reliable, well-structured systems that process and validate "
+                "data with precision.\n\n"
                 "{task_brief}\n\n"
-                "When you're ready to submit, please:\n"
-                "1. Push your solution to a public GitHub repository of your own\n"
+                "When you're ready to submit:\n"
+                "1. Push your solution to a public GitHub repository\n"
                 "2. Reply to this email with the GitHub URL\n\n"
-                "Best,\n{sender_name}"
+                "Take the time you need — we value correctness and clarity over speed.\n\n"
+                "Best,\n{sender_name}\n"
+                "LongevityInTime"
             ),
             required_fields=["candidate_name", "task_brief", "sender_name"],
         ),
@@ -97,18 +109,23 @@ TEMPLATES: dict[str, TemplateDefinition] = {
             subject_template="Re: {original_subject}",
             body_template=(
                 "Hi {candidate_name},\n\n"
-                "Great to hear you're interested! To match you to the right opening and tailor "
-                "the technical challenge, please share your CV or resume.\n\n"
+                "Great to hear you're interested in LongevityInTime!\n\n"
+                "We're building the engineering team behind our longevity research platform — "
+                "the infrastructure that processes biomarker data, runs predictive models, and "
+                "helps scientists understand what drives healthy human aging.\n\n"
+                "To match you to the right role and tailor the technical challenge to your background, "
+                "please share your CV or resume.\n\n"
                 "You can either:\n"
                 "- Reply with your CV pasted as text, or\n"
                 "- Attach your resume as a PDF or Word document\n\n"
-                "We'll need:\n"
-                "- Your experience and what you've shipped recently\n"
+                "It would help to know:\n"
+                "- Your recent experience and what you've shipped\n"
                 "- Core skills and tech stack\n"
                 "- Current location\n"
-                "- Notice period (if employed)\n\n"
-                "Once we have it we'll come back to you with the roles we think fit best.\n\n"
-                "Best,\n{sender_name}"
+                "- Notice period (if currently employed)\n\n"
+                "Once we have that, we'll come back to you with the roles we think are the best fit.\n\n"
+                "Best,\n{sender_name}\n"
+                "LongevityInTime"
             ),
             required_fields=["candidate_name", "original_subject", "sender_name"],
             auto_send_eligible=True,
@@ -129,40 +146,52 @@ TEMPLATES: dict[str, TemplateDefinition] = {
         ),
         TemplateDefinition(
             id="jd-sharing",
-            subject_template="Roles at CureForge — We Think You'd Be a Fit",
+            subject_template="Open Roles at LongevityInTime — Strong Match for Your Background",
             body_template=(
                 "Hi {candidate_name},\n\n"
-                "Based on your background, here are the roles we think you'd be a strong match for:\n\n"
+                "Thanks for sharing your background. Based on what you've built and your experience, "
+                "here are the LongevityInTime roles we think you'd be a strong fit for:\n\n"
                 "{jd_list}\n\n"
-                "Would you like to proceed with any of these? Just reply with the role you're "
-                "most interested in and we'll kick off the next step — a short technical problem "
-                "tailored to that position.\n\n"
-                "Best,\n{sender_name}"
+                "LongevityInTime is building the data and AI infrastructure for longevity science — "
+                "the platform our researchers use to track biomarkers, run predictive models, "
+                "and understand what drives healthy aging at scale.\n\n"
+                "If any of these roles interest you, just reply with the one you'd like to pursue "
+                "and we'll send over a short technical problem tailored to that position.\n\n"
+                "Best,\n{sender_name}\n"
+                "LongevityInTime"
             ),
             required_fields=["candidate_name", "jd_list", "sender_name"],
             auto_send_eligible=True,
         ),
         TemplateDefinition(
             id="warm-hold",
-            subject_template="Staying in Touch",
+            subject_template="LongevityInTime — Thank You",
             body_template=(
                 "Hi {candidate_name},\n\n"
-                "Thank you for the time you've invested in our process. "
-                "We'd like to keep you in mind as our needs evolve.\n\n"
-                "We'll be in touch.\n\n"
-                "Best,\n{sender_name}"
+                "Thank you for the time and effort you've put into our process — "
+                "we genuinely appreciate it.\n\n"
+                "We're not moving forward at this stage, but we'd like to keep you in mind "
+                "as LongevityInTime grows. The longevity space is moving fast and our engineering "
+                "needs are evolving — we may well be in touch.\n\n"
+                "Thanks again, and best of luck with what you're working on.\n\n"
+                "Best,\n{sender_name}\n"
+                "LongevityInTime"
             ),
             required_fields=["candidate_name", "sender_name"],
         ),
         TemplateDefinition(
             id="offer-cover",
-            subject_template="An Offer",
+            subject_template="LongevityInTime — Offer",
             body_template=(
                 "Hi {candidate_name},\n\n"
-                "We're excited to move forward and extend the following offer:\n\n"
+                "We're excited to move forward and would love to have you join LongevityInTime.\n\n"
+                "Here are the details of our offer:\n\n"
                 "{offer_details}\n\n"
-                "Please let us know if you have any questions.\n\n"
-                "Best,\n{sender_name}"
+                "We're building something genuinely important — the engineering infrastructure "
+                "that powers longevity research — and we think you'd be a great part of that.\n\n"
+                "Please take the time you need to review. We're happy to answer any questions.\n\n"
+                "Best,\n{sender_name}\n"
+                "LongevityInTime"
             ),
             required_fields=["candidate_name", "offer_details", "sender_name"],
         ),

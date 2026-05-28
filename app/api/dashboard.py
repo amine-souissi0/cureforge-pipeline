@@ -25,7 +25,7 @@ class DraftOfferRequest(BaseModel):
     equity: str = ""
     benefits: str = ""
     to_email: str
-    sender_name: str = "CureForge Team"
+    sender_name: str = "LongevityInTime Team"
 
 
 # ---------------------------------------------------------------------------

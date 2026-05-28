@@ -21,7 +21,7 @@ BLOCKED_TOPICS: list[str] = [
     "treatment protocol",
     # Internal systems
     "longevity_engine",
-    "cureforge_internal",
+    "longevityintime_internal",
     "biological_clock",
     # Security-sensitive
     "authentication bypass",

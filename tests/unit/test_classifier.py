@@ -116,7 +116,7 @@ def test_route_task_submission_without_url_to_human():
         confidence=0.97,
         extracted={"submission_url": None},
     )
-    assert route_classified_email(output, "cand1") == "human_review_no_url"
+    assert route_classified_email(output, "cand1") == "request_submission_url"
 
 
 def test_route_question_to_template_responder():

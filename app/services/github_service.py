@@ -64,7 +64,7 @@ class GithubService:
                 "name": repo_name,
                 "private": True,
                 "auto_init": False,
-                "description": "Engineering problem — CureForge pipeline",
+                "description": "Engineering problem — LongevityInTime pipeline",
             },
         )
         _raise_for_status(response, "create repo")

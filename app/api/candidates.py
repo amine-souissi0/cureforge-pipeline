@@ -99,14 +99,14 @@ async def dispatch_outcome_email(
 
     if next_state == CandidateState.WARM_HOLD:
         template_id = "warm-hold"
-        fields = {"candidate_name": candidate.name, "sender_name": "CureForge Team"}
+        fields = {"candidate_name": candidate.name, "sender_name": "LongevityInTime Team"}
     else:
         template_id = "feedback-delivery"
         fields = {
             "candidate_name": candidate.name,
             "feedback": feedback_text,
             "upgrade_ask": "Please address the gaps above and resubmit your solution.",
-            "sender_name": "CureForge Team",
+            "sender_name": "LongevityInTime Team",
         }
 
     subject, body = TemplateRegistry.render(template_id, fields)
@@ -237,7 +237,7 @@ def generate_task_for_candidate(self: object, candidate_id: str, role: str = "so
         subject, body = TemplateRegistry.render("task-assignment-cover", {
             "candidate_name": candidate.name,
             "task_brief": output.candidate_brief,
-            "sender_name": "CureForge Team",
+            "sender_name": "LongevityInTime Team",
         })
         send_mode = get_send_mode(candidate_id, "task-assignment-cover")
 
@@ -399,15 +399,15 @@ def run_submission_evaluation(self: object, candidate_id: str, submission_url: s
         )
         evaluation_id = await EvaluationStore.add(evaluation)
 
-        # UNDER_EVALUATION → FEEDBACK_SENT
+        # UNDER_EVALUATION → PENDING_CEO_REVIEW (no auto-feedback — CEO decides)
         transitioned = await fsm.transition(
             candidate_id=candidate_id,
-            target_state=CandidateState.FEEDBACK_SENT,
+            target_state=CandidateState.PENDING_CEO_REVIEW,
             context={"evaluation_record_id": evaluation_id},
             actor="submission_task",
         )
         if transitioned:
-            await CandidateStore.update_state(candidate_id, CandidateState.FEEDBACK_SENT)
+            await CandidateStore.update_state(candidate_id, CandidateState.PENDING_CEO_REVIEW)
 
         await AuditLog.append("submission_evaluated_async", {
             "candidate_id": candidate_id,
@@ -416,16 +416,8 @@ def run_submission_evaluation(self: object, candidate_id: str, submission_url: s
             "is_resubmission": is_resubmission,
             "composite": agent_output.composite,
             "sha": sha,
+            "status": "pending_ceo_review",
         })
-
-        # Feedback loop: send feedback draft, run decision engine, advance FSM
-        from app.services.feedback_controller import run_feedback_loop
-        await run_feedback_loop(
-            candidate_id=candidate_id,
-            evaluation_id=evaluation_id,
-            to_email=candidate.email,
-            mode="recommend",
-        )
 
         return f"submission_evaluated:{evaluation_id}:round={round_number}"
 
@@ -629,7 +621,7 @@ async def intake_candidate(payload: IntakeRequest) -> dict:
                     "candidate_name": candidate.name,
                     "role": payload.role,
                     "personal_note": payload.personal_note,
-                    "sender_name": "CureForge Team",
+                    "sender_name": "LongevityInTime Team",
                 },
             )
             send_mode = get_send_mode(candidate.id, "initial-outreach")
@@ -659,7 +651,7 @@ class InviteRequest(BaseModel):
     to_email: str
     role: str = "Senior Software Engineer"
     personal_note: str = "Your background caught my attention — particularly your systems work."
-    sender_name: str = "CureForge Team"
+    sender_name: str = "LongevityInTime Team"
 
 
 @router.post("/{candidate_id}/invite")

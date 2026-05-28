@@ -38,7 +38,7 @@ class ProvisionRepoRequest(BaseModel):
 class SendBriefRequest(BaseModel):
     candidate_id: str
     to_email: str
-    sender_name: str = "CureForge Team"
+    sender_name: str = "LongevityInTime Team"
 
 
 # ---------------------------------------------------------------------------

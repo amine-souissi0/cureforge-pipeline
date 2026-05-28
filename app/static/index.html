@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>CureForge Pipeline</title>
+  <title>LongevityInTime Pipeline</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
   <script src="https://cdn.tailwindcss.com"></script>
@@ -77,7 +77,7 @@
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
       </div>
       <div>
-        <div class="font-bold text-sm text-white leading-none">CureForge</div>
+        <div class="font-bold text-sm text-white leading-none">LongevityInTime</div>
         <div class="text-xs text-purple-400/70 mt-0.5">Pipeline</div>
       </div>
     </div>
@@ -89,6 +89,11 @@
     <div class="nav-item active" id="nav-pipeline" onclick="switchTab('pipeline')">
       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
       Pipeline
+    </div>
+    <div class="nav-item" id="nav-ceo" onclick="switchTab('ceo')">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+      CEO Review
+      <span id="ceoBadge" class="badge ml-auto hidden"></span>
     </div>
     <div class="nav-item" id="nav-approvals" onclick="switchTab('approvals')">
       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.5 11.5a19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 3.42 1h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.91 8.4a16 16 0 0 0 5.5 5.5l1.76-1.76a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 14.92z"/></svg>
@@ -151,14 +156,14 @@
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
       </div>
       <div>
-        <div class="font-bold text-white">CureForge Pipeline</div>
+        <div class="font-bold text-white">LongevityInTime Pipeline</div>
         <div class="text-xs text-purple-400/70">Sign in to continue</div>
       </div>
     </div>
     <form id="loginForm" onsubmit="doLogin(event)" class="space-y-4">
       <div>
         <label class="section-label block mb-1.5">Email</label>
-        <input id="loginEmail" type="email" placeholder="you@cureforge.com" class="input" required autocomplete="email" />
+        <input id="loginEmail" type="email" placeholder="you@longevityintime.com" class="input" required autocomplete="email" />
       </div>
       <div>
         <label class="section-label block mb-1.5">Password</label>
@@ -204,6 +209,18 @@
     <div id="view-pipeline" class="animate-fade-in space-y-8">
       <div id="statsRow" class="grid grid-cols-4 gap-4"></div>
       <div id="pipelineBoard"></div>
+    </div>
+
+    <!-- CEO Review -->
+    <div id="view-ceo" class="hidden animate-fade-in">
+      <div id="ceoList" class="space-y-4"></div>
+      <div id="ceoEmpty" class="hidden flex flex-col items-center justify-center py-24 text-center">
+        <div class="w-14 h-14 rounded-2xl flex items-center justify-center mb-4" style="background:rgba(245,158,11,0.1);">
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#f59e0b" stroke-width="1.5"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+        </div>
+        <p class="font-semibold text-white">No candidates pending review</p>
+        <p class="text-sm text-gray-500 mt-1">Evaluated candidates will appear here for your decision.</p>
+      </div>
     </div>
 
     <!-- Approvals -->
@@ -322,6 +339,22 @@
   </div>
 </div>
 
+<!-- ── EMAIL VIEW MODAL ─────────────────────────────────────────────────── -->
+<div id="emailViewModal" class="fixed inset-0 z-50 hidden modal-overlay flex items-center justify-center p-4" onclick="closeEmailViewModal(event)">
+  <div class="glass rounded-2xl w-full max-w-2xl shadow-2xl" onclick="event.stopPropagation()" style="max-height:85vh;display:flex;flex-direction:column;">
+    <div class="flex items-center justify-between px-6 py-4 border-b border-white/5 shrink-0">
+      <div>
+        <h2 id="emailViewSubject" class="font-bold text-white text-sm"></h2>
+        <p class="text-xs text-gray-500 mt-0.5">Full email content</p>
+      </div>
+      <button onclick="closeEmailViewModal()" class="w-8 h-8 flex items-center justify-center rounded-lg text-gray-400 hover:text-white hover:bg-white/10 transition text-xl leading-none">&times;</button>
+    </div>
+    <div class="px-6 py-5 overflow-y-auto flex-1">
+      <div id="emailViewBody" class="text-sm text-gray-200 whitespace-pre-wrap leading-relaxed"></div>
+    </div>
+  </div>
+</div>
+
 <!-- ── CANDIDATE DETAIL PANEL (right slide-in) ─────────────────────────── -->
 <div id="panel" class="fixed inset-0 z-40 hidden" onclick="closePanel(event)">
   <div class="modal-overlay absolute inset-0"></div>
@@ -400,6 +433,7 @@ const STATE_META = {
   TASK_ASSIGNED:        { color:'#818cf8', bg:'rgba(129,140,248,0.15)', group:'Active' },
   AWAITING_SUBMISSION:  { color:'#a78bfa', bg:'rgba(167,139,250,0.15)', group:'Active' },
   UNDER_EVALUATION:     { color:'#fbbf24', bg:'rgba(251,191,36,0.15)',  group:'Evaluation' },
+  PENDING_CEO_REVIEW:   { color:'#f59e0b', bg:'rgba(245,158,11,0.18)',  group:'Decision' },
   FEEDBACK_SENT:        { color:'#fb923c', bg:'rgba(251,146,60,0.15)',  group:'Evaluation' },
   AWAITING_RESUBMISSION:{ color:'#f87171', bg:'rgba(248,113,113,0.15)', group:'Evaluation' },
   HIRE_RECOMMENDED:     { color:'#34d399', bg:'rgba(52,211,153,0.15)',  group:'Decision' },
@@ -546,8 +580,9 @@ function toast(msg, ok = true) {
 // ── Navigation ─────────────────────────────────────────────────────────────
 const PAGE_META = {
   pipeline:  { title:'Pipeline Overview',    sub:'All candidates by stage' },
+  ceo:       { title:'CEO Review',           sub:'Evaluated candidates awaiting your decision' },
   approvals: { title:'Approval Queue',       sub:'Draft emails awaiting your review' },
-  costs:     { title:'Claude API Costs',     sub:'Spend breakdown by agent' },
+  costs:     { title:'LLM Costs',            sub:'Spend breakdown by agent' },
   users:     { title:'User Management',      sub:'Team members and access roles' },
 };
 
@@ -555,7 +590,7 @@ function switchTab(tab) {
   document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
   const navEl = document.getElementById('nav-' + tab);
   if (navEl) navEl.classList.add('active');
-  ['pipeline','approvals','costs','users'].forEach(v =>
+  ['pipeline','ceo','approvals','costs','users'].forEach(v =>
     document.getElementById('view-' + v).classList.toggle('hidden', v !== tab));
   const m = PAGE_META[tab];
   document.getElementById('pageTitle').textContent = m.title;
@@ -564,6 +599,7 @@ function switchTab(tab) {
   document.getElementById('addCandidateBtn').classList.toggle('hidden', tab !== 'pipeline');
   document.getElementById('simEmailBtn').classList.toggle('hidden', tab !== 'pipeline');
   if (tab === 'pipeline') loadPipeline();
+  else if (tab === 'ceo') loadCeoReview();
   else if (tab === 'approvals') loadApprovals();
   else if (tab === 'costs') loadCosts();
   else if (tab === 'users') loadUsers();
@@ -571,6 +607,7 @@ function switchTab(tab) {
 
 function refresh() {
   if (currentTab === 'pipeline') loadPipeline();
+  else if (currentTab === 'ceo') loadCeoReview();
   else if (currentTab === 'approvals') loadApprovals();
   else if (currentTab === 'costs') loadCosts();
   else if (currentTab === 'users') loadUsers();
@@ -590,6 +627,11 @@ async function loadPipeline(silent = false) {
     } else {
       badge.classList.add('hidden');
     }
+    // Badge CEO review count
+    const ceoCnt = (pipelineData.by_state || {}).PENDING_CEO_REVIEW || 0;
+    const ceoBadge = document.getElementById('ceoBadge');
+    if (ceoCnt > 0) { ceoBadge.textContent = ceoCnt; ceoBadge.classList.remove('hidden'); }
+    else { ceoBadge.classList.add('hidden'); }
     setStatus('ok', `${pipelineData.total_candidates} candidates`);
   } catch(e) { setStatus('err', e.message); toast(e.message, false); }
 }
@@ -750,6 +792,130 @@ async function rejectDraft(id) {
   } catch(e) { toast('Reject failed: ' + e.message, false); }
 }
 
+// ── CEO Review ─────────────────────────────────────────────────────────────
+async function loadCeoReview() {
+  setStatus('pending');
+  try {
+    const data = await api('/dashboard/pipeline');
+    const pending = (data.candidates || []).filter(c => c.state === 'PENDING_CEO_REVIEW');
+    // Fetch full details for each candidate pending CEO review
+    const detailed = await Promise.all(pending.map(c => api(`/dashboard/candidate/${c.candidate_id}`)));
+    renderCeoReview(detailed);
+    setStatus('ok', `${pending.length} pending`);
+  } catch(e) { setStatus('err', e.message); toast(e.message, false); }
+}
+
+function renderCeoReview(candidates) {
+  const list = document.getElementById('ceoList');
+  const empty = document.getElementById('ceoEmpty');
+  if (!candidates.length) { list.innerHTML = ''; empty.classList.remove('hidden'); return; }
+  empty.classList.add('hidden');
+  list.innerHTML = candidates.map(d => {
+    const ev = d.evaluations?.length ? d.evaluations[d.evaluations.length - 1] : null;
+    const score = ev?.composite ?? d.latest_composite;
+    const scoreClr = score == null ? '#6b7280' : score >= 8.5 ? '#34d399' : score >= 7 ? '#a78bfa' : score >= 5 ? '#fbbf24' : '#f87171';
+    const dimLabels = { correctness_verification:'Correctness', invariant_failclosed_discipline:'Fail-Closed',
+      structure_determinism:'Structure', testing_instrumentation:'Testing', communication_iteration:'Communication' };
+    const dims = ev?.dimension_scores ? Object.entries(ev.dimension_scores).map(([k,v]) => {
+      const pct = Math.round((v/10)*100);
+      const c = v>=8.5?'#34d399':v>=7?'#a78bfa':v>=5?'#fbbf24':'#f87171';
+      return `<div><div class="flex justify-between text-xs mb-0.5"><span class="text-gray-400">${dimLabels[k]||k}</span><span style="color:${c};font-weight:700;">${v.toFixed(1)}</span></div>
+        <div style="height:3px;border-radius:2px;background:rgba(255,255,255,0.06);"><div style="height:3px;border-radius:2px;width:${pct}%;background:${c};"></div></div></div>`;
+    }).join('') : '';
+    const feedback = ev?.feedback_draft || d.evaluations?.[0]?.feedback_draft || '';
+    const evidence = ev?.evidence?.evidence_summary || '';
+    return `
+    <div class="glass rounded-2xl p-6 space-y-5 animate-slide-up" id="ceo-card-${d.candidate_id}">
+      <!-- Header -->
+      <div class="flex items-start justify-between gap-4">
+        <div class="flex items-center gap-3">
+          <div class="w-11 h-11 rounded-xl flex items-center justify-center text-sm font-bold text-white shrink-0"
+            style="background:linear-gradient(135deg,#f59e0b44,#f59e0b22);border:1px solid #f59e0b33;">
+            ${esc(d.name.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase())}
+          </div>
+          <div>
+            <div class="font-bold text-white text-base">${esc(d.name)}</div>
+            <div class="text-xs text-gray-400">${esc(d.email)}</div>
+            <div class="flex items-center gap-2 mt-1">
+              ${d.role ? `<span class="pill" style="background:rgba(139,92,246,0.1);color:#c4b5fd;border:1px solid rgba(139,92,246,0.2);">${esc(d.role)}</span>` : ''}
+              ${d.confirmed_jd_id ? `<span class="pill" style="background:rgba(96,165,250,0.08);color:#93c5fd;">${esc(d.confirmed_jd_id)}</span>` : ''}
+            </div>
+          </div>
+        </div>
+        <div class="text-center shrink-0">
+          <div class="text-4xl font-bold leading-none" style="color:${scoreClr}">${score != null ? score.toFixed(1) : '—'}</div>
+          <div class="text-xs text-gray-500 mt-1">/ 10.0</div>
+          <div class="text-xs mt-1" style="color:${scoreClr}">${score>=8.5?'Strong hire':score>=7?'Resubmit':score>=5?'Borderline':'Weak'}</div>
+        </div>
+      </div>
+
+      <!-- Score breakdown -->
+      ${dims ? `<div class="space-y-2">${dims}</div>` : ''}
+
+      <!-- Evidence -->
+      ${evidence ? `
+      <div>
+        <div class="section-label">Evaluation Evidence</div>
+        <div class="rounded-xl p-3 text-xs text-gray-300 leading-relaxed" style="background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.07);">
+          ${esc(evidence)}
+        </div>
+      </div>` : ''}
+
+      <!-- Feedback draft -->
+      ${feedback ? `
+      <div>
+        <div class="section-label">Feedback Draft (will be sent to candidate)</div>
+        <div class="rounded-xl p-3 text-xs text-gray-300 leading-relaxed whitespace-pre-wrap" style="background:rgba(139,92,246,0.05);border:1px solid rgba(139,92,246,0.15);">
+          ${esc(feedback)}
+        </div>
+      </div>` : ''}
+
+      <!-- CEO Actions -->
+      <div>
+        <div class="section-label">Your Decision</div>
+        <div class="flex gap-3 flex-wrap">
+          <button onclick="ceoDecide('${d.candidate_id}','${esc(d.email)}','accept')" class="btn btn-success flex-1 justify-center">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+            Accept — Send Feedback
+          </button>
+          <button onclick="ceoDecide('${d.candidate_id}','${esc(d.email)}','resubmit')" class="btn btn-ghost flex-1 justify-center">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-3.5"/></svg>
+            Ask for Resubmission
+          </button>
+          <button onclick="ceoDecide('${d.candidate_id}','${esc(d.email)}','reject')" class="btn btn-danger flex-1 justify-center">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+            Reject — Warm Hold
+          </button>
+        </div>
+        <div id="ceo-result-${d.candidate_id}" class="hidden mt-3 rounded-xl p-3 text-xs text-center" style="background:rgba(52,211,153,0.08);border:1px solid rgba(52,211,153,0.2);color:#34d399;"></div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+async function ceoDecide(candidateId, email, action) {
+  const ev = await api(`/evaluations/candidate/${candidateId}`);
+  const evaluations = ev.evaluations || [];
+  if (!evaluations.length) { toast('No evaluation found for this candidate.', false); return; }
+  const latestEval = evaluations[evaluations.length - 1];
+  const actionLabels = { accept: 'Accepted', resubmit: 'Resubmission requested', reject: 'Rejected → Warm Hold' };
+  try {
+    await post(`/gate/${candidateId}/ceo-decision`, {
+      evaluation_id: latestEval.evaluation_id,
+      action,
+      to_email: email,
+      sender_name: 'LongevityInTime Team',
+    });
+    const resultEl = document.getElementById(`ceo-result-${candidateId}`);
+    if (resultEl) {
+      resultEl.textContent = `✓ ${actionLabels[action]} — pipeline updated`;
+      resultEl.classList.remove('hidden');
+    }
+    toast(`${actionLabels[action]}. Email queued.`);
+    setTimeout(() => { loadCeoReview(); loadPipeline(true); }, 1500);
+  } catch(e) { toast('Decision failed: ' + e.message, false); }
+}
+
 // ── Costs ──────────────────────────────────────────────────────────────────
 async function loadCosts() {
   setStatus('pending');
@@ -874,6 +1040,7 @@ const PIPELINE_STEPS = [
   { key:'TASK_ASSIGNED',         label:'Task Assigned' },
   { key:'AWAITING_SUBMISSION',   label:'Awaiting Submission' },
   { key:'UNDER_EVALUATION',      label:'Evaluating' },
+  { key:'PENDING_CEO_REVIEW',    label:'CEO Review' },
   { key:'FEEDBACK_SENT',         label:'Feedback Sent' },
   { key:'AWAITING_RESUBMISSION', label:'Resubmission' },
   { key:'HIRE_RECOMMENDED',      label:'Hire Recommended' },
@@ -931,7 +1098,7 @@ function renderCommsThread(messages) {
   if (!messages || !messages.length) {
     return `<div class="text-sm text-gray-500 py-3">No messages yet.</div>`;
   }
-  return messages.map(m => {
+  return messages.map((m, _i) => {
     const out = m.direction === 'outbound';
     const col = out ? '#8b5cf6' : '#60a5fa';
     const bg  = out ? 'rgba(139,92,246,0.08)' : 'rgba(96,165,250,0.06)';
@@ -951,7 +1118,10 @@ function renderCommsThread(messages) {
         </div>
         ${m.subject ? `<div class="text-xs text-gray-400 mb-1 font-medium">${esc(m.subject)}</div>` : ''}
         <div class="text-xs text-gray-300 whitespace-pre-wrap leading-relaxed"
-          style="max-height:100px;overflow-y:auto;">${esc((m.body||'').slice(0,400))}${(m.body||'').length>400?'…':''}</div>
+          style="max-height:120px;overflow-y:auto;">${esc((m.body||'').slice(0,500))}${(m.body||'').length>500?'…':''}</div>
+        ${(m.body||'').length > 100 ? `
+        <button onclick="openEmailModal_view(${storeEmail(m.subject||'', m.body||'')})"
+          class="mt-1.5 text-xs font-medium hover:underline" style="color:#a78bfa;">View full email →</button>` : ''}
       </div>`;
   }).join('');
 }
@@ -1134,6 +1304,26 @@ function renderPanel(d) {
           </button>
           <div id="taskResult" class="hidden glass rounded-xl p-3 text-xs text-gray-300 leading-relaxed max-h-40 overflow-y-auto"></div>
         </div>
+      </div>` : ''}
+
+    ${d.current_state === 'PENDING_CEO_REVIEW' && d.evaluations?.length ? `
+      <div>
+        <div class="section-label" style="color:#f59e0b;">⭐ CEO Decision Required</div>
+        <div class="rounded-xl p-3 mb-2 text-xs text-amber-200 leading-relaxed" style="background:rgba(245,158,11,0.08);border:1px solid rgba(245,158,11,0.2);">
+          Score: <strong>${d.latest_composite?.toFixed(1) ?? '—'}</strong> / 10.0 · ${d.evaluations.length} round(s) completed
+        </div>
+        <div class="flex gap-2 flex-wrap">
+          <button onclick="ceoDecide('${d.candidate_id}','${esc(d.email)}','accept')" class="btn btn-success flex-1 justify-center text-xs py-2">
+            ✓ Accept
+          </button>
+          <button onclick="ceoDecide('${d.candidate_id}','${esc(d.email)}','resubmit')" class="btn btn-ghost flex-1 justify-center text-xs py-2">
+            ↩ Resubmit
+          </button>
+          <button onclick="ceoDecide('${d.candidate_id}','${esc(d.email)}','reject')" class="btn btn-danger flex-1 justify-center text-xs py-2">
+            ✕ Reject
+          </button>
+        </div>
+        <p class="text-xs text-gray-500 mt-2">Or go to <button onclick="closePanelDirect();switchTab('ceo')" class="text-amber-400 underline">CEO Review tab</button> for full details.</p>
       </div>` : ''}
 
     ${d.evaluations?.length && ['FEEDBACK_SENT','AWAITING_RESUBMISSION'].includes(d.current_state) ? `
@@ -1329,6 +1519,29 @@ function relativeTime(iso) {
   const h = Math.floor(m/60);
   if (h < 24) return `${h}h ago`;
   return `${Math.floor(h/24)}d ago`;
+}
+
+// ── Email View Modal ───────────────────────────────────────────────────────
+// Store full email content keyed by index to avoid inline string escaping issues
+const _emailStore = {};
+let _emailStoreIdx = 0;
+
+function storeEmail(subject, body) {
+  const idx = _emailStoreIdx++;
+  _emailStore[idx] = { subject, body };
+  return idx;
+}
+
+function openEmailModal_view(idx) {
+  const e = _emailStore[idx];
+  if (!e) return;
+  document.getElementById('emailViewSubject').textContent = e.subject || '(no subject)';
+  document.getElementById('emailViewBody').textContent = e.body || '';
+  document.getElementById('emailViewModal').classList.remove('hidden');
+}
+function closeEmailViewModal(e) {
+  if (!e || e.target === document.getElementById('emailViewModal'))
+    document.getElementById('emailViewModal').classList.add('hidden');
 }
 
 // ── Simulate Email ─────────────────────────────────────────────────────────

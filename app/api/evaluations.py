@@ -31,7 +31,7 @@ async def _queue_feedback_draft(
         "candidate_name": candidate.name,
         "feedback": feedback_text,
         "upgrade_ask": upgrade_ask or "Please address the gaps above and resubmit.",
-        "sender_name": "CureForge Team",
+        "sender_name": "LongevityInTime Team",
     })
 
     draft = DraftEmail(

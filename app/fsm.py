@@ -15,6 +15,7 @@ class CandidateState(str, Enum):
     TASK_ASSIGNED = "TASK_ASSIGNED"
     AWAITING_SUBMISSION = "AWAITING_SUBMISSION"
     UNDER_EVALUATION = "UNDER_EVALUATION"
+    PENDING_CEO_REVIEW = "PENDING_CEO_REVIEW"
     FEEDBACK_SENT = "FEEDBACK_SENT"
     AWAITING_RESUBMISSION = "AWAITING_RESUBMISSION"
     HIRE_RECOMMENDED = "HIRE_RECOMMENDED"
@@ -70,6 +71,7 @@ class FSMEngine:
             "repo_provisioned": lambda ctx: bool(ctx.get("repo_url")),
             "submission_sha_pinned": lambda ctx: bool(ctx.get("submission_sha")),
             "evaluation_complete": lambda ctx: ctx.get("evaluation_record_id") is not None,
+            "ceo_reviewed": lambda ctx: ctx.get("ceo_action") in ("accept", "reject", "resubmit"),
             # Resubmit: score below hire bar AND not yet at warm-hold threshold
             "needs_resubmission": lambda ctx: (
                 ctx.get("composite", 0) < 8.5
@@ -99,7 +101,10 @@ class FSMEngine:
             FSMTransition(CandidateState.TASK_ASSIGNED, CandidateState.AWAITING_SUBMISSION, "task_brief_sent",
                          predicates["task_brief_sent"]),
             FSMTransition(CandidateState.AWAITING_SUBMISSION, CandidateState.UNDER_EVALUATION, "submission_sha_pinned", predicates["submission_sha_pinned"]),
-            FSMTransition(CandidateState.UNDER_EVALUATION, CandidateState.FEEDBACK_SENT, "evaluation_complete", predicates["evaluation_complete"]),
+            FSMTransition(CandidateState.UNDER_EVALUATION, CandidateState.PENDING_CEO_REVIEW, "evaluation_complete", predicates["evaluation_complete"]),
+            FSMTransition(CandidateState.PENDING_CEO_REVIEW, CandidateState.FEEDBACK_SENT, "ceo_reviewed", predicates["ceo_reviewed"]),
+            FSMTransition(CandidateState.PENDING_CEO_REVIEW, CandidateState.WARM_HOLD, "ceo_reviewed", predicates["ceo_reviewed"]),
+            FSMTransition(CandidateState.PENDING_CEO_REVIEW, CandidateState.AWAITING_RESUBMISSION, "ceo_reviewed", predicates["ceo_reviewed"]),
             FSMTransition(CandidateState.FEEDBACK_SENT, CandidateState.AWAITING_RESUBMISSION, "needs_resubmission", predicates["needs_resubmission"]),
             FSMTransition(CandidateState.FEEDBACK_SENT, CandidateState.WARM_HOLD, "composite_below_7_no_improvement", predicates["composite_below_7_no_improvement"]),
             FSMTransition(CandidateState.FEEDBACK_SENT, CandidateState.HIRE_RECOMMENDED, "composite_above_8_5_recommend", predicates["composite_above_8_5_recommend"]),

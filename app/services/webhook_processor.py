@@ -496,7 +496,7 @@ async def _queue_template(
             template_id=template_id,
             candidate_context={
                 "candidate_name": candidate.name,
-                "sender_name": "CureForge Team",
+                "sender_name": "LongevityInTime Team",
                 "original_subject": original_subject,
             },
             extra_context=extra_context,
