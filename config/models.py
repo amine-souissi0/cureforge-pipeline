@@ -24,4 +24,9 @@ MODELS = {
         "max_tokens": 1500,
         "temperature": 0.3,
     },
+    "repo_analyzer": {
+        "model": "claude-3-5-haiku-20241022",
+        "max_tokens": 600,
+        "temperature": 0.0,
+    },
 }

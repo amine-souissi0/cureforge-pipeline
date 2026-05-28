@@ -167,6 +167,62 @@ class GithubService:
 
 
     @staticmethod
+    async def fetch_file_tree(repo_url: str, sha: str) -> list:
+        """Return the flat file tree (list of {path, type, sha}) for a repo at a given SHA."""
+        owner, repo = _parse_github_url(repo_url)
+        token = get_github_token()
+        headers = {
+            "Authorization": f"Bearer {token}",
+            "Accept": "application/vnd.github+json",
+            "X-GitHub-Api-Version": "2022-11-28",
+        }
+        async with httpx.AsyncClient(base_url=GITHUB_API_URL, headers=headers) as client:
+            resp = await client.get(f"/repos/{owner}/{repo}/git/trees/{sha}?recursive=1")
+            _raise_for_status(resp, "fetch file tree")
+            return resp.json().get("tree", [])
+
+    @staticmethod
+    async def fetch_readme(repo_url: str) -> str:
+        """Return README.md content from the default branch, or empty string if absent."""
+        owner, repo = _parse_github_url(repo_url)
+        token = get_github_token()
+        headers = {
+            "Authorization": f"Bearer {token}",
+            "Accept": "application/vnd.github+json",
+            "X-GitHub-Api-Version": "2022-11-28",
+        }
+        async with httpx.AsyncClient(base_url=GITHUB_API_URL, headers=headers) as client:
+            resp = await client.get(f"/repos/{owner}/{repo}/readme")
+            if resp.status_code == 404:
+                return ""
+            _raise_for_status(resp, "fetch readme")
+            raw = resp.json().get("content", "")
+            return base64.b64decode(raw).decode("utf-8", errors="replace") if raw else ""
+
+    @staticmethod
+    async def fetch_file_content(repo_url: str, file_path: str, sha: str) -> str:
+        """Return the decoded content of a single file at a given tree SHA."""
+        owner, repo = _parse_github_url(repo_url)
+        token = get_github_token()
+        headers = {
+            "Authorization": f"Bearer {token}",
+            "Accept": "application/vnd.github+json",
+            "X-GitHub-Api-Version": "2022-11-28",
+        }
+        async with httpx.AsyncClient(base_url=GITHUB_API_URL, headers=headers) as client:
+            # Get the blob SHA for this specific path from the tree
+            tree_resp = await client.get(f"/repos/{owner}/{repo}/git/trees/{sha}?recursive=1")
+            _raise_for_status(tree_resp, "fetch tree for file lookup")
+            items = tree_resp.json().get("tree", [])
+            blob_sha = next((i["sha"] for i in items if i["path"] == file_path), None)
+            if blob_sha is None:
+                raise ValueError(f"File {file_path!r} not found in repo tree at SHA {sha}")
+            blob_resp = await client.get(f"/repos/{owner}/{repo}/git/blobs/{blob_sha}")
+            _raise_for_status(blob_resp, f"fetch blob for {file_path}")
+            raw = blob_resp.json().get("content", "")
+            return base64.b64decode(raw).decode("utf-8", errors="replace")
+
+    @staticmethod
     async def fetch_latest_sha(repo_url: str) -> str:
         """Return the HEAD commit SHA from a GitHub repo URL."""
         owner, repo = _parse_github_url(repo_url)

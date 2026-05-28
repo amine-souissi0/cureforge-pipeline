@@ -14,6 +14,21 @@ oauth_router = APIRouter(prefix="/oauth", tags=["oauth"])
 webhook_router = APIRouter(prefix="/candidates", tags=["webhook"])
 
 
+def _rewrite_function_name(
+    held_out_tests: list,
+    old_name: str,
+    new_name: str,
+) -> list:
+    """Replace occurrences of old_name( with new_name( in each test's input expression."""
+    updated = []
+    for test in held_out_tests:
+        t = dict(test)
+        if isinstance(t.get("input"), str):
+            t["input"] = t["input"].replace(f"{old_name}(", f"{new_name}(")
+        updated.append(t)
+    return updated
+
+
 async def fsm_advance_to_awaiting(candidate_id: str, task_id: str) -> None:
     """ENGAGED → TASK_ASSIGNED → AWAITING_SUBMISSION after brief auto-sent."""
     from app.services.candidate_store import CandidateStore
@@ -124,6 +139,7 @@ class IntakeRequest(BaseModel):
     github_handle: Optional[str] = None
     source: str = "founder_added"
     role: str = "Software Engineer"
+    level: str = "senior"
     personal_note: str = "Your background caught our attention — we think you'd be a strong fit."
 
 
@@ -144,7 +160,7 @@ class ApprovalPayload(BaseModel):
 # ---------------------------------------------------------------------------
 
 @celery_app.task(bind=True, autoretry_for=(Exception,), max_retries=3, default_retry_delay=2)  # type: ignore[misc]
-def generate_task_for_candidate(self: object, candidate_id: str, role: str = "software engineer", level: str = "senior") -> str:  # noqa: ARG001
+def generate_task_for_candidate(self: object, candidate_id: str, role: str = "software engineer", level: str = "senior", corpus_pattern: str = "") -> str:  # noqa: ARG001
     """
     Async task: run TaskDecomposer and store result in approval queue.
     Triggered automatically when a candidate replies INTERESTED.
@@ -167,7 +183,12 @@ def generate_task_for_candidate(self: object, candidate_id: str, role: str = "so
             })
             return f"task_already_exists:{existing.id}"
 
-        output = await TaskDecomposerAgent.decompose(candidate_role=role, candidate_level=level)
+        output = await TaskDecomposerAgent.decompose(
+            candidate_role=role,
+            candidate_level=level,
+            background_notes=candidate.background_notes or "",
+            preferred_pattern_id=corpus_pattern or None,
+        )
 
         if not output.success or output.blocklist_check != "PASS":
             await AuditLog.append("task_generation_rejected", {
@@ -282,7 +303,8 @@ def run_submission_evaluation(self: object, candidate_id: str, submission_url: s
 
         try:
             sha = await GithubService.fetch_latest_sha(submission_url)
-            source_code = await GithubService.fetch_source_code(submission_url, sha)
+            file_tree = await GithubService.fetch_file_tree(submission_url, sha)
+            readme = await GithubService.fetch_readme(submission_url)
         except Exception as e:
             await AuditLog.append("submission_github_fetch_failed", {
                 "candidate_id": candidate_id,
@@ -290,6 +312,31 @@ def run_submission_evaluation(self: object, candidate_id: str, submission_url: s
                 "error": str(e),
             })
             return f"github_fetch_failed:{candidate_id}"
+
+        # Use the RepoExecutionAgent to find the entry file + function name
+        from app.agents.repo_execution_agent import RepoExecutionAgent
+
+        expected_fn = task.internal_spec.get("function_name", "")
+        expected_behavior = task.internal_spec.get("expected_behavior", "")
+        exec_plan = await RepoExecutionAgent.analyze(
+            repo_url=submission_url,
+            file_tree=file_tree,
+            readme_content=readme,
+            expected_function_name=expected_fn,
+            expected_behavior=expected_behavior,
+        )
+
+        # Fetch the identified entry file; fall back to all Python files if not found
+        try:
+            source_code = await GithubService.fetch_file_content(
+                submission_url, exec_plan.entry_file, sha
+            )
+        except Exception:
+            await AuditLog.append("entry_file_fetch_fallback", {
+                "candidate_id": candidate_id,
+                "entry_file": exec_plan.entry_file,
+            })
+            source_code = await GithubService.fetch_source_code(submission_url, sha)
 
         fsm = FSMEngine()
 
@@ -307,7 +354,13 @@ def run_submission_evaluation(self: object, candidate_id: str, submission_url: s
             await CandidateStore.update_state(candidate_id, CandidateState.UNDER_EVALUATION)
 
         round_number = await EvaluationStore.get_round_count(candidate_id) + 1
+
+        # Rewrite test inputs if the candidate used a different function name
         held_out_tests = task.internal_spec.get("held_out_tests", [])
+        if exec_plan.function_name and exec_plan.function_name != expected_fn and expected_fn:
+            held_out_tests = _rewrite_function_name(
+                held_out_tests, expected_fn, exec_plan.function_name
+            )
 
         sandbox_result = SandboxRunner.run(
             source_code=source_code,
@@ -429,10 +482,11 @@ def process_email_task(self: object, history_id: str) -> str:  # noqa: ARG001
         svc = GmailService()
         messages, latest_hid = await svc.list_new_messages(history_id)
 
+        r = redis_lib.from_url(os.environ.get("REDIS_URL", "redis://localhost:6379/0"))
+
         # Persist latest historyId so the poll task doesn't reprocess these messages
         if latest_hid:
             try:
-                r = redis_lib.from_url(os.environ.get("REDIS_URL", "redis://localhost:6379/0"))
                 r.set("gmail:last_history_id", latest_hid)
             except Exception:
                 pass
@@ -445,6 +499,12 @@ def process_email_task(self: object, history_id: str) -> str:  # noqa: ARG001
 
         results = []
         for message in messages:
+            # Idempotency: skip Gmail message IDs already processed by any path
+            redis_key = f"gmail:processed:{message.message_id}"
+            if r.exists(redis_key):
+                results.append(f"already_processed:{message.message_id}")
+                continue
+            r.set(redis_key, "1", ex=7 * 24 * 3600)
             result = await process_inbound_message(message)
             results.append(result)
 
@@ -523,6 +583,8 @@ async def intake_candidate(payload: IntakeRequest) -> dict:
             name=payload.name,
             email=payload.email,
             github_handle=payload.github_handle,
+            role=payload.role,
+            level=payload.level,
             source=payload.source,  # type: ignore[arg-type]
         )
     except ValidationError as e:
@@ -634,6 +696,30 @@ async def send_invite(candidate_id: str, payload: InviteRequest) -> dict:
 class ClassifyRequest(BaseModel):
     sender_email: str
     body: str
+    subject: str = "Re: Engineering Role"
+
+
+@router.post("/simulate")
+async def simulate_inbound(payload: ClassifyRequest) -> dict:
+    """
+    Full pipeline simulation: classify + route + execute actions.
+    Use this to test the complete flow (background gathering, task generation, etc.)
+    """
+    from app.schemas import Message
+    from app.services.webhook_processor import process_inbound_message
+
+    ts = int(__import__('time').time())
+    sim_id = f"sim-{ts}"
+    message = Message(
+        id=sim_id,
+        message_id=sim_id,
+        sender_email=payload.sender_email,
+        sender_name=payload.sender_email.split("@")[0],
+        subject=payload.subject,
+        body=payload.body,
+    )
+    result = await process_inbound_message(message)
+    return {"result": result}
 
 
 @router.post("/classify")
@@ -654,6 +740,7 @@ async def classify_email(payload: ClassifyRequest) -> dict:
     output = await ReplyClassifierAgent.classify_email(
         email_body=payload.body,
         candidate_context=candidate_context,
+        candidate_state=candidate.state.value if candidate else "",
     )
     routing = route_classified_email(output, candidate.id if candidate else "unknown")
 

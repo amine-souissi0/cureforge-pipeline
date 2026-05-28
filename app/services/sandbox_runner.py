@@ -293,10 +293,14 @@ def _build_harness(source_code: str, test_input: str) -> str:
 {source_code}
 
 # --- held-out test harness ---
-import sys as _sys
+import sys as _sys, json as _json
 try:
     _result = eval({test_input!r})
-    print(_result)
+    # Normalise output: JSON for dict/list (sort_keys for determinism), repr for scalars
+    if isinstance(_result, (dict, list)):
+        print(_json.dumps(_result, sort_keys=True, default=str))
+    else:
+        print(repr(_result))
 except Exception as _e:
     print(f"ERROR: {{_e}}", file=_sys.stderr)
     _sys.exit(1)

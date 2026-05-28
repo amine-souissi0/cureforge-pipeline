@@ -14,11 +14,13 @@ class ReplyClassifierAgent:
     async def classify_email(
         email_body: str,
         candidate_context: str,
+        candidate_state: str = "",
         retries: int = 1,
     ) -> ReplyClassifierOutput:
         user_message = json.dumps({
             "email_body": email_body,
             "candidate_context": candidate_context,
+            "candidate_state": candidate_state,
         })
 
         last_error: str = ""
@@ -82,11 +84,22 @@ def route_classified_email(output: ReplyClassifierOutput, candidate_id: str) -> 
     if output.intent == "TASK_SUBMISSION":
         submission_url = (output.extracted or {}).get("submission_url")
         if not submission_url:
-            return "human_review_no_url"
+            # Candidate signalled a submission but omitted the URL — ask for it explicitly
+            return "request_submission_url"
         return f"submission_intake:{submission_url}"
 
     if output.intent == "DECLINE":
         return "fsm_withdrawn"
+
+    if output.intent == "BACKGROUND_SUBMITTED":
+        return "background_intake"
+
+    if output.intent == "JD_INTERESTED":
+        jd_title = (output.extracted or {}).get("jd_title") or ""
+        return f"jd_confirmed:{jd_title}"
+
+    if output.intent == "JD_NOT_INTERESTED":
+        return "jd_declined"
 
     # INTERESTED, QUESTION, SCHEDULING
     return f"template_responder:{output.intent}"

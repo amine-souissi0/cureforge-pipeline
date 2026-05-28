@@ -35,7 +35,7 @@ class Message(BaseModel):
 
 class ReplyClassifierOutput(BaseModel):
     """Schema for Reply Classifier agent output."""
-    intent: Literal["INTERESTED", "QUESTION", "SCHEDULING", "TASK_SUBMISSION", "DECLINE", "OTHER"]
+    intent: Literal["INTERESTED", "BACKGROUND_SUBMITTED", "JD_INTERESTED", "JD_NOT_INTERESTED", "QUESTION", "SCHEDULING", "TASK_SUBMISSION", "DECLINE", "OTHER"]
     confidence: float
     extracted: Optional[Dict[str, Any]] = None
     summary: Optional[str] = None
@@ -70,6 +70,17 @@ class InternalTaskSpec(BaseModel):
     expected_behavior: str
     held_out_tests: List[HeldOutTest]
     failure_modes: List[str]
+    function_name: str = ""
+    function_signature: str = ""
+
+
+class RepoExecutionPlan(BaseModel):
+    """Plan produced by the RepoExecutionAgent for running a candidate's submission."""
+    entry_file: str
+    function_name: str
+    confidence: float
+    reasoning: str
+    setup_note: str = ""
 
 
 class TaskDecomposerOutput(BaseModel):

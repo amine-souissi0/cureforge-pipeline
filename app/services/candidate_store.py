@@ -1,5 +1,5 @@
 from datetime import datetime
-from typing import Dict, List, Optional
+from typing import Any, Dict, List, Optional
 
 from sqlalchemy import func, select, update
 from sqlalchemy.exc import IntegrityError
@@ -16,6 +16,14 @@ def _row_to_model(row: CandidateRow) -> CandidateModel:
         name=row.name,
         email=row.email,
         github_handle=row.github_handle,
+        role=row.role if row.role else "Software Engineer",
+        level=row.level if row.level else "senior",
+        background_notes=row.background_notes,
+        candidate_profile=row.candidate_profile,
+        confirmed_jd_id=row.confirmed_jd_id,
+        location=row.location,
+        notice_period=row.notice_period,
+        preferred_roles=row.preferred_roles,
         source=row.source,  # type: ignore[arg-type]
         state=CandidateState(row.state),
         round=row.round,
@@ -34,6 +42,14 @@ class CandidateStore:
                 name=candidate.name,
                 email=candidate.email,
                 github_handle=candidate.github_handle,
+                role=candidate.role,
+                level=candidate.level,
+                background_notes=candidate.background_notes,
+                candidate_profile=candidate.candidate_profile,
+                confirmed_jd_id=candidate.confirmed_jd_id,
+                location=candidate.location,
+                notice_period=candidate.notice_period,
+                preferred_roles=candidate.preferred_roles,
                 source=candidate.source,
                 state=candidate.state.value,
                 round=candidate.round,
@@ -80,6 +96,56 @@ class CandidateStore:
             await session.commit()
             row = await session.get(CandidateRow, candidate_id)
             return _row_to_model(row) if row else None
+
+    @staticmethod
+    async def update_background(candidate_id: str, background_notes: str, level: str) -> None:
+        async with AsyncSessionLocal() as session:
+            await session.execute(
+                update(CandidateRow)
+                .where(CandidateRow.id == candidate_id)
+                .values(background_notes=background_notes, level=level, updated_at=datetime.utcnow())
+            )
+            await session.commit()
+
+    @staticmethod
+    async def update_profile(
+        candidate_id: str,
+        candidate_profile: dict,
+        background_notes: str,
+        level: str,
+        location: Optional[str] = None,
+        notice_period: Optional[str] = None,
+        preferred_roles: Optional[List] = None,
+    ) -> None:
+        async with AsyncSessionLocal() as session:
+            values: dict = dict(
+                candidate_profile=candidate_profile,
+                background_notes=background_notes,
+                level=level,
+                updated_at=datetime.utcnow(),
+            )
+            if location is not None:
+                values["location"] = location
+            if notice_period is not None:
+                values["notice_period"] = notice_period
+            if preferred_roles is not None:
+                values["preferred_roles"] = preferred_roles
+            await session.execute(
+                update(CandidateRow)
+                .where(CandidateRow.id == candidate_id)
+                .values(**values)
+            )
+            await session.commit()
+
+    @staticmethod
+    async def update_confirmed_jd(candidate_id: str, jd_id: str) -> None:
+        async with AsyncSessionLocal() as session:
+            await session.execute(
+                update(CandidateRow)
+                .where(CandidateRow.id == candidate_id)
+                .values(confirmed_jd_id=jd_id, updated_at=datetime.utcnow())
+            )
+            await session.commit()
 
     @staticmethod
     async def count_by_state() -> Dict[str, int]:

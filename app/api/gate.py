@@ -1,9 +1,11 @@
 from typing import Any, Dict
 
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel
 
+from app.auth import require_admin, require_recruiter
 from app.fsm import CandidateState, FSMEngine
+from app.orm_models import UserRow
 from app.schemas import AuditLog
 from app.services.evaluation_store import EvaluationStore
 from app.services.task_store import TaskStore
@@ -56,7 +58,7 @@ class OfferApproveRequest(BaseModel):
 # ---------------------------------------------------------------------------
 
 @router.post("/{candidate_id}/decide")
-async def decide_gate(candidate_id: str, payload: DecideRequest) -> Dict[str, Any]:
+async def decide_gate(candidate_id: str, payload: DecideRequest, _: UserRow = Depends(require_admin)) -> Dict[str, Any]:
     """
     Run the full feedback loop for a candidate after evaluation:
     send feedback email, run decision engine, execute FSM transition.
@@ -96,7 +98,7 @@ async def decide_gate(candidate_id: str, payload: DecideRequest) -> Dict[str, An
 
 
 @router.post("/{candidate_id}/override")
-async def override_gate(candidate_id: str, payload: OverrideRequest) -> Dict[str, Any]:
+async def override_gate(candidate_id: str, payload: OverrideRequest, _: UserRow = Depends(require_admin)) -> Dict[str, Any]:
     """
     Founder override — force-write any valid FSM state, bypassing transition predicates.
     Intended for manual pipeline corrections. Every override is audit-logged.
@@ -225,7 +227,7 @@ async def resubmit(candidate_id: str, payload: ResubmitRequest) -> Dict[str, Any
 
 
 @router.post("/{candidate_id}/offer/draft")
-async def draft_offer(candidate_id: str, payload: OfferDraftRequest) -> Dict[str, Any]:
+async def draft_offer(candidate_id: str, payload: OfferDraftRequest, _: UserRow = Depends(require_admin)) -> Dict[str, Any]:
     """
     Generate and queue an offer letter for founder approval.
     FSM: HIRE_RECOMMENDED → OFFER_DRAFTED
@@ -283,7 +285,7 @@ async def draft_offer(candidate_id: str, payload: OfferDraftRequest) -> Dict[str
 
 
 @router.post("/{candidate_id}/offer/approve")
-async def approve_offer(candidate_id: str, payload: OfferApproveRequest) -> Dict[str, Any]:
+async def approve_offer(candidate_id: str, payload: OfferApproveRequest, _: UserRow = Depends(require_admin)) -> Dict[str, Any]:
     """
     Send an approved offer letter via Gmail and mark the candidate as HIRED.
     FSM: OFFER_DRAFTED → HIRED

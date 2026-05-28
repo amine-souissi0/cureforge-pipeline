@@ -55,6 +55,7 @@ async def process_inbound_message(message: Message) -> str:
     output = await ReplyClassifierAgent.classify_email(
         email_body=message.body,
         candidate_context=candidate.name,
+        candidate_state=candidate.state.value,
     )
 
     routing = route_classified_email(output, candidate.id)
@@ -82,9 +83,26 @@ async def _execute_routing(
         await _handle_decline(candidate)
         return
 
+    if routing == "background_intake":
+        await _handle_background_submitted(candidate, message)
+        return
+
+    if routing.startswith("jd_confirmed:"):
+        jd_title = routing.split(":", 1)[1]
+        await _handle_jd_confirmed(candidate, jd_title)
+        return
+
+    if routing == "jd_declined":
+        await _handle_decline(candidate)
+        return
+
     if routing.startswith("submission_intake:"):
         submission_url = routing.split(":", 1)[1]
         await _handle_submission(candidate, message, submission_url)
+        return
+
+    if routing == "request_submission_url":
+        await _handle_request_submission_url(candidate, message)
         return
 
     if routing.startswith("template_responder:"):
@@ -92,7 +110,7 @@ async def _execute_routing(
         await _handle_template_response(candidate, message, intent)
         return
 
-    # human_review or human_review_no_url — flag for founder, no automated action
+    # human_review — flag for founder, no automated action
     await AuditLog.append("human_review_flagged", {
         "candidate_id": candidate.id,
         "intent": output.intent,
@@ -142,12 +160,7 @@ async def _handle_submission(
         "gmail_message_id": message.message_id,
     })
 
-    # Acknowledge receipt
-    await _queue_template(
-        candidate=candidate,
-        template_id="acknowledgment",
-        original_subject=message.subject,
-    )
+    # No acknowledgment here — the evaluation feedback is the response to a submission.
 
     # Auto-trigger evaluation whenever a submission arrives and we have a task ready.
     # Include TASK_ASSIGNED: brief was sent but the AWAITING_SUBMISSION transition may not
@@ -164,6 +177,203 @@ async def _handle_submission(
         })
 
 
+async def _handle_request_submission_url(
+    candidate: CandidateModel,
+    message: Message,
+) -> None:
+    """Auto-send a polite URL request when candidate signals submission but omits the link."""
+    await AuditLog.append("submission_url_missing", {
+        "candidate_id": candidate.id,
+        "gmail_message_id": message.message_id,
+    })
+    await _queue_template(
+        candidate=candidate,
+        template_id="request-submission-url",
+        original_subject=message.subject,
+    )
+
+
+async def _handle_background_submitted(
+    candidate: CandidateModel,
+    message: Message,
+) -> None:
+    """
+    Candidate responded to the profile questionnaire.
+    1. Parse resume → structured profile
+    2. Validate sufficiency — if insufficient, ask for missing details
+    3. Run JD matching → share top roles
+    4. Transition to JD_SHARED
+    """
+    from app.agents.resume_parser import ResumeParserAgent
+    from app.agents.jd_matcher import JDMatcherAgent
+    from app.services.candidate_store import CandidateStore
+    from config.jobs import JOBS
+
+    # --- Step 1: Parse ---
+    profile = await ResumeParserAgent.parse(
+        email_body=message.body,
+        candidate_role=candidate.role,
+    )
+
+    await AuditLog.append("resume_parsed", {
+        "candidate_id": candidate.id,
+        "is_sufficient": profile.get("is_sufficient"),
+        "inferred_level": profile.get("inferred_level"),
+        "skills": profile.get("skills", []),
+        "location": profile.get("location"),
+        "notice_period": profile.get("notice_period"),
+        "missing_fields": profile.get("missing_fields", []),
+    })
+
+    # --- Step 2: Validate sufficiency ---
+    if not profile.get("is_sufficient"):
+        missing = profile.get("missing_fields", ["skills", "experience"])
+        missing_details = "\n".join(f"- {f.replace('_', ' ').title()}" for f in missing)
+        await _queue_template(
+            candidate=candidate,
+            template_id="profile-incomplete",
+            original_subject=message.subject,
+            extra_context={"missing_details": missing_details},
+        )
+        await AuditLog.append("profile_incomplete_requested", {
+            "candidate_id": candidate.id,
+            "missing_fields": missing,
+        })
+        return  # stay in GATHERING_BACKGROUND
+
+    # --- Step 3: Store profile ---
+    inferred_level = profile.get("inferred_level", candidate.level)
+    summary_parts = [profile.get("summary", "")]
+    if profile.get("skills"):
+        summary_parts.append(f"Skills: {', '.join(profile['skills'])}")
+    if profile.get("location"):
+        summary_parts.append(f"Location: {profile['location']}")
+    if profile.get("notice_period"):
+        summary_parts.append(f"Notice: {profile['notice_period']}")
+    background_notes = "\n".join(p for p in summary_parts if p)
+
+    await CandidateStore.update_profile(
+        candidate_id=candidate.id,
+        candidate_profile=profile,
+        background_notes=background_notes,
+        level=inferred_level,
+        location=profile.get("location"),
+        notice_period=profile.get("notice_period"),
+        preferred_roles=profile.get("preferred_roles"),
+    )
+
+    # --- Step 4: JD matching ---
+    match_result = await JDMatcherAgent.match(profile)
+    matches = match_result.get("matches", [])
+
+    await AuditLog.append("jd_matched", {
+        "candidate_id": candidate.id,
+        "top_jd_id": match_result.get("top_jd_id"),
+        "match_scores": {m["jd_id"]: m["score"] for m in matches},
+    })
+
+    # --- Step 5: Build JD list and share ---
+    jd_lines = []
+    for m in matches:
+        jd = JOBS.get(m["jd_id"])
+        if not jd:
+            continue
+        jd_lines.append(
+            f"**{jd.title}** ({jd.team} · {jd.location})\n"
+            f"{jd.description}\n"
+            f"Match: {m['match_reason']}"
+            + (f"\nNote: {m['gap']}" if m.get("gap") else "")
+        )
+
+    jd_list = "\n\n---\n\n".join(jd_lines) if jd_lines else "We'll follow up with relevant openings shortly."
+
+    await _queue_template(
+        candidate=candidate,
+        template_id="jd-sharing",
+        original_subject=message.subject,
+        extra_context={"jd_list": jd_list},
+    )
+
+    # --- Step 6: FSM → JD_SHARED ---
+    fsm = FSMEngine()
+    transitioned = await fsm.transition(
+        candidate_id=candidate.id,
+        target_state=CandidateState.JD_SHARED,
+        context={"profile_complete": True},
+        actor="webhook_processor",
+    )
+    if transitioned:
+        from app.services.candidate_store import CandidateStore as _CS
+        await _CS.update_state(candidate.id, CandidateState.JD_SHARED)
+
+    await AuditLog.append("jd_shared", {
+        "candidate_id": candidate.id,
+        "jd_count": len(jd_lines),
+        "fsm_transitioned": transitioned,
+    })
+
+
+async def _handle_jd_confirmed(
+    candidate: CandidateModel,
+    jd_title: str,
+) -> None:
+    """
+    Candidate confirmed interest in a specific JD.
+    Resolve which JD they meant, store it, trigger task generation.
+    """
+    from app.services.candidate_store import CandidateStore
+    from app.api.candidates import generate_task_for_candidate
+    from config.jobs import JOBS
+
+    # Resolve JD by title match (case-insensitive partial)
+    confirmed_jd = None
+    jd_title_lower = jd_title.lower()
+    for jd in JOBS.values():
+        if jd_title_lower and jd_title_lower in jd.title.lower():
+            confirmed_jd = jd
+            break
+    # Fallback: use top match from stored profile
+    if confirmed_jd is None and candidate.candidate_profile:
+        from app.agents.jd_matcher import JDMatcherAgent
+        match_result = await JDMatcherAgent.match(candidate.candidate_profile)
+        top_id = match_result.get("top_jd_id")
+        confirmed_jd = JOBS.get(top_id) if top_id else None
+    # Last resort: first job
+    if confirmed_jd is None:
+        confirmed_jd = next(iter(JOBS.values()), None)
+
+    if confirmed_jd is None:
+        await AuditLog.append("jd_confirmed_no_match", {
+            "candidate_id": candidate.id,
+            "jd_title": jd_title,
+        })
+        return
+
+    await CandidateStore.update_confirmed_jd(candidate.id, confirmed_jd.id)
+
+    await AuditLog.append("jd_confirmed", {
+        "candidate_id": candidate.id,
+        "confirmed_jd_id": confirmed_jd.id,
+        "confirmed_jd_title": confirmed_jd.title,
+        "jd_title_from_message": jd_title,
+    })
+
+    # Trigger task generation with JD context
+    generate_task_for_candidate.delay(
+        candidate.id,
+        confirmed_jd.title,
+        candidate.level,
+        confirmed_jd.task_corpus_pattern or "",
+    )
+
+    await AuditLog.append("task_generation_enqueued", {
+        "candidate_id": candidate.id,
+        "trigger": "jd_confirmed",
+        "confirmed_jd_id": confirmed_jd.id,
+        "corpus_pattern": confirmed_jd.task_corpus_pattern,
+    })
+
+
 async def _handle_template_response(
     candidate: CandidateModel,
     message: Message,
@@ -177,26 +387,42 @@ async def _handle_template_response(
         })
         return
 
+    # For QUESTION intent, pass the question text so the LLM can generate a real answer
+    extra: dict = {}
+    if intent == "QUESTION":
+        extra = {"question_text": message.body, "original_subject": message.subject}
+
     await _queue_template(
         candidate=candidate,
         template_id=template_id,
         original_subject=message.subject,
+        extra_context=extra,
     )
 
-    # INTERESTED → kick off task generation in background
+    # INTERESTED → ask for background first, then generate task after response
     if intent == "INTERESTED":
-        from app.api.candidates import generate_task_for_candidate
-        generate_task_for_candidate.delay(candidate.id)
-        await AuditLog.append("task_generation_enqueued", {
+        fsm = FSMEngine()
+        transitioned = await fsm.transition(
+            candidate_id=candidate.id,
+            target_state=CandidateState.GATHERING_BACKGROUND,
+            context={"intent": "INTERESTED"},
+            actor="webhook_processor",
+        )
+        if transitioned:
+            from app.services.candidate_store import CandidateStore
+            await CandidateStore.update_state(candidate.id, CandidateState.GATHERING_BACKGROUND)
+        await AuditLog.append("background_gathering_started", {
             "candidate_id": candidate.id,
-            "trigger": "INTERESTED_reply",
+            "fsm_transitioned": transitioned,
         })
 
 
 def _intent_to_template(intent: str) -> Optional[str]:
+    # INTERESTED: send background questionnaire (task generation waits for response).
+    # SCHEDULING: candidates proposing calls get routed to human review (no template).
+    # QUESTION: generate a real answer.
     return {
-        "INTERESTED": "acknowledgment",
-        "SCHEDULING": "acknowledgment",
+        "INTERESTED": "background-request",
         "QUESTION": "answer-common-question",
     }.get(intent)
 
@@ -261,6 +487,7 @@ async def _queue_template(
     candidate: CandidateModel,
     template_id: str,
     original_subject: str = "",
+    extra_context: dict | None = None,
 ) -> None:
     from app.agents.template_responder import TemplateResponderAgent
     from app.services.approval_queue import ApprovalQueue, DraftEmail
@@ -274,6 +501,7 @@ async def _queue_template(
                 "sender_name": "CureForge Team",
                 "original_subject": original_subject,
             },
+            extra_context=extra_context,
         )
     except Exception as e:
         await AuditLog.append("template_render_failed", {

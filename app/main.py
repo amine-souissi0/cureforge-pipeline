@@ -20,14 +20,32 @@ from app.api.evaluations import router as evaluations_router
 from app.api.gate import router as gate_router
 from app.api.dashboard import router as dashboard_router
 from app.api.health import router as health_router
+from app.api.auth_router import router as auth_router
 from app.auth import require_api_key
 from app.middleware.rate_limiter import RateLimiterMiddleware
+
+
+async def _seed_admin() -> None:
+    """Create the default admin account on first boot if no users exist."""
+    from app.auth import hash_password
+    from app.services.user_store import UserStore
+    if await UserStore.count() == 0:
+        email = os.environ.get("ADMIN_EMAIL", "admin@cureforge.com")
+        password = os.environ.get("ADMIN_PASSWORD", "admin123")
+        await UserStore.create(
+            email=email,
+            name="Founder",
+            hashed_password=hash_password(password),
+            role="admin",
+        )
+        logging.getLogger(__name__).info(f"Seeded default admin: {email}")
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     from app.database import init_db
     await init_db()
+    await _seed_admin()
     yield
 
 
@@ -51,7 +69,8 @@ app.include_router(evaluations_router, dependencies=_auth)
 app.include_router(gate_router, dependencies=_auth)
 app.include_router(dashboard_router, dependencies=_auth)
 
-# Unprotected — health probes, OAuth redirect, Gmail Pub/Sub webhook, GitHub push webhook
+# Unprotected — login, health probes, OAuth redirect, Gmail Pub/Sub webhook, GitHub push webhook
+app.include_router(auth_router)
 app.include_router(health_router)
 app.include_router(oauth_router)
 app.include_router(auth_google_router)

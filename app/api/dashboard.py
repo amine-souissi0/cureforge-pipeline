@@ -10,6 +10,7 @@ from app.schemas import AuditLog
 from app.services.approval_queue import ApprovalQueue, DraftEmail
 from app.services.evaluation_store import EvaluationStore
 from app.services.candidate_store import CandidateStore
+from app.services.message_store import MessageStore
 
 router = APIRouter(prefix="/dashboard", tags=["dashboard"])
 
@@ -87,32 +88,79 @@ async def candidate_detail(candidate_id: str) -> Dict[str, Any]:
     ]
 
     projected: Optional[str] = None
+    trajectory: Optional[str] = None
     if evaluations:
-        from app.services.decision_engine import decide
+        from app.services.decision_engine import decide, compute_trajectory
+        composites = [e.composite for e in evaluations]
+        trajectory = compute_trajectory(composites)
         latest = evaluations[-1]
         decision = decide(
             composite=latest.composite,
             rounds_completed=len(evaluations),
+            prior_composites=composites,
         )
         projected = decision.next_state.value
+
+    messages = await MessageStore.list_by_candidate(candidate_id)
+
+    # Days in pipeline from candidate creation
+    from datetime import datetime, timezone
+    created_at = candidate.created_at if hasattr(candidate, "created_at") and candidate.created_at else None
+    days_in_pipeline: Optional[int] = None
+    if created_at:
+        try:
+            now = datetime.now(timezone.utc)
+            ca = created_at.replace(tzinfo=timezone.utc) if created_at.tzinfo is None else created_at
+            days_in_pipeline = (now - ca).days
+        except Exception:
+            pass
+
+    best_composite = max((e.composite for e in evaluations), default=None)
+    latest_composite = evaluations[-1].composite if evaluations else None
 
     return {
         "candidate_id": candidate_id,
         "name": candidate.name,
         "email": candidate.email,
+        "role": candidate.role,
+        "level": candidate.level,
+        "background_notes": candidate.background_notes,
+        "candidate_profile": candidate.candidate_profile,
+        "confirmed_jd_id": candidate.confirmed_jd_id,
+        "location": candidate.location,
+        "notice_period": candidate.notice_period,
+        "preferred_roles": candidate.preferred_roles,
         "current_state": candidate.state.value,
+        "created_at": candidate.created_at.isoformat() if hasattr(candidate, "created_at") and candidate.created_at else None,
+        "days_in_pipeline": days_in_pipeline,
         "rounds_completed": len(evaluations),
+        "best_composite": best_composite,
+        "latest_composite": latest_composite,
+        "trajectory": trajectory,
         "evaluations": [
             {
+                "evaluation_id": e.id,
                 "round": e.round,
                 "composite": e.composite,
+                "dimension_scores": e.dimension_scores,
                 "sha": e.submission_sha,
                 "created_at": e.created_at.isoformat(),
             }
             for e in evaluations
         ],
+        "messages": [
+            {
+                "direction": m.direction,
+                "subject": m.subject,
+                "body": m.body,
+                "template_id": m.template_id if hasattr(m, "template_id") else None,
+                "created_at": m.created_at.isoformat(),
+            }
+            for m in messages
+        ],
         "pending_drafts": pending_drafts,
         "projected_next_state": projected,
+        "trajectory": trajectory,
     }
 
 

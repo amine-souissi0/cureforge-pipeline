@@ -27,6 +27,7 @@ class TaskDecomposerAgent:
     async def decompose(
         candidate_role: str,
         candidate_level: str,
+        background_notes: str = "",
         preferred_pattern_id: Optional[str] = None,
         retries: int = 1,
     ) -> TaskDecomposerOutput:
@@ -38,6 +39,7 @@ class TaskDecomposerAgent:
         user_message = json.dumps({
             "candidate_role": candidate_role,
             "candidate_level": candidate_level,
+            "candidate_background": background_notes or None,
             "preferred_pattern_id": preferred_pattern_id,
             "available_pattern_ids": list(PATTERNS.keys()),
         })

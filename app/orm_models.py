@@ -13,6 +13,14 @@ class CandidateRow(Base):
     name: Mapped[str] = mapped_column(String, nullable=False)
     email: Mapped[str] = mapped_column(String, nullable=False, unique=True, index=True)
     github_handle: Mapped[str | None] = mapped_column(String, nullable=True)
+    role: Mapped[str] = mapped_column(String, default="Software Engineer")
+    level: Mapped[str] = mapped_column(String, default="senior")
+    background_notes: Mapped[str | None] = mapped_column(Text, nullable=True)
+    candidate_profile: Mapped[dict | None] = mapped_column(JSON, nullable=True)
+    confirmed_jd_id: Mapped[str | None] = mapped_column(String, nullable=True)
+    location: Mapped[str | None] = mapped_column(String, nullable=True)
+    notice_period: Mapped[str | None] = mapped_column(String, nullable=True)
+    preferred_roles: Mapped[list | None] = mapped_column(JSON, nullable=True)
     source: Mapped[str] = mapped_column(String, default="founder_added")
     state: Mapped[str] = mapped_column(String, default="NEW", index=True)
     round: Mapped[int] = mapped_column(Integer, default=0)
@@ -100,4 +108,16 @@ class AuditLogRow(Base):
     id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
     event_type: Mapped[str] = mapped_column(String, nullable=False, index=True)
     data: Mapped[dict] = mapped_column(JSON, default=dict)
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
+
+
+class UserRow(Base):
+    __tablename__ = "users"
+
+    id: Mapped[str] = mapped_column(String, primary_key=True)
+    email: Mapped[str] = mapped_column(String, nullable=False, unique=True, index=True)
+    name: Mapped[str] = mapped_column(String, nullable=False)
+    hashed_password: Mapped[str] = mapped_column(String, nullable=False)
+    role: Mapped[str] = mapped_column(String, nullable=False, default="recruiter")  # "admin" | "recruiter"
+    is_active: Mapped[bool] = mapped_column(default=True)
     created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)

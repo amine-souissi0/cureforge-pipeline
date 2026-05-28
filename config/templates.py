@@ -49,6 +49,8 @@ TEMPLATES: dict[str, TemplateDefinition] = {
                 "Best,\n{sender_name}"
             ),
             required_fields=["candidate_name", "original_subject", "answer", "sender_name"],
+            # extra_context expected: question_text (the candidate's actual question)
+            # The LLM fills {answer} based on question_text
         ),
         TemplateDefinition(
             id="task-assignment-cover",
@@ -76,6 +78,68 @@ TEMPLATES: dict[str, TemplateDefinition] = {
                 "Best,\n{sender_name}"
             ),
             required_fields=["candidate_name", "feedback", "upgrade_ask", "sender_name"],
+        ),
+        TemplateDefinition(
+            id="request-submission-url",
+            subject_template="Re: {original_subject}",
+            body_template=(
+                "Hi {candidate_name},\n\n"
+                "Thanks for your message. It looks like you may be sharing your submission — "
+                "could you include the full GitHub repository URL? "
+                "Something like: https://github.com/your-username/your-repo\n\n"
+                "Once we have the link we'll take a look right away.\n\n"
+                "Best,\n{sender_name}"
+            ),
+            required_fields=["candidate_name", "original_subject", "sender_name"],
+            auto_send_eligible=True,
+        ),
+        TemplateDefinition(
+            id="background-request",
+            subject_template="Re: {original_subject}",
+            body_template=(
+                "Hi {candidate_name},\n\n"
+                "Great to hear you're interested! To match you to the right opening and tailor "
+                "the technical challenge, could you paste your CV or resume directly into this email?\n\n"
+                "We'll need:\n"
+                "- Your experience and what you've shipped recently\n"
+                "- Core skills and tech stack\n"
+                "- Current location\n"
+                "- Notice period (if employed)\n\n"
+                "Just paste it as text — no attachments needed. Once we have it we'll come back "
+                "to you with the roles we think fit best.\n\n"
+                "Best,\n{sender_name}"
+            ),
+            required_fields=["candidate_name", "original_subject", "sender_name"],
+            auto_send_eligible=True,
+        ),
+        TemplateDefinition(
+            id="profile-incomplete",
+            subject_template="Re: {original_subject}",
+            body_template=(
+                "Hi {candidate_name},\n\n"
+                "Thanks for getting back to us! To move forward we still need a bit more detail.\n\n"
+                "Could you help us with:\n"
+                "{missing_details}\n\n"
+                "Once we have that we can match you to the right opening and share the details.\n\n"
+                "Best,\n{sender_name}"
+            ),
+            required_fields=["candidate_name", "original_subject", "missing_details", "sender_name"],
+            auto_send_eligible=True,
+        ),
+        TemplateDefinition(
+            id="jd-sharing",
+            subject_template="Roles at CureForge — We Think You'd Be a Fit",
+            body_template=(
+                "Hi {candidate_name},\n\n"
+                "Based on your background, here are the roles we think you'd be a strong match for:\n\n"
+                "{jd_list}\n\n"
+                "Would you like to proceed with any of these? Just reply with the role you're "
+                "most interested in and we'll kick off the next step — a short technical problem "
+                "tailored to that position.\n\n"
+                "Best,\n{sender_name}"
+            ),
+            required_fields=["candidate_name", "jd_list", "sender_name"],
+            auto_send_eligible=True,
         ),
         TemplateDefinition(
             id="warm-hold",

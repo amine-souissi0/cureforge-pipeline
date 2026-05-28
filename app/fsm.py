@@ -10,6 +10,8 @@ class CandidateState(str, Enum):
     """Finite State Machine states for candidate lifecycle."""
     NEW = "NEW"
     ENGAGED = "ENGAGED"
+    GATHERING_BACKGROUND = "GATHERING_BACKGROUND"
+    JD_SHARED = "JD_SHARED"
     TASK_ASSIGNED = "TASK_ASSIGNED"
     AWAITING_SUBMISSION = "AWAITING_SUBMISSION"
     UNDER_EVALUATION = "UNDER_EVALUATION"
@@ -83,6 +85,14 @@ class FSMEngine:
         
         transitions = [
             FSMTransition(CandidateState.NEW, CandidateState.ENGAGED, "intake_complete", predicates["intake_complete"]),
+            FSMTransition(CandidateState.ENGAGED, CandidateState.GATHERING_BACKGROUND, "intent_interested",
+                         lambda ctx: ctx.get("intent") == "INTERESTED"),
+            FSMTransition(CandidateState.GATHERING_BACKGROUND, CandidateState.JD_SHARED, "profile_complete",
+                         lambda ctx: ctx.get("profile_complete", False)),
+            FSMTransition(CandidateState.GATHERING_BACKGROUND, CandidateState.WITHDRAWN, "intent_declined", predicates["intent_declined"]),
+            FSMTransition(CandidateState.JD_SHARED, CandidateState.TASK_ASSIGNED, "intent_interested_and_task_generated",
+                         lambda ctx: predicates["intent_interested_or_scheduling"](ctx) and predicates["task_generated"](ctx)),
+            FSMTransition(CandidateState.JD_SHARED, CandidateState.WITHDRAWN, "intent_declined", predicates["intent_declined"]),
             FSMTransition(CandidateState.ENGAGED, CandidateState.TASK_ASSIGNED, "intent_interested_and_task_generated",
                          lambda ctx: predicates["intent_interested_or_scheduling"](ctx) and predicates["task_generated"](ctx)),
             FSMTransition(CandidateState.ENGAGED, CandidateState.WITHDRAWN, "intent_declined", predicates["intent_declined"]),

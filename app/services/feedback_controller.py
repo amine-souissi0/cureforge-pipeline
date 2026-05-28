@@ -46,6 +46,10 @@ async def run_feedback_loop(
 
     rounds = await EvaluationStore.get_round_count(candidate_id)
 
+    # Collect full composite history for trajectory analysis (§9)
+    all_evals = await EvaluationStore.list_by_candidate(candidate_id)
+    prior_composites = [e.composite for e in all_evals]
+
     from app.services.candidate_store import CandidateStore
     candidate = await CandidateStore.get_by_id(candidate_id)
     candidate_name = candidate.name if candidate else candidate_id
@@ -100,11 +104,12 @@ async def run_feedback_loop(
             "draft_id": draft_id,
         })
 
-    # --- Step 2: Decision engine ---
+    # --- Step 2: Decision engine (trajectory-aware per §9) ---
     decision = decide(
         composite=evaluation.composite,
         rounds_completed=rounds,
         mode=mode,
+        prior_composites=prior_composites,
     )
 
     await AuditLog.append("decision_made", {

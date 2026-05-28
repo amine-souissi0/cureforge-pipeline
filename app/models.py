@@ -12,6 +12,14 @@ class CandidateModel(BaseModel):
     name: str
     email: str
     github_handle: Optional[str] = None
+    role: str = "Software Engineer"
+    level: str = "senior"
+    background_notes: Optional[str] = None
+    candidate_profile: Optional[Dict[str, Any]] = None
+    confirmed_jd_id: Optional[str] = None
+    location: Optional[str] = None
+    notice_period: Optional[str] = None
+    preferred_roles: Optional[List[str]] = None
     source: Literal["founder_added", "email_forwarded"] = "founder_added"
     state: CandidateState = CandidateState.NEW
     round: int = 0

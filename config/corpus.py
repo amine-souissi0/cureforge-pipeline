@@ -64,6 +64,59 @@ PATTERNS: dict[str, CorpusPattern] = {
             ),
         ),
 
+        # ── Company-stage patterns (abstracted from current engineering work) ─
+        CorpusPattern(
+            id="measurement_stream_processor",
+            name="Stateful Measurement Stream Processor",
+            domain="data_engineering",
+            description=(
+                "Process an ordered stream of entity measurement events. "
+                "For each entity, maintain per-entity state: count, mean, variance, and latest value. "
+                "Detect anomalies: flag any value more than 2 standard deviations from the entity's running mean. "
+                "Null/missing values must fail closed — emit a structured error record, never silently skip. "
+                "Low-quality readings (quality='low' or quality='failed') must be tracked separately "
+                "and excluded from statistical aggregation but included in the error report. "
+                "Input: list of event dicts with keys entity_id, value, measurement_type, quality. "
+                "Output: dict mapping entity_id → {count, mean, variance, latest, anomalies: list, errors: list}. "
+                "Edge cases: single-event entity (variance=0.0), all-null entity (error record only)."
+            ),
+        ),
+        CorpusPattern(
+            id="pipeline_record_validator",
+            name="Multi-Stage Pipeline Record Validator",
+            domain="data_engineering",
+            description=(
+                "Validate a batch of pipeline records against a schema and cross-field invariants. "
+                "Each record has: record_id, entity_id, stage (ingestion|validation|transformation), "
+                "status (PENDING|COMPLETED|FAILED), payload dict, retry_count. "
+                "Validation rules: (1) payload.raw_value must be a non-null float in [0, 100]; "
+                "(2) FAILED records must have a non-empty error field; "
+                "(3) retry_count must be >= 0 and < 3 for non-FAILED records; "
+                "(4) COMPLETED transformation records must have a normalized_value in payload. "
+                "Emit a structured validation report: {valid: list[record_id], invalid: list[{record_id, violations: list[str]}], "
+                "summary: {total, valid_count, invalid_count}}. "
+                "Unknown stage values must fail closed (treated as invalid). Never mutate input records."
+            ),
+        ),
+        CorpusPattern(
+            id="checkpoint_simulation_runner",
+            name="Checkpointed Multi-Step Simulation Runner",
+            domain="agent_systems",
+            description=(
+                "Implement a multi-step simulation runner that processes a sequence of parameter sets, "
+                "applies a deterministic transformation at each step, and supports checkpointing. "
+                "A checkpoint records the step index and current accumulated state so the simulation "
+                "can resume from the last checkpoint after a failure. "
+                "Requirements: each step must be idempotent — replaying it from a checkpoint must "
+                "produce the same state as the original run; "
+                "if a step raises an exception the runner must record a structured failure entry and "
+                "continue (fail-open per step, fail-closed at report time); "
+                "the final output must include: completed_steps, failed_steps, final_state, "
+                "and a replay_log of checkpoints. "
+                "The runner itself must never crash on malformed input — return a structured error record."
+            ),
+        ),
+
         # ── CureForge engineering discipline patterns (from build brief) ─────
         CorpusPattern(
             id="explicit_fsm",
@@ -138,4 +191,5 @@ PATTERNS: dict[str, CorpusPattern] = {
             ),
         ),
     ]
+    
 }

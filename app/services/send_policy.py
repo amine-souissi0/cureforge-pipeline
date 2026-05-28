@@ -4,7 +4,14 @@ from typing import Dict
 # Per §5.3: only low-stakes templates auto-send by default.
 # Higher-stakes (task assignment, feedback, warm-hold, offer) are draft-for-approval by default;
 # auto-send only if founder enables it via set_candidate_mode(id, SendMode.AUTO).
-_AUTO_SEND_TEMPLATES = {"acknowledgment", "answer-common-question"}
+_AUTO_SEND_TEMPLATES = {
+    "acknowledgment",
+    "answer-common-question",
+    "background-request",
+    "profile-incomplete",
+    "jd-sharing",
+    "request-submission-url",
+}
 
 
 class SendMode(str, Enum):

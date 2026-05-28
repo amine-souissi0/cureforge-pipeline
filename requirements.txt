@@ -1,4 +1,6 @@
 aiofiles
+bcrypt
+python-jose[cryptography]
 pydantic
 pytest
 pytest-asyncio
