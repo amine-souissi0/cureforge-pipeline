@@ -159,7 +159,13 @@ class GmailService:
         if not sender_name:
             sender_name = sender_email.split("@")[0]
 
+        service = self._get_service()
         body = self._extract_body(raw.get("payload", {}))
+
+        # Append text from PDF/Word attachments (covers empty body and resume-as-attachment cases)
+        attachment_text = self._extract_attachments(service, raw["id"], raw.get("payload", {}))
+        if attachment_text:
+            body = (body.strip() + "\n\n" + attachment_text).strip() if body.strip() else attachment_text
 
         return Message(
             id=str(uuid.uuid4()),
@@ -237,19 +243,99 @@ class GmailService:
         return messages, latest_history_id
 
     def _extract_body(self, payload: Dict[str, Any]) -> str:
+        # Direct body data (simple non-multipart message)
         data = payload.get("body", {}).get("data", "")
         if data:
             return base64.urlsafe_b64decode(data).decode("utf-8", errors="replace")
 
-        for part in payload.get("parts", []):
+        # Recurse through parts — handles multipart/alternative, multipart/mixed, etc.
+        parts = payload.get("parts", [])
+
+        # Prefer text/plain first
+        for part in parts:
             if part.get("mimeType") == "text/plain":
                 part_data = part.get("body", {}).get("data", "")
                 if part_data:
-                    return base64.urlsafe_b64decode(part_data).decode(
-                        "utf-8", errors="replace"
-                    )
+                    return base64.urlsafe_b64decode(part_data).decode("utf-8", errors="replace")
+
+        # Recurse into nested multipart containers
+        for part in parts:
+            if part.get("mimeType", "").startswith("multipart/"):
+                result = self._extract_body(part)
+                if result:
+                    return result
+
+        # Fall back to text/html and strip tags if no plain text found
+        for part in parts:
+            if part.get("mimeType") == "text/html":
+                part_data = part.get("body", {}).get("data", "")
+                if part_data:
+                    html = base64.urlsafe_b64decode(part_data).decode("utf-8", errors="replace")
+                    import re
+                    return re.sub(r"<[^>]+>", " ", html).strip()
 
         return ""
+
+    def _extract_attachments(self, service: Any, message_id: str, payload: Dict[str, Any]) -> str:
+        """Extract text from PDF or Word attachments when email body is empty."""
+        texts: list[str] = []
+        self._collect_attachment_text(service, message_id, payload, texts)
+        return "\n\n".join(texts)
+
+    def _collect_attachment_text(self, service: Any, message_id: str, payload: Dict[str, Any], out: list) -> None:
+        for part in payload.get("parts", []):
+            mime = part.get("mimeType", "")
+            filename = part.get("filename", "")
+            attachment_id = part.get("body", {}).get("attachmentId")
+
+            if attachment_id and filename:
+                try:
+                    att = service.users().messages().attachments().get(
+                        userId="me", messageId=message_id, id=attachment_id
+                    ).execute()
+                    data = base64.urlsafe_b64decode(att["data"])
+
+                    if mime == "application/pdf" or filename.lower().endswith(".pdf"):
+                        text = self._pdf_to_text(data)
+                        if text:
+                            out.append(f"[Attachment: {filename}]\n{text}")
+
+                    elif mime in ("application/vnd.openxmlformats-officedocument.wordprocessingml.document",) or filename.lower().endswith(".docx"):
+                        text = self._docx_to_text(data)
+                        if text:
+                            out.append(f"[Attachment: {filename}]\n{text}")
+
+                except Exception:
+                    pass
+
+            # Recurse into nested multipart
+            if mime.startswith("multipart/"):
+                self._collect_attachment_text(service, message_id, part, out)
+
+    @staticmethod
+    def _pdf_to_text(data: bytes) -> str:
+        try:
+            import io
+            from pypdf import PdfReader
+            reader = PdfReader(io.BytesIO(data))
+            return "\n".join(page.extract_text() or "" for page in reader.pages).strip()
+        except Exception:
+            return ""
+
+    @staticmethod
+    def _docx_to_text(data: bytes) -> str:
+        try:
+            import io
+            import zipfile
+            import xml.etree.ElementTree as ET
+            with zipfile.ZipFile(io.BytesIO(data)) as z:
+                with z.open("word/document.xml") as f:
+                    tree = ET.parse(f)
+            ns = "{http://schemas.openxmlformats.org/wordprocessingml/2006/main}"
+            texts = [node.text for node in tree.iter(f"{ns}t") if node.text]
+            return " ".join(texts).strip()
+        except Exception:
+            return ""
 
     async def send_email(
         self,

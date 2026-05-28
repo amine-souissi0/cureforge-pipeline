@@ -11,6 +11,11 @@ _AUTO_SEND_TEMPLATES = {
     "profile-incomplete",
     "jd-sharing",
     "request-submission-url",
+    "initial-outreach",
+    "task-assignment-cover",
+    "feedback-delivery",
+    "warm-hold",
+    "offer-letter",
 }
 
 

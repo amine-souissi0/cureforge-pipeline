@@ -185,7 +185,6 @@ async def send_brief(task_id: str, payload: SendBriefRequest) -> Dict[str, Any]:
         },
         extra_context={
             "task_brief": task.candidate_brief,
-            "repo_url": task.repo_url or "(repo not yet provisioned)",
         },
     )
 

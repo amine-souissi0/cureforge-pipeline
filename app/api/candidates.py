@@ -237,7 +237,6 @@ def generate_task_for_candidate(self: object, candidate_id: str, role: str = "so
         subject, body = TemplateRegistry.render("task-assignment-cover", {
             "candidate_name": candidate.name,
             "task_brief": output.candidate_brief,
-            "repo_url": repo_url or "(repo provisioning failed — contact support)",
             "sender_name": "CureForge Team",
         })
         send_mode = get_send_mode(candidate_id, "task-assignment-cover")

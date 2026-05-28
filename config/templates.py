@@ -59,13 +59,12 @@ TEMPLATES: dict[str, TemplateDefinition] = {
                 "Hi {candidate_name},\n\n"
                 "Here's the engineering problem we'd like you to work through:\n\n"
                 "{task_brief}\n\n"
-                "We've set up a private GitHub repository for your submission:\n"
-                "{repo_url}\n\n"
-                "Push your solution to the main branch of that repository when you're ready. "
-                "We'll be notified automatically once you push.\n\n"
+                "When you're ready to submit, please:\n"
+                "1. Push your solution to a public GitHub repository of your own\n"
+                "2. Reply to this email with the GitHub URL\n\n"
                 "Best,\n{sender_name}"
             ),
-            required_fields=["candidate_name", "task_brief", "repo_url", "sender_name"],
+            required_fields=["candidate_name", "task_brief", "sender_name"],
         ),
         TemplateDefinition(
             id="feedback-delivery",
@@ -99,14 +98,16 @@ TEMPLATES: dict[str, TemplateDefinition] = {
             body_template=(
                 "Hi {candidate_name},\n\n"
                 "Great to hear you're interested! To match you to the right opening and tailor "
-                "the technical challenge, could you paste your CV or resume directly into this email?\n\n"
+                "the technical challenge, please share your CV or resume.\n\n"
+                "You can either:\n"
+                "- Reply with your CV pasted as text, or\n"
+                "- Attach your resume as a PDF or Word document\n\n"
                 "We'll need:\n"
                 "- Your experience and what you've shipped recently\n"
                 "- Core skills and tech stack\n"
                 "- Current location\n"
                 "- Notice period (if employed)\n\n"
-                "Just paste it as text — no attachments needed. Once we have it we'll come back "
-                "to you with the roles we think fit best.\n\n"
+                "Once we have it we'll come back to you with the roles we think fit best.\n\n"
                 "Best,\n{sender_name}"
             ),
             required_fields=["candidate_name", "original_subject", "sender_name"],

@@ -1,5 +1,6 @@
 aiofiles
 bcrypt
+pypdf
 python-jose[cryptography]
 pydantic
 pytest

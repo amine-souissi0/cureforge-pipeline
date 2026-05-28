@@ -280,9 +280,7 @@ async def _handle_background_submitted(
             continue
         jd_lines.append(
             f"**{jd.title}** ({jd.team} · {jd.location})\n"
-            f"{jd.description}\n"
-            f"Match: {m['match_reason']}"
-            + (f"\nNote: {m['gap']}" if m.get("gap") else "")
+            f"{jd.description}"
         )
 
     jd_list = "\n\n---\n\n".join(jd_lines) if jd_lines else "We'll follow up with relevant openings shortly."

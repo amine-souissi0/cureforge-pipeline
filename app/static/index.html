@@ -143,7 +143,7 @@
 </aside>
 
 <!-- ── LOGIN PAGE ─────────────────────────────────────────────────────────── -->
-<div id="loginPage" class="fixed inset-0 z-50 flex items-center justify-center" style="background:radial-gradient(ellipse at 30% 20%, rgba(124,58,237,0.18) 0%, transparent 60%), #0d0b1e;">
+<div id="loginPage" class="fixed inset-0 z-50 items-center justify-center" style="display:none; background:radial-gradient(ellipse at 30% 20%, rgba(124,58,237,0.18) 0%, transparent 60%), #0d0b1e;">
   <div class="glass rounded-2xl w-full max-w-sm mx-4 animate-slide-up p-8">
     <!-- Logo -->
     <div class="flex items-center gap-3 mb-8">
@@ -454,9 +454,9 @@ async function doLogin(e) {
   try {
     const data = await fetch('/auth/login', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 'Content-Type': 'application/json', 'ngrok-skip-browser-warning': 'true' },
       body: JSON.stringify({ email: document.getElementById('loginEmail').value, password: document.getElementById('loginPassword').value }),
-    }).then(async r => { if (!r.ok) throw new Error((await r.json()).detail || 'Login failed'); return r.json(); });
+    }).then(async r => { if (!r.ok) throw new Error((await r.json().catch(() => ({detail:'Login failed'}))).detail || 'Login failed'); return r.json(); });
     setToken(data.access_token);
     localStorage.setItem('cf_user', JSON.stringify(data.user));
     showApp(data.user);
@@ -470,7 +470,7 @@ async function doLogin(e) {
 
 function showApp(user) {
   _currentUser = user;
-  document.getElementById('loginPage').classList.add('hidden');
+  document.getElementById('loginPage').style.display='none';
   document.getElementById('userName').textContent = user.name;
   const initial = (user.name || '?')[0].toUpperCase();
   document.getElementById('userAvatar').textContent = initial;
@@ -495,7 +495,7 @@ function logout(silent = false) {
   clearToken();
   _currentUser = null;
   document.getElementById('userInfo').classList.add('hidden');
-  document.getElementById('loginPage').classList.remove('hidden');
+  document.getElementById('loginPage').style.display='flex';
   document.getElementById('loginEmail').value = '';
   document.getElementById('loginPassword').value = '';
   if (!silent) toast('Signed out');
@@ -503,14 +503,22 @@ function logout(silent = false) {
 
 async function initAuth() {
   const token = getToken();
-  if (!token) { document.getElementById('loginPage').classList.remove('hidden'); return; }
+  if (!token) {
+    document.getElementById('loginPage').style.display='flex';
+    setTimeout(() => document.getElementById('loginEmail').focus(), 100);
+    return;
+  }
   try {
     const user = await fetch('/auth/me', { headers: headers() }).then(async r => {
       if (!r.ok) throw new Error('token invalid');
       return r.json();
     });
     showApp(user);
-  } catch { clearToken(); document.getElementById('loginPage').classList.remove('hidden'); }
+  } catch {
+    clearToken();
+    document.getElementById('loginPage').style.display='flex';
+    setTimeout(() => document.getElementById('loginEmail').focus(), 100);
+  }
 }
 
 function setStatus(state, msg) {
@@ -895,7 +903,7 @@ function renderProgressBar(currentState) {
       const col = active ? '#a78bfa' : done ? '#34d399' : '#374151';
       const bgCol = active ? 'rgba(167,139,250,0.15)' : done ? 'rgba(52,211,153,0.1)' : 'rgba(55,65,81,0.1)';
       const connector = i < PIPELINE_STEPS.length - 1
-        ? `<div style="width:20px;height:2px;background:${done?'#34d399':'rgba(255,255,255,0.07)';flex-shrink:0;}"></div>`
+        ? `<div style="width:20px;height:2px;flex-shrink:0;background:${done?'#34d399':'rgba(255,255,255,0.07)'}"></div>`
         : '';
       return `
         <div class="flex items-center" style="flex-shrink:0;">
@@ -1584,7 +1592,6 @@ async function submitCreateUser(e) {
 }
 
 document.addEventListener('DOMContentLoaded', () => {
-  document.getElementById('loginPage').classList.add('hidden');
   document.getElementById('addCandidateBtn').classList.remove('hidden');
   document.getElementById('simEmailBtn').classList.remove('hidden');
 
