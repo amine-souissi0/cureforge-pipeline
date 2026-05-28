@@ -609,10 +609,11 @@ async def intake_candidate(payload: IntakeRequest) -> dict:
         "fsm_transitioned": transitioned,
     })
 
-    # Auto-queue outreach invite draft for founder approval
     if transitioned:
         from app.agents.template_responder import TemplateResponderAgent
         from app.services.approval_queue import ApprovalQueue, DraftEmail
+        from app.services.send_policy import SendMode, get_send_mode
+        from app.services.gmail_service import GmailService
         try:
             result = await TemplateResponderAgent.render(
                 template_id="initial-outreach",
@@ -623,15 +624,23 @@ async def intake_candidate(payload: IntakeRequest) -> dict:
                     "sender_name": "CureForge Team",
                 },
             )
-            draft = DraftEmail(
-                candidate_id=candidate.id,
-                template_id="initial-outreach",
-                subject=result.subject,
-                body=result.body,
-                to_email=candidate.email,
-            )
-            await ApprovalQueue.add(draft)
-            await AuditLog.append("outreach_draft_queued", {"candidate_id": candidate.id})
+            send_mode = get_send_mode(candidate.id, "initial-outreach")
+            if send_mode == SendMode.AUTO:
+                svc = GmailService()
+                gmail_id = await svc.send_email(to=candidate.email, subject=result.subject, body=result.body)
+                await AuditLog.append("template_auto_sent", {
+                    "candidate_id": candidate.id, "template_id": "initial-outreach", "gmail_id": gmail_id,
+                })
+            else:
+                draft = DraftEmail(
+                    candidate_id=candidate.id,
+                    template_id="initial-outreach",
+                    subject=result.subject,
+                    body=result.body,
+                    to_email=candidate.email,
+                )
+                await ApprovalQueue.add(draft)
+                await AuditLog.append("outreach_draft_queued", {"candidate_id": candidate.id})
         except Exception as exc:
             await AuditLog.append("outreach_draft_failed", {"candidate_id": candidate.id, "error": str(exc)})
 

@@ -219,18 +219,23 @@ class GmailService:
             latest_history_id = str(result.get("historyId", history_id))
             seen_ids: set = set()
             for record in result.get("history", []):
-                # Each history record's `messages` list covers the full thread.
-                # Filter to only INBOX-labeled messages to skip SENT/thread members.
-                for msg_ref in record.get("messages", []):
-                    msg_id = msg_ref["id"]
-                    if msg_id in seen_ids:
+                # Use messagesAdded — the only truly new messages in this history event.
+                # record["messages"] covers the full thread and causes old messages to be reprocessed.
+                for added in record.get("messagesAdded", []):
+                    msg_ref = added.get("message", {})
+                    msg_id = msg_ref.get("id")
+                    if not msg_id or msg_id in seen_ids:
                         continue
                     seen_ids.add(msg_id)
-                    meta = service.users().messages().get(
-                        userId="me", id=msg_id, format="metadata",
-                        metadataHeaders=["From", "Subject"],
-                    ).execute()
-                    if "INBOX" not in meta.get("labelIds", []):
+                    # Only process messages that landed in INBOX
+                    labels = msg_ref.get("labelIds") or []
+                    if not labels:
+                        meta = service.users().messages().get(
+                            userId="me", id=msg_id, format="metadata",
+                            metadataHeaders=["From", "Subject"],
+                        ).execute()
+                        labels = meta.get("labelIds", [])
+                    if "INBOX" not in labels:
                         continue
                     msg = await self.fetch_message(msg_id)
                     if msg:
