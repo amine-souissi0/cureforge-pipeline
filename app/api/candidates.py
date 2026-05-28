@@ -479,11 +479,19 @@ def process_email_task(self: object, history_id: str) -> str:  # noqa: ARG001
         import os
         import redis as redis_lib
         svc = GmailService()
-        messages, latest_hid = await svc.list_new_messages(history_id)
 
-        r = redis_lib.from_url(os.environ.get("REDIS_URL", "redis://localhost:6379/0"))
+        r = redis_lib.from_url(os.environ.get("REDIS_URL", "redis://redis:6379/0"))
 
-        # Persist latest historyId so the poll task doesn't reprocess these messages
+        # Use Redis-stored last ID, not the webhook's notification historyId.
+        # Gmail's historyId in the push notification is the current head — querying
+        # startHistoryId=notification_id skips everything between our last checkpoint
+        # and the notification. Always resume from our stored checkpoint.
+        raw = r.get("gmail:last_history_id")
+        start_id = raw.decode() if raw else history_id
+
+        messages, latest_hid = await svc.list_new_messages(start_id)
+
+        # Advance checkpoint after fetching so next call doesn't reprocess
         if latest_hid:
             try:
                 r.set("gmail:last_history_id", latest_hid)
@@ -492,9 +500,9 @@ def process_email_task(self: object, history_id: str) -> str:  # noqa: ARG001
 
         if not messages:
             await AuditLog.append("process_email_task_no_messages", {
-                "history_id": history_id,
+                "history_id": start_id,
             })
-            return f"no_new_messages:history_id={history_id}"
+            return f"no_new_messages:history_id={start_id}"
 
         results = []
         for message in messages:
