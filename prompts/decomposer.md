@@ -44,12 +44,20 @@ TASK REQUIREMENTS:
 
 HELD-OUT TEST FORMAT (machine-executable, required):
 - Each test's "input" field: a Python expression string `function_name(args)` that can be passed to eval()
-  after the candidate's source code is loaded. Args must use concrete values (no variables).
-- Each test's "expected_output" field: the exact string the harness prints:
+  after the candidate's source code is loaded. Use only Python literals: None (not null), True/False (not true/false).
+- Each test's "expected_output" field: MANUALLY COMPUTE the correct output by hand-tracing the algorithm
+  step-by-step before writing it. Do NOT guess or estimate.
   - dict/list results → json.dumps(result, sort_keys=True) with no extra whitespace
   - scalar results → repr(result) e.g. "42", "3.14", "'ok'"
+- CRITICAL — before writing expected_output, trace through the algorithm:
+  1. List the exact input values for each entity
+  2. Apply each rule from the spec in order (null check → quality check → anomaly → aggregate)
+  3. Compute count, mean, variance, anomalies, errors by hand with exact arithmetic
+  4. The output schema must exactly match what the candidate_brief defines — no extra or missing keys
 - Include at least 5 tests covering: normal multi-entity case, empty input [], null value handling,
-  low-quality data exclusion, anomaly or out-of-range detection
+  low-quality data exclusion, anomaly detection (need at least 3 prior values for reliable anomaly)
+- ANOMALY DETECTION NOTE: anomaly detection requires at least 2 prior values in state; do not expect
+  anomalies with only 1 prior value since std_dev = 0 and only values != mean would be flagged
 
 CONSTRAINTS:
 - candidate_brief must NEVER include: delivery timelines, rubric language, internal system names, scoring weights
