@@ -132,7 +132,17 @@ async def ceo_decision(candidate_id: str, payload: CeoDecisionRequest, _: UserRo
             "warm_hold_draft_id": draft_id,
         }
 
-    # accept or resubmit — run feedback loop
+    # accept or resubmit — first transition PENDING_CEO_REVIEW → FEEDBACK_SENT,
+    # then run feedback loop which handles FEEDBACK_SENT → final state
+    transitioned = await fsm.transition(
+        candidate_id=candidate_id,
+        target_state=CandidateState.FEEDBACK_SENT,
+        context={"ceo_action": payload.action},
+        actor="ceo",
+    )
+    if transitioned:
+        await CandidateStore.update_state(candidate_id, CandidateState.FEEDBACK_SENT)
+
     mode = "recommend" if payload.action == "accept" else "resubmit"
     result = await run_feedback_loop(
         candidate_id=candidate_id,
