@@ -1,0 +1,58 @@
+AI SIMULATION SYSTEM
+Post-Carotid Endarterectomy Stroke
+Treatment, Monitoring & Rehabilitation
+Technical Design Brief & Clinical Knowledge Base
+Patient OIT | Male 80+ | Case Date: 27.03.2026
+Built for Longevity InTime AI Research Institute
+PART 1 — COMPLETE CLINICAL CASE
+Patient OIT — Male, age 80+. All data from EMIAS Moscow portal, 27.03.2026.
+1.1 Patient Profile
+1.2 Key Biomarkers
+1.3 Operation, Complication, and Surgical Response
+1.4 Thrombus Formation -- Virchow's Triad Analysis
+All three components of Virchow's triad were active simultaneously -- a convergence that explains the exceptional 10 cm thrombus length.
+PART 2 — CLINICAL EVIDENCE BASE
+2.1 Post-CEA Stroke (ESVS 2023 Recommendations 91-93)
+Contemporary 30-day stroke rate after CEA in asymptomatic patients: 1.8% (meta-analysis cited in ESVS 2023). In the ICSS procedural-stroke substudy (Huibers et al., EJVES 2015), 20 of 27 CEA strokes (74.1%) occurred post-operatively rather than intra-operatively.
+Source: Naylor R et al., Eur J Vasc Endovasc Surg 2023;65:7-111
+2.2 Cerebral Hyperperfusion Syndrome (CHS)
+Definition: ipsilateral headache, hypertension, seizures, and focal deficits after revascularization with cerebral blood flow increased >100% above baseline (van Mook et al., Lancet Neurol 2005;4:877-888).
+2.3 Proportional Recovery Rule (PRR)
+2.4 AVERT III and Dose-Response
+2.5 Anticoagulation Timing in AF-related Ischemic Stroke
+For Patient OIT (large cortical infarct, post-surgical): start DOAC Day 6-7 (ELAN major-stroke arm), contingent on: (1) APTT/INR normalized, (2) no hemorrhagic transformation on follow-up CT/MRI.
+2.6 Rehabilitation Guidelines
+2.7 CRP as Stroke Outcome Predictor
+Finck et al., Front Neurol 2023 (n=676 large-vessel-occlusion thrombectomy patients): CRP >=5 mg/L associated with poor 90-day outcome (64.5% vs 42.1%; p<0.0001) and mortality (25.2% vs 9.4%). Youden optimal cut-offs: 3.5 mg/L for poor outcome; 8.5 mg/L for mortality.
+Patient OIT CRP 14.6 mg/L is above both thresholds. Serial CRP at 48h and Day 7 is mandatory. UTI treatment is part of stroke management.
+Rocco et al., Neurol Sci 2015 (n=1,242 thrombolysis cohort): follow-up CRP independently predicts 90-day dependent outcome (adj OR 2.67), mortality (adj OR 2.53), and sICH (adj OR 3.03). Trend matters more than single value.
+2.8 Malignant Edema and Decompressive Craniectomy
+Patient OIT update: current MRI shows NO edema and infarct zone not fully formed (penumbra). Malignant edema threshold not yet reached. Monitor at 24h repeat CT.
+PART 3 — AI SIMULATION SYSTEM DESIGN
+3.0 Architecture Overview
+3.A Clinical Decision Support Agent (CDS-A)
+CDS-A Pseudocode -- Core Decision Logic
+3.B Patient-Facing Rehabilitation Coach Agent (RC-A)
+Conversational LLM delivering daily session scripts adapted to NIHSS, age, comorbidities, and preserved motor function.
+3.C Medical Staff Training Simulator (TS)
+3.D Multi-Agent Orchestration Protocol
+Inter-Agent Message Schema (JSON)
+3.E Data Pipeline and Research Analysis Module
+PART 4 — TECHNICAL IMPLEMENTATION GUIDE
+4.1 LLM Configuration
+4.2 Tool Definitions
+4.3 Patient State JSON Schema
+4.4 Safety Guardrails
+4.5 Example: CDS-A Few-Shot Prompt
+4.6 Evaluation Framework
+PART 5 — CLINICAL SIMULATION SCENARIOS
+Five end-to-end scenarios derived from Patient OIT. Each includes state, correct-response path, wrong paths, scoring logic, and evidence citations.
+CAVEATS AND LIMITATIONS
+Age 80+ evidence gap: AVERT, ELAN, OPTIMAS, and decompressive-craniectomy trials under-recruit octogenarians. All recommendations carry a wider uncertainty band for this demographic. Shared decision-making with documented goals-of-care is mandatory.
+PRR limitations: the proportional recovery rule is being re-evaluated as an explanatory model. Combine with PREP2/SAFE algorithm and clinical TMS/MEP data rather than using PRR alone for prognosis.
+Citation correction: 'Rocco et al., Front Neurol 2023' in the case discussion is a citation merge. The Front Neurol 2023 CRP paper is Finck T et al. (PMID 37360331); the Rocco follow-up CRP paper is in Neurol Sci 2015;36:2235-2241. Both are retained correctly in Part 2.
+ESVS 2023 Rec 91-93 evidence level: Class I confirmed; the precise evidence letter (likely C, from the Meershoek/de Borst 2021 Delphi) should be re-verified against Section 7.1.1 of the EJVES PDF before clinical-board sign-off.
+ELAN/OPTIMAS/CATALYST did NOT specifically enroll post-CEA patients with active surgical sites. Extrapolation to Patient OIT is reasonable but must be co-decided with vascular surgery and documented.
+Hyperperfusion BP target: 100-130 mmHg is the strict-control band for CHS-confirmed patients. Routine post-CEA target in the wider literature is <140/90 mmHg. The AI system should default to <140 mmHg unless hyperperfusion is confirmed or strongly suspected.
+AI system is decision-support only -- no autonomous prescribing. Performance must be validated on a prospective, clinical-board-adjudicated test set before any patient-facing deployment. This document is a design brief, not a validated clinical tool.
+Compiled by Longevity InTime AI Research Institute. Evidence base: ESVS 2023, AHA/ASA 2016, ESO 2025, ELAN (NEJM 2023), OPTIMAS (Lancet 2024), CATALYST (Lancet 2025), AVERT (Lancet 2015 / Neurology 2016), PROT-AGE (JAMDA 2013), ESPEN Neurology (Clin Nutr 2018), Finck et al. (Front Neurol 2023), van Mook et al. (Lancet Neurol 2005). This document is a clinical knowledge base and technical design brief. It does not constitute medical advice or a validated clinical decision-support system.

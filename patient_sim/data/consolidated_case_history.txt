@@ -1,0 +1,111 @@
+CONSOLIDATED CASE HISTORY
+From Arterial Plaque to Stroke: Course, Trajectory and Recommendations
+Patient: Oleg I. T., 83 years old
+Konchalovsky City Clinical Hospital, Zelenograd, Moscow | OMS policy 7700001073760942
+Document for the treating physicians, nurses, speech therapist and rehabilitation team. Compiled 30.05.2026.
+Contents
+Section 1. Timeline: from plaque to stroke
+Section 2. Operation and complication
+Section 3. Imaging trajectory (CT, MRI, CT angiography)
+Section 4. NIHSS and ECG trajectory
+Section 5. Current status and prognosis
+Section 6. Recommendations for treating physicians
+Section 7. Recommendations for nurses (care)
+Section 8. Recommendations for the speech therapist (aphasia, multilingualism)
+Section 9. Rehabilitation and center choice
+Section 10. Questions for the team and caveats
+SECTION 1. TIMELINE: FROM PLAQUE TO STROKE
+The patient has long-standing systemic atherosclerosis affecting several vascular territories. The stroke was the culmination of this process, complicating planned carotid treatment.
+1.1 Vascular background (history)
+1.2 Cause of stroke — why the thrombus formed
+The stroke developed after surgery on the left carotid artery. The key driver was simultaneous action of all three components of Virchow's triad — the classic mechanism of thrombosis:
+The convergence of all three factors explains the unusually long thrombus (10 cm).
+SECTION 2. OPERATION AND COMPLICATION
+The surgical approach fully complies with the international ESVS 2023 guidelines (Rec. 92): when a neurological deficit appears after flow restoration, urgent re-exploration is indicated.
+SECTION 3. IMAGING TRAJECTORY
+3.1 Understanding ASPECTS
+SECTION 4. NIHSS AND ECG TRAJECTORY
+4.1 NIHSS — stroke severity scale (0-42)
+Date | Score | Note
+27.05 (D1) | 15 | admission
+28.05 (D2) | 18 | worsening
+29.05 (D3) | 14 | recovery
+30.05 (D4) | 12 | latest (corrected — was incorrectly reported as 7-9)
+4.2 ECG — atrial fibrillation trajectory
+Date | HR (min-mean-max) | Rhythm | Extrasystole | Scar | Note
+29.05 | 63-87-114 | AF normosys | PRESENT | suspected | concerning
+30.05 | 77-87-110 | AF normosys | ABSENT | none | resolved
+02.06 | 66-83-113 | AF normosys | ABSENT | none | stably controlled
+Cardiac conclusion: rhythm stably controlled across three consecutive ECGs; the 29.05 concerns (ventricular extrasystole, scar suspicion) confirmed transient — absent on both 30.05 and 02.06. HR stable at ~83 bpm. Cardiology consult with echocardiography is planned, not urgent. Blood pressure monitoring continues during rehabilitation.
+SECTION 5. CURRENT STATUS AND PROGNOSIS
+5.1 Neurological status on 30.05
+Conscious, oriented, understands speech, follows commands
+Speech: motor (Broca's) aphasia — mumbling, isolated sounds. Sensory aphasia resolved.
+Right leg: active movements, nearly recovered
+Right arm: makes a fist, but paresis persists (more affected than the leg)
+Swallowing preserved
+Emotional reactions preserved (recognizes family, reacts consciously)
+5.2 Prognosis (given CT ASPECTS 8 and NIHSS trajectory)
+Small cortical infarct of the left frontal lobe (Broca's area) without involvement of deep motor pathways. This explains the whole clinical picture and defines a favorable prognosis.
+SECTION 6. RECOMMENDATIONS FOR TREATING PHYSICIANS
+6.1 Anticoagulation (key question)
+6.2 Risk-factor control
+6.3 Additional
+Cardiology: planned echocardiogram + ideally Holter (assess extrasystole and old scar). Monitor potassium and magnesium.
+Vascular surveillance: right ICA — 35-40% plaque (Plaque RADS III), monitor, follow-up duplex in 1-3 months. Left ICA occluded, compensated via circle of Willis.
+Future MRI — account for the hip implant (1.5 Tesla standard for MR Conditional implants).
+Clarify which pre-stroke medications resume (rivaroxaban/Xarelto, amlodipine, perineva, clopidogrel, pentoxifylline) and when.
+SECTION 7. RECOMMENDATIONS FOR NURSES (CARE)
+7.1 Right arm positioning
+Pillow under the whole arm — not dangling. Shoulder slightly raised.
+Arm abducted 30-45° from the body, elbow slightly flexed.
+Palm up, fingers open (roll in the hand), thumb abducted — do NOT let it clench into a fist.
+Do NOT pull on the paralyzed arm when turning (shoulder dislocation risk).
+7.2 Right leg positioning
+Pillow under the shin. HEEL floating free (not on mattress) — pressure-sore prevention.
+Knee slightly flexed (~10-15°). Foot at 90° to the shin (support) — foot-drop prevention.
+Roll beside the hip — against outward rotation.
+Left foot stump (post-amputation) — no direct pressure, inspect at every turn.
+7.3 Turns and pressure sores
+Reposition every 2 hours: back -> left (healthy) side -> back. Do NOT place on the right (affected) side.
+Risk zones: sacrum, heels (especially right), shoulder blades, elbows, occiput, ear, foot stump.
+Sheet without wrinkles. Skin dry. Do NOT rub reddened areas.
+7.4 Night warning signs (call doctor immediately)
+Worsening consciousness, new facial asymmetry, sharp BP rise >160.
+Noisy/gurgling breathing (aspiration risk), seizures, vomiting.
+Bleeding from nose/gums (on anticoagulation), temperature >38°C.
+Redness/pain at the neck surgery site.
+SECTION 8. RECOMMENDATIONS FOR THE SPEECH THERAPIST
+Leading deficit — motor (Broca's) aphasia with preserved comprehension. Multilingual patient: Russian (native), English, Swahili.
+8.1 Evidence-based methods
+Melodic Intonation Therapy (MIT) — singing/intoning phrases; proven for motor aphasia with preserved comprehension.
+Semantic Feature Analysis (SFA) — naming via object features.
+Script Training — 5-10 functional phrases to automaticity ('I need water', 'Where is my granddaughter?').
+Intensity >=3 hours/week, short frequent sessions.
+8.2 Multilingual strategy
+8.3 How to communicate with the patient
+Short closed questions ('Want water?'), picture cards, time to respond.
+Speak normally, as to an adult — he understands everything.
+Do NOT demand 'say it properly', do not repeat questions many times.
+Language mixing is a normal compensatory strategy, not an error.
+SECTION 9. REHABILITATION AND CENTER CHOICE
+9.1 Early rehabilitation principles
+Short frequent sessions (2-3/day, 10-20 min), NOT an intensive marathon (per AVERT III, early high-intensity mobilization is harmful).
+Mirror therapy for the right arm from the first days.
+Nutrition: 1.2-1.5 g protein per kg body weight per day.
+Sleep in darkness — important for neuroplasticity.
+9.2 Recommended centers (by combined factors)
+SECTION 10. QUESTIONS FOR THE TEAM
+Coagulogram result — when does anticoagulation start and with which drug (apixaban often preferred at 83)?
+Current NIHSS on the neurologist's latest assessment?
+When is transfer from ICU to neurology/rehabilitation ward?
+When does speech therapy begin?
+Will rivaroxaban (Xarelto) resume or a different drug?
+Is a cardiology consult and Holter needed (scar, extrasystole)?
+Important caveats
+Prognostic percentages are population statistics for ASPECTS 8, not a prediction for this individual.
+Infarct size 'up to 15 mm' is linear per the CT description, not a volume in mL.
+Timing and choice of anticoagulant are determined only by physicians per the full coagulogram and bleeding risk.
+Suspicion of an old myocardial scar is reduced on ECG trend but needs planned echocardiographic verification.
+This document is a summary of available data and analysis, not a medical opinion. All decisions are with the treating physicians.
+Consolidated case history. Sources: 16 studies from EMIAS (CT, MRI, CT angiography, echocardiography, ECG series, vascular/organ ultrasound, discharge summary). Evidence base: ESVS 2023, AHA/ASA 2016, ESO 2025, ELAN 2023, OPTIMAS 2024, CATALYST 2025, AVERT 2015. Compiled 30.05.2026. Not a medical opinion.

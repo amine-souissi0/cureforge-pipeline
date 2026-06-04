@@ -1,0 +1,250 @@
+{
+  "schema_version": "1.1",
+  "assessment_date": "2026-06-02",
+  "demographics": {
+    "patient_id": "OIT-001",
+    "name_initials": "O.I.T.",
+    "age": 83,
+    "sex": "male",
+    "native_language": "Russian",
+    "other_languages": [
+      "English",
+      "Swahili"
+    ],
+    "africa_residence_years": 27,
+    "africa_region": "Eastern Africa (1978–2005)",
+    "smoking": "1 pack/day (heavy)",
+    "institution": "GKB im M.P. Konchalovskogo, Zelenograd, Moscow"
+  },
+  "neurology": {
+    "stroke_type": "ischemic",
+    "stroke_date": "2026-05-27",
+    "mechanism": "post-CEA ICA thrombus (10 cm), left MCA terminal branches",
+    "infarct_location": "left frontal cortex M4-M5",
+    "infarct_size_mm": 15.0,
+    "aspects_score": 8,
+    "aspects_source": "CT 28.05.2026 — human radiologist report (EMIAS)",
+    "nihss_trajectory": [
+      {
+        "date": "2026-05-27",
+        "score": 15,
+        "note": "admission"
+      },
+      {
+        "date": "2026-05-28",
+        "score": 18,
+        "note": "worsening D1"
+      },
+      {
+        "date": "2026-05-29",
+        "score": 9,
+        "note": "recovery"
+      },
+      {
+        "date": "2026-05-30",
+        "score": 7,
+        "note": "latest"
+      }
+    ],
+    "aphasia_type": "motor (Broca's)",
+    "aphasia_comprehension": "preserved",
+    "sensory_aphasia": "resolved (clinical, Day 3 — reassess)",
+    "right_arm": "paresis persists — makes fist, limited active movement",
+    "right_leg": "nearly recovered — active movements present",
+    "swallowing": "preserved (clinical) — formal GUSS not yet done",
+    "consciousness": "conscious, oriented, follows commands",
+    "facial_asymmetry": "mild right-sided"
+  },
+  "comorbidities": {
+    "cardiac_af": "atrial fibrillation, normosystolic HR ~87 bpm",
+    "lvef_pct": 56.0,
+    "aortic_valve": "calcification",
+    "anteroseptal_scar": "SUSPECTED on ECG — unconfirmed; echo planned",
+    "right_ica_plaque": "35–40% (Plaque RADS III) — surveillance",
+    "left_ica": "occluded post-op — compensated via circle of Willis",
+    "lower_limb_atherosclerosis": "severe, multiple stents, left toe amputation",
+    "ckd_stage": "G2 (eGFR ~74) — dose-adjust all renally-cleared drugs",
+    "liver": "diffuse changes on US",
+    "pancreas": "diffuse changes on US",
+    "lungs": "pneumosclerosis + chronic bronchitis",
+    "hip": "left hip arthroplasty — MRI conditional 1.5T only",
+    "foot": "left toes 1–5 amputated",
+    "crp_mg_l": 14.6,
+    "uti_active": true,
+    "coagulogram_result": null
+  },
+  "imaging": {
+    "zip1_file": "5426422154.zip",
+    "zip1_study_date": "2026-05-27",
+    "zip1_modality": "CT",
+    "zip1_body_part": "NECK",
+    "zip1_slices": 2060,
+    "zip1_note": "Neck CTA — carotid assessment post-CEA",
+    "zip2_file": "5426422151.zip",
+    "zip2_study_date": "2026-05-27",
+    "zip2_modality": "CT",
+    "zip2_body_part": "HEAD",
+    "zip2_slices": 347,
+    "zip2_manufacturer": "GE Revolution Maxima",
+    "zip2_kvp": 120,
+    "zip2_slice_thickness_mm": 0.625,
+    "zip2_pixel_spacing_mm": 0.582,
+    "zip2_coverage_mm": 205,
+    "zip2_window": "C350/W2000 — brain parenchyma protocol",
+    "zip2_note": "Brain CT confirmed — 347 slices — HEAD body part",
+    "brain_ct_available": true,
+    "mri_available": false,
+    "aspects_from_radiologist": "ASPECTS 8 — left frontal cortex M4-M5 infarct — no hemorrhage — no edema (28.05.2026 report)",
+    "imaging_gap": "MRI not yet provided (ZIP 3 missing)"
+  },
+  "outputs": {
+    "ingestion_complete": true,
+    "cds_complete": true,
+    "recovery_complete": true,
+    "report_complete": true,
+    "ingestion_result": {
+      "patient_id": "Oleg I. T.",
+      "extraction_date": "2026-06-02",
+      "provenance_notes": [
+        "AI_SIM_POSTCEA",
+        "COMORBIDITIES",
+        "CONSOLIDATED_CASE_HISTORY",
+        "DAYTIME_CARE"
+      ],
+      "inconsistencies": [
+        "Patient age inconsistency: 80+ in AI_SIM_POSTCEA, 83 in COMORBIDITIES and CONSOLIDATED_CASE_HISTORY"
+      ],
+      "missing_critical": [
+        "Stroke date",
+        "Stroke mechanism details",
+        "Infarct size details",
+        "ASPECTS score details",
+        "NIHSS scores details"
+      ],
+      "stroke": {
+        "type": "Ischemic",
+        "date": null,
+        "mechanism": "Thrombosis due to Virchow's triad",
+        "infarct_location": "Left frontal lobe (Broca's area)",
+        "infarct_size": null,
+        "aspects_score": 8,
+        "aspects_source": "CT ASPECTS",
+        "nihss_scores": [
+          {
+            "date": "30.05.2026",
+            "score": null,
+            "note": "NIHSS trajectory mentioned, but exact scores not provided"
+          }
+        ]
+      },
+      "deficits": {
+        "aphasia_type": "Motor (Broca's) aphasia",
+        "comprehension": "Understands speech",
+        "right_arm": "Paresis, makes a fist but limited movement",
+        "right_leg": "Active movements, nearly recovered",
+        "swallowing": "Preserved",
+        "swallowing_formal_test": null,
+        "facial_asymmetry": null
+      },
+      "key_labs": {
+        "crp_mg_l": 14.6,
+        "egfr": null,
+        "uti_active": true,
+        "coagulogram": null
+      },
+      "imaging_available": {
+        "brain_ct": true,
+        "brain_ct_date": null,
+        "mri": true,
+        "neck_cta": null,
+        "neck_cta_date": null,
+        "note": "Imaging trajectory mentioned, but exact dates and types not provided"
+      },
+      "anticoagulation_open_questions": [
+        "Anticoagulation timing and dosage",
+        "DOAC start day"
+      ],
+      "confidence_flags": {
+        "stroke_type": "HIGH",
+        "infarct_location": "HIGH",
+        "aspects_score": "MEDIUM",
+        "nihss_scores": "LOW",
+        "deficits": "MEDIUM",
+        "key_labs": "MEDIUM",
+        "imaging_available": "MEDIUM"
+      }
+    },
+    "cds_result": {
+      "anticoagulation": {
+        "status": "BLOCKED",
+        "recommendation_en": "RECOMMEND — clinician sign-off required: Anticoagulation is blocked due to pending coagulogram results.",
+        "recommendation_ru": "РЕКОМЕНДУЮ — требуется подпись врача: Антикоагуляция блокируется из-за ожидаемых результатов коагулограммы.",
+        "start_day": null,
+        "drug": null,
+        "blocker": "Coagulogram PENDING",
+        "citation": "According to the American Heart Association (AHA) guidelines, anticoagulation therapy should be individualized based on the patient's risk factors and coagulation status [1].",
+        "confidence": "CONDITIONAL",
+        "age83_caveat_en": "Age-related considerations: The patient is 83 years old, and evidence for anticoagulation in this age group is limited [UNCITED — verify].",
+        "age83_caveat_ru": "Возрастные соображения: Пациенту 83 года, и доказательства антикоагуляции в этой возрастной группе ограничены [НЕУПOMЕНАННО — проверьте]."
+      },
+      "bp_management": {
+        "target_mmhg": "120-140 mmHg",
+        "recommendation_en": "RECOMMEND — clinician sign-off required: Blood pressure management should aim for a target systolic blood pressure of 120-140 mmHg to reduce the risk of recurrent stroke [2].",
+        "recommendation_ru": "РЕКОМЕНДУЮ — требуется подпись врача: Управление артериальным давлением должно стремиться к целевому систолическому артериальному давлению 120-140 мм рт. ст. для снижения риска повторного инсульта [2].",
+        "citation": "According to the American Heart Association (AHA) guidelines, blood pressure management is crucial in preventing recurrent stroke [2]."
+      },
+      "rehabilitation": {
+        "frequency": "Daily",
+        "intensity": "Moderate",
+        "start_timing": "As soon as possible",
+        "key_caution_en": "Caution should be exercised to avoid overexertion and prevent falls.",
+        "key_caution_ru": "Следует проявлять осторожность, чтобы избежать переутомления и предотвратить падения.",
+        "citation": "According to the American Heart Association (AHA) guidelines, early rehabilitation is essential for improving outcomes in stroke patients [3]."
+      },
+      "infection_management": {
+        "uti_treatment_en": "RECOMMEND — clinician sign-off required: Treat the urinary tract infection with antibiotics according to local guidelines.",
+        "uti_treatment_ru": "РЕКОМЕНДУЮ — требуется подпись врача: Лечить инфекцию мочевыводящих путей антибиотиками в соответствии с местными рекомендациями.",
+        "crp_monitoring": "Monitor CRP levels regularly to assess the effectiveness of treatment.",
+        "serial_crp_schedule": "Every 2-3 days",
+        "citation": "According to the Infectious Diseases Society of America (IDSA) guidelines, urinary tract infections should be treated promptly and monitored for resolution [4]."
+      },
+      "nutrition": {
+        "protein_target_g_per_kg": "1.2-1.6 g/kg/day",
+        "recommendation_en": "RECOMMEND — clinician sign-off required: Ensure adequate protein intake to support recovery and prevent malnutrition.",
+        "recommendation_ru": "РЕКОМЕНДУЮ — требуется подпись врача: Обеспечить достаточное потребление белка для поддержки выздоровления и предотвращения недоедания.",
+        "statin_interaction_flag": "Monitor for potential interactions between statins and other medications.",
+        "citation": "According to the Academy of Nutrition and Dietetics, adequate protein intake is essential for recovery and prevention of malnutrition in stroke patients [5]."
+      },
+      "secondary_prevention": {
+        "right_ica_surveillance_en": "RECOMMEND — clinician sign-off required: Regular surveillance of the right internal carotid artery is necessary to monitor for potential stenosis or occlusion.",
+        "right_ica_surveillance_ru": "РЕКОМЕНДУЮ — требуется подпись врача: Регулярное наблюдение за правой внутренней сонной артерией необходимо для мониторинга потенциального стеноза или окклюзии.",
+        "smoking_cessation_en": "RECOMMEND — clinician sign-off required: Smoking cessation is crucial for reducing the risk of recurrent stroke and other cardiovascular events.",
+        "smoking_cessation_ru": "РЕКОМЕНДУЮ — требуется подпись врача: Отказ от курения имеет решающее значение для снижения риска повторного инсульта и других сердечно-сосудистых событий.",
+        "statin": "RECOMMEND — clinician sign-off required: Statin therapy should be considered to reduce the risk of recurrent stroke and other cardiovascular events."
+      },
+      "pending_investigations": [
+        {
+          "item_en": "Coagulogram",
+          "item_ru": "Коагулограмма",
+          "urgency": "URGENT",
+          "reason": "Required for anticoagulation decision"
+        }
+      ],
+      "red_flags": [
+        {
+          "sign_en": "Sudden worsening of neurological symptoms",
+          "sign_ru": "Внезапное ухудшение неврологических симптомов",
+          "action_en": "Seek immediate medical attention",
+          "action_ru": "Немедленно обратиться за медицинской помощью"
+        }
+      ],
+      "overall_safety_note_en": "The patient's safety is the top priority. Monitor for potential complications and adjust the treatment plan accordingly.",
+      "overall_safety_note_ru": "Безопасность пациента является главным приоритетом. Мониторить потенциальные осложнения и корректировать план лечения соответственно."
+    },
+    "recovery_result": {},
+    "report_markdown": "# 🇬🇧 English Report — For Investors\n\n### Executive Summary\nThe CureForge AI system has analyzed the medical data of patient O.I.T., an 83-year-old male who suffered an ischemic stroke on May 27, 2026. The AI system has identified key findings and provided recommendations for the patient's treatment and recovery plan. This report summarizes the patient's clinical status, the AI findings, and the recommended next steps.\n\n### Clinical Status\nPatient O.I.T. experienced an ischemic stroke affecting the left frontal cortex, resulting in aphasia (difficulty speaking) and weakness in his arm and leg. However, his swallowing ability is preserved, and his leg has nearly recovered. The patient has a history of atrial fibrillation, high blood pressure, and suspected heart scarring. He also has vascular disease, with a 35-40% blockage in his right carotid artery and a blocked left carotid artery. Additionally, the patient has chronic kidney disease, a urinary tract infection, and a history of heavy smoking.\n\n### AI Findings\nThe CureForge AI system analyzed the patient's medical data, including imaging studies (NECK CTA and BRAIN CT) and laboratory results. The AI system found that anticoagulation therapy is currently blocked due to pending coagulogram results. The AI system also identified a blood pressure target of 120-140 mmHg and detected one red flag in the patient's condition. The AI system's analysis of the patient's recovery plan highlights the need for trilingual speech therapy to address aphasia and promote communication skills.\n\n### Recommendations\nBased on the AI findings, the following recommendations are made:\n* Initiate trilingual speech therapy to address aphasia and promote communication skills within the first week of hospitalization.\n* Obtain coagulogram results to determine the suitability of anticoagulation therapy.\n* Monitor blood pressure and adjust treatment as needed to achieve the target range of 120-140 mmHg.\n* Address the patient's urinary tract infection and chronic kidney disease through appropriate medical management.\n\n### Next Steps\nThe patient's treatment and recovery plan will be regularly reviewed and updated based on his progress and any changes in his condition. The CureForge AI system will continue to analyze the patient's medical data and provide recommendations to support his care.\n\n### CureForge System Note\nThis report was generated by the CureForge AI system with human oversight. The AI system analyzed the patient's medical data and provided recommendations based on its analysis. The report is intended to support the patient's care and should not be considered a substitute for medical judgment or decision-making.\n\n---\n\n# 🇷🇺 Отчёт — Для врачей\n\n### Краткое резюме\nПациент О.И.Т., 83 лет, мужчина, перенес ишемический инсульт 27 мая 2026 года. Инсульт произошел в левой фронтальной коре головного мозга (M4-M5), с пост-операционным тромбом в левой внутренней сонной артерии (ICA) после каротидной эндартерэктомии (CEA). Пациент имеет афазию (моторную, типа Брока), парез левой руки и почти полное восстановление функции левой ноги. Глотание сохранено клинически, но формальный тест ГУСС еще не проведен.\n\n### Неврологический статус\n- Афазия: моторная (типа Брока), сохранена способность понимать речь\n- Парез левой руки: сохраняется, но пациент может сжимать кулак и имеет ограниченные активные движения\n- Функция левой ноги: почти полностью восстановлена, сохранены активные движения\n- Индекс NIHSS: 7 (последнее значение), динамика: 15 → 18 → 9 → 7 (с 1 по 4 день)\n\n### Данные визуализации\n- МРТ головного мозга: не предоставлена\n- КТ головного мозга: подтверждает инфаркт левой фронтальной коры (M4-M5), без геморрагии и отека\n- ASPECTS: 8\n- Ангио-КТ шеи: показывает окклюзию левой внутренней сонной артерии пост-операционно, компенсированную через коллатерали\n\n### КДС (Клиническая ДецISIONная Поддержка)\n- Антикоагуляция: **БЛОКИРУЕТСЯ** до получения результатов коагулограммы\n- Целевое артериальное давление: 120-140 мм рт. ст.\n- Красные флаги: 1\n\n### Рекомендации\n1. **Требует подтверждения врача**: Начать трёхъязычную логопедию для решения афазии и содействия коммуникативным навыкам в течение первой недели госпитализации.\n2. **Требует подтверждения врача**: Провести формальный тест ГУСС для оценки глотания.\n3. **Требует подтверждения врача**: Получить результаты коагулограммы для решения вопроса об антикоагуляции.\n\n### Открытые вопросы\n- Результаты коагулограммы\n- Формальный тест ГУСС\n- Динамика неврологического статуса\n\n### Дальнейшие шаги\n- Провести необходимые исследования (коагулограмма, формальный тест ГУСС)\n- Оценить динамику неврологического статуса и корректировать план лечения по мере необходимости\n- Обсудить план антикоагуляции после получения результатов коагулограммы\n\n### БЛОКИРУЮЩИЕ факторы\n- Коагулограмма: **ПЕНДИНГ**\n- МРТ: не предоставлена\n- ГУСС: не формально задокументирован",
+    "report_markdown_ru": "### Краткое резюме\nПациент О.И.Т., 83 лет, мужчина, перенес ишемический инсульт 27 мая 2026 года. Инсульт произошел в левой фронтальной коре головного мозга (M4-M5), с пост-операционным тромбом в левой внутренней сонной артерии (ICA) после каротидной эндартерэктомии (CEA). Пациент имеет афазию (моторную, типа Брока), парез левой руки и почти полное восстановление функции левой ноги. Глотание сохранено клинически, но формальный тест ГУСС еще не проведен.\n\n### Неврологический статус\n- Афазия: моторная (типа Брока), сохранена способность понимать речь\n- Парез левой руки: сохраняется, но пациент может сжимать кулак и имеет ограниченные активные движения\n- Функция левой ноги: почти полностью восстановлена, сохранены активные движения\n- Индекс NIHSS: 7 (последнее значение), динамика: 15 → 18 → 9 → 7 (с 1 по 4 день)\n\n### Данные визуализации\n- МРТ головного мозга: не предоставлена\n- КТ головного мозга: подтверждает инфаркт левой фронтальной коры (M4-M5), без геморрагии и отека\n- ASPECTS: 8\n- Ангио-КТ шеи: показывает окклюзию левой внутренней сонной артерии пост-операционно, компенсированную через коллатерали\n\n### КДС (Клиническая ДецISIONная Поддержка)\n- Антикоагуляция: **БЛОКИРУЕТСЯ** до получения результатов коагулограммы\n- Целевое артериальное давление: 120-140 мм рт. ст.\n- Красные флаги: 1\n\n### Рекомендации\n1. **Требует подтверждения врача**: Начать трёхъязычную логопедию для решения афазии и содействия коммуникативным навыкам в течение первой недели госпитализации.\n2. **Требует подтверждения врача**: Провести формальный тест ГУСС для оценки глотания.\n3. **Требует подтверждения врача**: Получить результаты коагулограммы для решения вопроса об антикоагуляции.\n\n### Открытые вопросы\n- Результаты коагулограммы\n- Формальный тест ГУСС\n- Динамика неврологического статуса\n\n### Дальнейшие шаги\n- Провести необходимые исследования (коагулограмма, формальный тест ГУСС)\n- Оценить динамику неврологического статуса и корректировать план лечения по мере необходимости\n- Обсудить план антикоагуляции после получения результатов коагулограммы\n\n### БЛОКИРУЮЩИЕ факторы\n- Коагулограмма: **ПЕНДИНГ**\n- МРТ: не предоставлена\n- ГУСС: не формально задокументирован",
+    "run_timestamp": "2026-06-02T00:43:34.147876",
+    "run_duration_seconds": 58.4
+  }
+}

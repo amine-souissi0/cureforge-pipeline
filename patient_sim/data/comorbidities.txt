@@ -1,0 +1,125 @@
+COMORBIDITIES & OTHER HEALTH ISSUES
+Findings in Other Organs from the Comprehensive Workup
+Patient: Oleg Ivanovich Teterin, 83 years old (DOB 26.09.1942)
+Addendum to the consolidated case history. As of 30.05.2026.
+Purpose of this document
+This collects findings in organs and systems NOT directly related to the stroke but important for the rehabilitation team: they affect nutrition, medications, exertion, and monitoring. Most are chronic background changes that do not require emergency action but must be taken into account.
+1. HEART AND VESSELS
+Organ/system
+Finding
+Meaning / action
+Heart (echo)
+LVEF 56% (low-normal), aortic valve calcified, mitral/tricuspid regurgitation grade 1, diastolic dysfunction type 1
+Systolic function preserved. Cardiology follow-up, BP control
+Rhythm (ECG)
+Atrial fibrillation, normosystolic. Transient extrasystole (29.05, resolved)
+HR control, anticoagulation per team decision
+Myocardium
+Possible anteroseptal scar changes (not confirmed on 30.05)
+Planned echo for verification
+Carotid arteries (pre-op)
+Left ICA stenosis up to 65-70% (ECST) — indication for the 27.05 surgery; right 55-60%. Post-op right plaque 35-40% (RADS III)
+Monitor, statins, follow-up duplex in 1-3 months
+Left carotid artery
+Occlusion after surgery, compensated via circle of Willis
+Brain supply provided by collaterals
+Leg arteries
+Multiple occlusions/stents; left femoro-popliteal stent occluded; CLI stage 3 left. Trans-metatarsal amputation of left foot (21.08.2023)
+Limited mobility — account for in rehabilitation
+Leg veins
+Patent bilaterally, no thrombosis
+Low PE risk at time of exam
+Aorta (CT-angio)
+Abdominal aorta tortuous, calcified plaques, moderate stenoses
+Atherosclerosis, no aneurysm
+Visceral arteries
+Celiac trunk ~85% ostial stenosis; SMA ~35%; renal arteries with plaques, no severe stenosis
+Account for in nutrition/exertion; monitor
+2. KIDNEYS AND URINARY SYSTEM
+Organ
+Finding
+Meaning / action
+Kidneys (US)
+Diffuse parenchymal changes, normal size, moderately increased echogenicity
+Chronic nephropathy (background). Monitor creatinine/eGFR
+Renal function
+Creatinine 83 µmol/L, eGFR ~74 (stage G2)
+Adequate function. Account for in drug dosing
+Urinary tract
+Active infection (leukocyturia, bacteriuria noted in workup)
+Treat to full resolution — reduces inflammation and thrombosis risk
+3. LIVER, PANCREAS, GI TRACT
+Organ
+Finding
+Meaning / action
+Liver (US)
+Diffuse changes, moderately hyperechoic, homogeneous structure
+Likely fatty liver/background. Liver enzymes normal (ALT/AST)
+Pancreas (US)
+Diffuse changes, irregular contours, heterogeneous structure
+Chronic changes (background), duct not dilated
+Gallbladder
+Walls thickened-dense, not enlarged, no stones
+No acute pathology
+Intestine
+Marked pneumatosis (increased gas)
+Common in bedridden/ICU; hampers US. Monitor bowel function
+Spleen, free fluid
+Not enlarged; no free fluid
+Normal
+4. LUNGS AND BREATHING
+Organ
+Finding
+Meaning / action
+Lungs
+Moderate pneumosclerosis (background), chronic bronchitis in history
+Breathing exercises, pneumonia prevention
+Chest
+Scoliosis (left-sided)
+May affect ECG recording (low amplitude) and positioning
+Smoking
+~50 years, 10 cigarettes/day
+Risk factor; full cessation if possible
+5. MUSCULOSKELETAL SYSTEM
+Structure
+Finding
+Meaning / action
+Left hip
+Arthroplasty (04.04.2025) after femoral neck fracture
+MRI only with implant compatibility (1.5 Tesla, MR Conditional)
+Left foot
+Amputation of toes 1-5 (after gangrene)
+Special stump care, protect from pressure sores
+Mobility
+Substantially limited (leg vessels + amputation + arthroplasty + paresis)
+Affects gait rehab plan — individual approach
+6. LABORATORY MARKERS (key)
+Marker
+Value
+Comment
+CRP (inflammation)
+14.6 mg/L (~3x high)
+Due to infection/surgery. Monitor over time
+HbA1c
+5.5%
+No diabetes
+Total cholesterol / LDL
+low on statin / 1.72
+LDL target <1.8 — achieved
+Creatinine / eGFR
+83 / ~74
+Adequate kidney function
+Total protein
+low-normal
+Nutritional flag — monitor nutrition (protein 1.2-1.5 g/kg)
+Fibrinogen
+3.47 g/L
+High-normal (prothrombotic background)
+SUMMARY FOR THE REHABILITATION TEAM
+Cardiology: AF on anticoagulation, planned echo (scar?), HR and BP control during exertion.
+Vessels: right carotid plaque under surveillance; severe leg atherosclerosis → limited mobility.
+Kidneys: adequate function, but dose drugs per eGFR; finish treating the urinary infection.
+Nutrition: protein 1.2-1.5 g/kg/day (low total protein); liver/pancreas — gentle regimen.
+Breathing: pneumosclerosis + scoliosis → breathing exercises, aspiration/pneumonia prevention.
+Musculoskeletal: hip implant (MRI limits), foot-stump care, individualized gait plan.
+Addendum to the consolidated case history. Sources: abdominal, renal, vascular ultrasound; echocardiography; ECG; laboratory tests; discharge summary. As of 30.05.2026. Not a medical opinion — all decisions with the treating physicians.

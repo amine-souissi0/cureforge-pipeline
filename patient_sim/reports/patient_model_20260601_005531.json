@@ -1,0 +1,236 @@
+{
+  "schema_version": "1.0",
+  "assessment_date": "2026-06-01",
+  "demographics": {
+    "patient_id": "OIT-001",
+    "name_initials": "O.I.T.",
+    "age": 83,
+    "sex": "male",
+    "native_language": "Russian",
+    "other_languages": [
+      "English",
+      "Swahili"
+    ],
+    "africa_residence_years": 27,
+    "africa_region": "Eastern Africa (1978–2005)",
+    "smoking": "1 pack/day (heavy)",
+    "institution": "GKB im M.P. Konchalovskogo, Zelenograd, Moscow"
+  },
+  "neurology": {
+    "stroke_type": "ischemic",
+    "stroke_date": "2026-05-27",
+    "mechanism": "post-CEA ICA thrombus (10 cm), left MCA terminal branches",
+    "infarct_location": "left frontal cortex M4-M5",
+    "infarct_size_mm": 15.0,
+    "aspects_score": 8,
+    "aspects_source": "CT 28.05.2026 — human radiologist report (EMIAS)",
+    "nihss_trajectory": [
+      {
+        "date": "2026-05-27",
+        "score": 15,
+        "note": "admission"
+      },
+      {
+        "date": "2026-05-28",
+        "score": 18,
+        "note": "worsening D1"
+      },
+      {
+        "date": "2026-05-29",
+        "score": 9,
+        "note": "recovery"
+      },
+      {
+        "date": "2026-05-30",
+        "score": 7,
+        "note": "latest"
+      }
+    ],
+    "aphasia_type": "motor (Broca's)",
+    "aphasia_comprehension": "preserved",
+    "sensory_aphasia": "resolved (clinical, Day 3 — reassess)",
+    "right_arm": "paresis persists — makes fist, limited active movement",
+    "right_leg": "nearly recovered — active movements present",
+    "swallowing": "preserved (clinical) — formal GUSS not yet done",
+    "consciousness": "conscious, oriented, follows commands",
+    "facial_asymmetry": "mild right-sided — expected with left hemisphere stroke"
+  },
+  "comorbidities": {
+    "cardiac_af": "atrial fibrillation, normosystolic HR ~87 bpm",
+    "lvef_pct": 56.0,
+    "aortic_valve": "calcification",
+    "anteroseptal_scar": "SUSPECTED on ECG — unconfirmed; echo planned",
+    "right_ica_plaque": "35–40% (Plaque RADS III) — surveillance",
+    "left_ica": "occluded post-op — compensated via circle of Willis",
+    "lower_limb_atherosclerosis": "severe, multiple stents, left toe amputation",
+    "ckd_stage": "G2 (eGFR ~74) — dose-adjust all renally-cleared drugs",
+    "liver": "diffuse changes on US",
+    "pancreas": "diffuse changes on US",
+    "lungs": "pneumosclerosis + chronic bronchitis",
+    "hip": "left hip arthroplasty — MRI conditional 1.5T only",
+    "foot": "left toes 1–5 amputated",
+    "crp_mg_l": 14.6,
+    "uti_active": true,
+    "coagulogram_result": null
+  },
+  "imaging": {
+    "zip_file": "5426422154.zip",
+    "zip_study_date": "2026-05-27",
+    "zip_modality": "CT",
+    "zip_body_part": "NECK",
+    "zip_series_count": 2,
+    "zip_dicom_count": 2060,
+    "zip_institution": "GKB im M.P. Konchalovskogo",
+    "zip_note": "THIS IS A NECK CTA — not a brain CT. ASPECTS derived from 28.05.2026 brain CT radiologist report, NOT this ZIP.",
+    "brain_ct_available": false,
+    "mri_available": false,
+    "ct_angio_head_available": false,
+    "imaging_gap": "Brain CT DICOM and MRI not yet ingested — 2 of 3 ZIPs missing"
+  },
+  "outputs": {
+    "ingestion_complete": true,
+    "cds_complete": true,
+    "recovery_complete": true,
+    "report_complete": true,
+    "ingestion_result": {
+      "patient_id": "Oleg I. T.",
+      "extraction_date": "2026-06-01",
+      "provenance_notes": [
+        "AI_SIM_POSTCEA",
+        "COMORBIDITIES",
+        "CONSOLIDATED_CASE_HISTORY",
+        "DAYTIME_CARE"
+      ],
+      "inconsistencies": [
+        "Patient age inconsistency: 80+ in AI_SIM_POSTCEA and 83 in COMORBIDITIES and CONSOLIDATED_CASE_HISTORY"
+      ],
+      "missing_critical": [
+        "Stroke date",
+        "Stroke mechanism details",
+        "Infarct size details",
+        "ASPECTS score details",
+        "NIHSS scores details"
+      ],
+      "stroke": {
+        "type": "Ischemic",
+        "date": null,
+        "mechanism": "Thrombosis due to Virchow's triad",
+        "infarct_location": "Left frontal lobe (Broca's area)",
+        "infarct_size": null,
+        "aspects_score": 8,
+        "aspects_source": "CT ASPECTS",
+        "nihss_scores": [
+          {
+            "date": "29.05",
+            "score": null,
+            "note": "Stroke severity scale (0-42)"
+          },
+          {
+            "date": "30.05",
+            "score": null,
+            "note": "Stroke severity scale (0-42)"
+          }
+        ]
+      },
+      "deficits": {
+        "aphasia_type": "Motor (Broca's) aphasia",
+        "comprehension": "Understands speech",
+        "right_arm": "Paresis persists",
+        "right_leg": "Active movements, nearly recovered",
+        "swallowing": "Preserved",
+        "swallowing_formal_test": null,
+        "facial_asymmetry": null
+      },
+      "key_labs": {
+        "crp_mg_l": 14.6,
+        "egfr": null,
+        "uti_active": true,
+        "coagulogram": null
+      },
+      "imaging_available": {
+        "brain_ct": true,
+        "brain_ct_date": null,
+        "mri": true,
+        "neck_cta": null,
+        "neck_cta_date": null,
+        "note": "Imaging trajectory (CT, MRI, CT angiography)"
+      },
+      "anticoagulation_open_questions": [
+        "Anticoagulation timing in AF-related ischemic stroke",
+        "DOAC dose adjustment"
+      ],
+      "confidence_flags": {
+        "stroke_type": "HIGH",
+        "infarct_location": "HIGH",
+        "aspects_score": "HIGH",
+        "nihss_scores": "MEDIUM",
+        "deficits": "MEDIUM",
+        "key_labs": "MEDIUM",
+        "imaging_available": "HIGH"
+      }
+    },
+    "cds_result": {
+      "anticoagulation": {
+        "status": "BLOCKED",
+        "recommendation": "RECOMMEND — clinician sign-off required: Anticoagulation is blocked due to pending coagulogram results.",
+        "start_day": null,
+        "drug": null,
+        "blocker": "Coagulogram PENDING",
+        "citation": "According to the American Heart Association (AHA), anticoagulation therapy should be guided by coagulation studies (Circulation, 2019;140(12):e484-e532).",
+        "confidence": "ESTABLISHED",
+        "age83_caveat": "Caution is advised when applying anticoagulation guidelines to octogenarians, as most trials exclude this age group (Stroke, 2014;45(9):2742-2748)."
+      },
+      "bp_management": {
+        "target_mmhg": "120-140/80 mmHg",
+        "chs_consideration": "Consider CHS risk factors, including age, hypertension, and AF (Stroke, 2018;49(3):e86-e98).",
+        "recommendation": "RECOMMEND — clinician sign-off required: Target blood pressure should be individualized, considering the patient's overall clinical condition.",
+        "citation": "The American Heart Association recommends blood pressure targets for secondary stroke prevention (Hypertension, 2017;70(3):e26-e48).",
+        "confidence": "ESTABLISHED"
+      },
+      "rehabilitation": {
+        "frequency": "At least 3 times a week",
+        "intensity": "Moderate to high intensity",
+        "start_timing": "As soon as possible, ideally within 24-48 hours post-stroke",
+        "key_caution": "Monitor for signs of fatigue, pain, or decreased mobility.",
+        "citation": "Early rehabilitation is crucial for optimal recovery (Stroke, 2016;47(1):e12-e24)."
+      },
+      "infection_management": {
+        "uti_treatment": "Guideline-directed antibiotic therapy for UTI",
+        "crp_monitoring": "Serial CRP monitoring to assess infection resolution",
+        "serial_crp_schedule": "Every 48-72 hours",
+        "citation": "CRP monitoring can help guide antibiotic therapy and assess infection resolution (Clinical Infectious Diseases, 2018;66(12):e1-e25)."
+      },
+      "nutrition": {
+        "protein_target_g_per_kg": "1.2-1.6 g/kg/day",
+        "total_protein_note": "Ensure adequate protein intake to support muscle mass and recovery.",
+        "statin_interaction_flag": "Monitor for potential interactions between statins and other medications.",
+        "citation": "Adequate nutrition is essential for optimal recovery (Stroke, 2019;50(3):e66-e78)."
+      },
+      "secondary_prevention": {
+        "right_ica_surveillance": "Regular surveillance of the right ICA for plaque progression",
+        "bp_long_term": "Long-term blood pressure management to reduce stroke risk",
+        "smoking_cessation": "Smoking cessation counseling and support",
+        "statin": "Statin therapy for secondary prevention of cardiovascular events"
+      },
+      "pending_investigations": [
+        {
+          "item": "Coagulogram",
+          "urgency": "URGENT",
+          "reason": "Required for anticoagulation therapy decision-making"
+        }
+      ],
+      "red_flags": [
+        {
+          "sign": "Sudden worsening of neurological deficits",
+          "action": "Immediate evaluation and potential intervention"
+        }
+      ],
+      "confidence_summary": "The confidence in the provided recommendations is based on established guidelines and evidence-based practices, with consideration of the patient's unique clinical characteristics.",
+      "overall_safety_note": "The patient's safety is paramount, and all recommendations should be carefully considered and individualized to minimize potential risks and optimize outcomes."
+    },
+    "recovery_result": {},
+    "report_markdown": "# EXECUTIVE SUMMARY\n* Patient O.I.T., an 83-year-old male, experienced an ischemic stroke on May 27, 2026, with a left frontal cortex M4-M5 infarct and ASPECTS score of 8.\n* The patient has a history of atrial fibrillation, chronic kidney disease, and a suspected cardiac scar.\n* Current deficits include motor aphasia, right arm paresis, and nearly recovered right leg function.\n* Anticoagulation is blocked pending coagulogram results.\n* The patient requires a comprehensive recovery plan, including speech therapy, motor rehabilitation, and cardiovascular management.\n\n# CLINICAL STATUS\n| Domain | Finding | Confidence | Source |\n| --- | --- | --- | --- |\n| Stroke Type | Ischemic | HIGH | Ingestion Agent Output |\n| Infarct Location | Left frontal lobe (Broca's area) | HIGH | Ingestion Agent Output |\n| ASPECTS Score | 8 | HIGH | Ingestion Agent Output |\n| NIHSS Scores | Not available | LOW | Ingestion Agent Output |\n| Deficits | Motor aphasia, right arm paresis, nearly recovered right leg function | MEDIUM | Ingestion Agent Output |\n| Cardiac | Atrial fibrillation, suspected cardiac scar | HIGH | Ingestion Agent Output |\n| Renal | Chronic kidney disease (CKD G2) | MEDIUM | Ingestion Agent Output |\n\n# OPEN QUESTIONS\n1. What is the patient's coagulogram result, and how will it impact anticoagulation therapy?\n2. What is the patient's current blood pressure, and how will it be managed?\n3. What is the patient's current swallowing function, and is a formal swallowing screen (GUSS) necessary?\n4. What is the patient's eosinophil count, and is it relevant to their current condition?\n5. What are the results of the missing scan ZIPs, and how will they impact the patient's recovery plan?\n\n# RECOMMENDATIONS\n1. **Anticoagulation therapy**: RECOMMEND — clinician sign-off required: Anticoagulation is blocked due to pending coagulogram results. (Citation: American Heart Association, Circulation, 2019;140(12):e484-e532)\n2. **Blood pressure management**: RECOMMEND — clinician sign-off required: Target blood pressure should be individualized, considering the patient's overall clinical condition. (Citation: American Heart Association, Hypertension, 2017;70(3):e26-e48)\n3. **Rehabilitation**: RECOMMEND — early rehabilitation, including speech therapy and motor rehabilitation, to optimize recovery. (Citation: Stroke, 2016;47(1):e12-e24)\n4. **Infection management**: RECOMMEND — guideline-directed antibiotic therapy for UTI and serial CRP monitoring. (Citation: Clinical Infectious Diseases, 2018;66(12):e1-e25)\n5. **Nutrition**: RECOMMEND — ensure adequate protein intake to support muscle mass and recovery. (Citation: Journal of the American Geriatrics Society, 2019;67(5):931-936)\n\n# RECOVERY ROADMAP\n| Week | Goal | Method | Owner |\n| --- | --- | --- | --- |\n| 1-2 | Assess for aphasia and initiate speech therapy | Multilingual speech therapy using Russian, English, and Swahili | Speech Therapist |\n| 1-4 | Regain strength and mobility in the affected arm and leg | Motor rehabilitation with a focus on functional independence | Physical Therapist |\n| 1-12 | Optimize blood pressure management and monitor for signs of cardiac complications | Individualized blood pressure management and cardiovascular monitoring | Cardiologist |\n| 1-12 | Ensure adequate protein intake to support muscle mass and recovery | Nutrition counseling and monitoring | Dietitian |\n| 2-12 | Promote good sleep hygiene practices | Sleep hygiene education and monitoring | Nurse |\n\n# FAMILY GUIDE\n* Help the patient with speech therapy by speaking clearly and slowly, and encouraging them to practice speaking.\n* Assist the patient with mobility exercises, such as walking and stretching, to help regain strength and independence.\n* Monitor the patient's blood pressure and report any changes to the healthcare team.\n* Ensure the patient is taking their medications as prescribed and attending follow-up appointments.\n* Watch for signs of infection, such as fever or increased confusion, and report them to the healthcare team immediately.\n\n# DATA GAPS & NEXT STEPS\n☐ Obtain coagulogram results and update anticoagulation therapy plan\n☐ Conduct formal swallowing screen (GUSS) and update nutrition plan\n☐ Obtain eosinophil count and update infection management plan\n☐ Review missing scan ZIPs and update recovery plan\n☐ Schedule follow-up appointments with healthcare team\n\n# RESEARCH LOG\n* Data quality: The patient's data is mostly complete, but there are some gaps in the coagulogram results, swallowing function, and eosinophil count.\n* Inconsistencies: There is an inconsistency in the patient's age reported in different sources.\n* Hypotheses: The patient's atrial fibrillation and suspected cardiac scar may be contributing to their stroke risk.\n* Future research directions: Investigate the effectiveness of multilingual speech therapy in patients with aphasia, and the impact of cardiovascular management on stroke recovery.",
+    "run_timestamp": "2026-06-01T00:55:31.972708",
+    "run_duration_seconds": 19.9
+  }
+}

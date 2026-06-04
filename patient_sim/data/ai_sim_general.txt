@@ -1,0 +1,38 @@
+AI SIMULATION SYSTEM — v2 (GENERALIZED)
+Stroke & Complex-Comorbidity Recovery: Decision Support, Monitoring, Rehabilitation
+Case-agnostic technical knowledge base — generalized from the post-CEA stroke design
+Longevity InTime AI Research Institute
+1. GENERALIZATION PRINCIPLES
+2. RETAINED CLINICAL EVIDENCE BASE (SEED CORPUS)
+The v1 evidence modules are retained unchanged as the seed knowledge base and remain authoritative for stroke cases:
+Post-CEA stroke (ESVS 2023 Rec 91-93); ~74% of CEA strokes are post-operative (Huibers, EJVES 2015).
+Cerebral hyperperfusion syndrome (van Mook, Lancet Neurol 2005): BP 100-130 only if CHS confirmed; else default <140 mmHg.
+Proportional Recovery Rule — use with PREP2/SAFE, not alone (model under re-evaluation).
+AVERT III dose-response: short frequent sessions; early high-intensity mobilization harmful.
+Anticoagulation timing in AF stroke: ELAN (NEJM 2023), OPTIMAS (Lancet 2024), CATALYST (Lancet 2025); 1-3-6-12 by infarct size.
+CRP as outcome predictor (Finck, Front Neurol 2023; Rocco, Neurol Sci 2015): serial CRP; treat infection as part of stroke care.
+Nutrition: PROT-AGE (JAMDA 2013) protein 1.2-1.5 g/kg; ESPEN Neurology (Clin Nutr 2018).
+3. v2 ARCHITECTURE (CASE-AGNOSTIC)
+Supervisor-orchestrated agents, parameterized by the patient model. Modules activate by problem type; the stroke module set is the v1 logic.
+4. CONFIG-DRIVEN THRESHOLDS (EXAMPLE)
+5. COMORBIDITY GATE (NEW IN v2)
+Before any recommendation is emitted, the gate runs hard checks and annotates or blocks:
+Renal (eGFR) → DOAC/contrast dose adjustment or block.
+Bleeding risk / active surgical site → anticoagulation timing co-decision flag.
+MRI-implant status → imaging-modality constraint (e.g., 1.5T MR-conditional).
+Drug-drug/drug-food (e.g., statin + grapefruit/pomelo) → nutrition-plan flag.
+Hepatic / pulmonary status → drug metabolism and exertion constraints.
+6. EXPOSURE / DIFFERENTIAL BRANCH (NEW IN v2)
+7. SAFETY & EVALUATION (UNCHANGED PRINCIPLES, BROADER SET)
+No autonomous prescribing; clinician sign-off on every actionable item; full audit log.
+Citation gate: uncited clinical claim blocked or labeled speculative.
+Confidence tiers: established / emerging / mechanistic / speculative.
+Octogenarian and small-trial-evidence bands widened and surfaced.
+Eval: board-adjudicated gold set; grounding, calibration, zero unsafe actions; prospective validation before any deployment.
+CAVEATS & LIMITATIONS
+v2 generalization does not re-validate the seed evidence; stroke modules remain the validated core, new modules are design-stage.
+Age 80+ evidence gap persists across the trial base; all thresholds carry wider uncertainty for octogenarians.
+Exposure-branch differentials are hypothesis-generation only; resolve via clinician-ordered testing.
+Anticoagulation extrapolation to post-surgical/active-site cases must be co-decided with the relevant surgical team.
+This is a technical design brief and knowledge base, not a validated clinical decision-support system. No prescribing.
+AI Simulation System v2 (generalized). Seed evidence base: ESVS 2023, AHA/ASA 2016, ESO 2025, ELAN (NEJM 2023), OPTIMAS (Lancet 2024), CATALYST (Lancet 2025), AVERT (Lancet 2015/Neurology 2016), PROT-AGE (JAMDA 2013), ESPEN (Clin Nutr 2018), Finck et al. (Front Neurol 2023), van Mook et al. (Lancet Neurol 2005). Design brief and knowledge base only; not medical advice; not a validated clinical tool.

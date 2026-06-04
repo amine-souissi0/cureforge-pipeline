@@ -1,0 +1,188 @@
+{
+  "schema_version": "1.1",
+  "assessment_date": "2026-06-02",
+  "demographics": {
+    "patient_id": "OIT-001",
+    "name_initials": "O.I.T.",
+    "age": 83,
+    "sex": "male",
+    "native_language": "Russian",
+    "other_languages": [
+      "English",
+      "Swahili"
+    ],
+    "africa_residence_years": 27,
+    "africa_region": "Eastern Africa (1978–2005)",
+    "smoking": "1 pack/day (heavy)",
+    "institution": "GKB im M.P. Konchalovskogo, Zelenograd, Moscow"
+  },
+  "neurology": {
+    "stroke_type": "ischemic",
+    "stroke_date": "2026-05-27",
+    "mechanism": "post-CEA ICA thrombus (10 cm), left MCA terminal branches",
+    "infarct_location": "left frontal cortex M4-M5",
+    "infarct_size_mm": 15.0,
+    "aspects_score": 8,
+    "aspects_source": "CT 28.05.2026 — human radiologist report (EMIAS)",
+    "nihss_trajectory": [
+      {
+        "date": "2026-05-27",
+        "score": 15,
+        "note": "admission"
+      },
+      {
+        "date": "2026-05-28",
+        "score": 18,
+        "note": "worsening D1"
+      },
+      {
+        "date": "2026-05-29",
+        "score": 9,
+        "note": "recovery"
+      },
+      {
+        "date": "2026-05-30",
+        "score": 7,
+        "note": "latest"
+      }
+    ],
+    "aphasia_type": "motor (Broca's)",
+    "aphasia_comprehension": "preserved",
+    "sensory_aphasia": "resolved (clinical, Day 3 — reassess)",
+    "right_arm": "paresis persists — makes fist, limited active movement",
+    "right_leg": "nearly recovered — active movements present",
+    "swallowing": "preserved (clinical) — formal GUSS not yet done",
+    "consciousness": "conscious, oriented, follows commands",
+    "facial_asymmetry": "mild right-sided"
+  },
+  "comorbidities": {
+    "cardiac_af": "atrial fibrillation, normosystolic HR ~87 bpm",
+    "lvef_pct": 56.0,
+    "aortic_valve": "calcification",
+    "anteroseptal_scar": "SUSPECTED on ECG — unconfirmed; echo planned",
+    "right_ica_plaque": "35–40% (Plaque RADS III) — surveillance",
+    "left_ica": "occluded post-op — compensated via circle of Willis",
+    "lower_limb_atherosclerosis": "severe, multiple stents, left toe amputation",
+    "ckd_stage": "G2 (eGFR ~74) — dose-adjust all renally-cleared drugs",
+    "liver": "diffuse changes on US",
+    "pancreas": "diffuse changes on US",
+    "lungs": "pneumosclerosis + chronic bronchitis",
+    "hip": "left hip arthroplasty — MRI conditional 1.5T only",
+    "foot": "left toes 1–5 amputated",
+    "crp_mg_l": 14.6,
+    "uti_active": true,
+    "coagulogram_result": null
+  },
+  "imaging": {
+    "zip1_file": "5426422154.zip",
+    "zip1_study_date": "2026-05-27",
+    "zip1_modality": "CT",
+    "zip1_body_part": "NECK",
+    "zip1_slices": 2060,
+    "zip1_note": "Neck CTA — carotid assessment post-CEA",
+    "zip2_file": "5426422151.zip",
+    "zip2_study_date": "2026-05-27",
+    "zip2_modality": "CT",
+    "zip2_body_part": "HEAD",
+    "zip2_slices": 347,
+    "zip2_manufacturer": "GE Revolution Maxima",
+    "zip2_kvp": 120,
+    "zip2_slice_thickness_mm": 0.625,
+    "zip2_pixel_spacing_mm": 0.582,
+    "zip2_coverage_mm": 205,
+    "zip2_window": "C350/W2000 — brain parenchyma protocol",
+    "zip2_note": "Brain CT confirmed — 347 slices — HEAD body part",
+    "brain_ct_available": true,
+    "mri_available": false,
+    "aspects_from_radiologist": "ASPECTS 8 — left frontal cortex M4-M5 infarct — no hemorrhage — no edema (28.05.2026 report)",
+    "imaging_gap": "MRI not yet provided (ZIP 3 missing)"
+  },
+  "outputs": {
+    "ingestion_complete": true,
+    "cds_complete": false,
+    "recovery_complete": false,
+    "report_complete": true,
+    "ingestion_result": {
+      "patient_id": "Oleg I. T.",
+      "extraction_date": "2026-06-02",
+      "provenance_notes": [
+        "AI_SIM_POSTCEA",
+        "COMORBIDITIES",
+        "CONSOLIDATED_CASE_HISTORY",
+        "DAYTIME_CARE"
+      ],
+      "inconsistencies": [
+        "Patient age inconsistency: 80+ in AI_SIM_POSTCEA and 83 in COMORBIDITIES and CONSOLIDATED_CASE_HISTORY"
+      ],
+      "missing_critical": [
+        "Stroke date",
+        "Stroke mechanism details",
+        "Infarct size details",
+        "ASPECTS score details",
+        "NIHSS scores details"
+      ],
+      "stroke": {
+        "type": "Ischemic",
+        "date": null,
+        "mechanism": "Thrombosis due to Virchow's triad",
+        "infarct_location": "Left frontal lobe (Broca's area)",
+        "infarct_size": null,
+        "aspects_score": 8,
+        "aspects_source": "CT ASPECTS",
+        "nihss_scores": [
+          {
+            "date": "30.05.2026",
+            "score": null,
+            "note": "NIHSS trajectory mentioned but score not specified"
+          }
+        ]
+      },
+      "deficits": {
+        "aphasia_type": "Motor (Broca's) aphasia",
+        "comprehension": "Understands speech",
+        "right_arm": "Paresis persists",
+        "right_leg": "Nearly recovered",
+        "swallowing": "Preserved",
+        "swallowing_formal_test": null,
+        "facial_asymmetry": null
+      },
+      "key_labs": {
+        "crp_mg_l": 14.6,
+        "egfr": null,
+        "uti_active": true,
+        "coagulogram": null
+      },
+      "imaging_available": {
+        "brain_ct": true,
+        "brain_ct_date": null,
+        "mri": true,
+        "neck_cta": null,
+        "neck_cta_date": null,
+        "note": "Imaging trajectory mentioned but details not specified"
+      },
+      "anticoagulation_open_questions": [
+        "Anticoagulation timing",
+        "DOAC dose"
+      ],
+      "confidence_flags": {
+        "stroke_type": "HIGH",
+        "infarct_location": "HIGH",
+        "aspects_score": "HIGH",
+        "nihss_scores": "MEDIUM",
+        "deficits": "MEDIUM",
+        "key_labs": "MEDIUM",
+        "imaging_available": "MEDIUM",
+        "anticoagulation_open_questions": "LOW"
+      }
+    },
+    "cds_result": {
+      "error": "429 Client Error: Too Many Requests for url: https://api.groq.com/openai/v1/chat/completions",
+      "status": "failed"
+    },
+    "recovery_result": {},
+    "report_markdown": "# 🇬🇧 English Report — For Investors\n\n### Executive Summary\nThis report summarizes the clinical status and AI findings for patient O.I.T., an 83-year-old male who suffered an ischemic stroke on May 27, 2026. The AI system analyzed the patient's medical data, including imaging and laboratory results, to identify key findings and provide recommendations for his care.\n\n### Clinical Status\nThe patient experienced a stroke due to a blockage in the left internal carotid artery, which affected the left frontal cortex. The stroke caused aphasia (difficulty speaking), weakness in the arm, and limited movement. However, the patient's leg function has nearly recovered. The patient also has a history of atrial fibrillation, high blood pressure, and kidney disease. Additionally, the patient has a suspected scar on the heart, which needs to be confirmed.\n\n### AI Findings\nThe AI system analyzed the patient's data and found the following key points:\n- The patient's stroke was caused by a blockage in the left internal carotid artery, which was confirmed by imaging tests.\n- The patient's brain imaging showed an infarct (dead tissue) in the left frontal cortex, but no bleeding or swelling.\n- The patient's kidney function is impaired, which requires dose adjustments for certain medications.\n- The patient has a high level of inflammation, which may indicate an underlying infection.\n- The patient's blood clotting test is pending, which is necessary to determine the best course of treatment.\n\n### Recommendations\nBased on the AI findings, the following recommendations are made:\n- The patient's blood pressure should be closely monitored and managed to prevent further damage.\n- The patient's kidney function should be closely monitored, and medications should be adjusted accordingly.\n- The patient should undergo further testing to confirm the suspected scar on the heart.\n- The patient's swallowing function should be formally assessed to ensure safe eating and drinking.\n- The patient's anticoagulation therapy should be determined once the blood clotting test results are available.\n\n### Next Steps\nThe patient's care team should:\n- Review the patient's medication list and adjust doses as needed based on kidney function.\n- Schedule a follow-up appointment to review the patient's progress and adjust the treatment plan as needed.\n- Consider consulting with a specialist to confirm the suspected scar on the heart.\n- Develop a plan to manage the patient's risk factors, including high blood pressure, atrial fibrillation, and smoking.\n\n### CureForge System Note\nThis report was generated by the CureForge AI system with human oversight. The AI system analyzed the patient's medical data and provided recommendations based on the analysis. The report is intended to provide a concise summary of the patient's clinical status and AI findings, and to support the patient's care team in developing an effective treatment plan.\n\n---\n\n# 🇷🇺 Отчёт — Для врачей\n\n[Agent error: 429 Client Error: Too Many Requests for url: https://api.groq.com/openai/v1/chat/completions]",
+    "report_markdown_ru": "[Agent error: 429 Client Error: Too Many Requests for url: https://api.groq.com/openai/v1/chat/completions]",
+    "run_timestamp": "2026-06-02T00:36:39.343383",
+    "run_duration_seconds": 5.0
+  }
+}

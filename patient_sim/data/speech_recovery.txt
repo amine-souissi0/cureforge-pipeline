@@ -1,0 +1,62 @@
+SPEECH RECOVERY IN MULTILINGUALISM
+Post-stroke aphasia in a speaker of three languages
+Russian + English + Swahili
+An evidence-based guide for the family
+Patient: Oleg I. T., 83 years | motor aphasia, sensory recovered
+1. HOW LANGUAGES RECOVER IN MULTILINGUAL APHASIA
+1.1 Six patterns of recovery (Paradis classification)
+The French-Canadian neurolinguist Michel Paradis identified six patterns of language recovery:
+For him, parallel recovery is most likely. The profile 'comprehension returned, speech lagging' is consistent with exactly this pattern.
+1.2 Which language recovers first?
+For him: Russian (native + language of the environment) has the lowest 'activation threshold' and will recover most fully. English second. Swahili third (if he did not use it daily, which is unlikely in Russia).
+2. TRANSFER OF SKILLS BETWEEN LANGUAGES
+2.1 Does therapy in one language transfer to others?
+Yes — partially. The meta-analysis by Goral et al. (2023; 40 studies, 85 participants) showed:
+2.2 Cognates (related words)
+Cognates — similar words across languages — transfer between languages best (Kohnert, 2004). But his three languages share few cognates:
+Russian <-> English: there are scientific/cultural cognates (телефон/telephone, доктор/doctor, такси/taxi)
+Swahili <-> Russian/English: almost no cognates in basic vocabulary
+But Swahili borrowed English words: kompyuta (computer), televisheni (television), daktari (doctor), gari (car) — these can be used to train transfer
+3. WHICH LANGUAGE TO CHOOSE FOR THERAPY
+4. PRACTICAL REHABILITATION METHODS
+4.1 Speech-therapy methods with proven efficacy in motor aphasia
+4.2 The family's role — training the communication partner
+Communication Partner Training has a strong evidence base (Simmons-Mackie et al., 2016). Family members learn to: (1) acknowledge the patient's competence, (2) give time and tools to respond, (3) use gestures, pictures, and writing.
+4.3 How to communicate correctly in motor aphasia
+IMPORTANT: he understands speech (sensory aphasia is gone) but cannot speak voluntarily. This is frustrating for him.
+HELPS: short closed questions ('Want water?'), picture cards, a calm tone, time to respond
+HELPS: speak normally, not as to a child — he is an adult and understands everything
+DOES NOT HELP: long explanations, demands to 'say it properly', constant re-questioning
+NORMAL: if he mixes languages — this is a compensatory strategy, a sign of recovery at work, not deterioration
+4.4 Technology and apps
+5. SPECIAL CONSIDERATIONS
+5.1 Swahili — a low-resource language for therapy
+There are practically no controlled studies of aphasia therapy in Swahili. Bilingual speech therapists with knowledge of Swahili are almost impossible to find in Russia. Practical conclusion: formal therapy in Swahili is likely unavailable — the language should be maintained through contact with family/community and recorded materials (songs, prayers, family conversations in Swahili on audio).
+5.2 Age 83
+5.3 Does multilingualism help or hinder?
+The evidence (Alladi et al., 2016; Lahiri et al., 2021) indicates: multilingualism does NOT hinder recovery and probably helps — through enhanced cognitive control and 'cognitive reserve'. Fears that 'dividing attention across three languages' would be harmful are not scientifically supported.
+6. ACTION PLAN
+Urgent (next 4-8 weeks)
+Formal assessment by a bilingual speech therapist using the BAT (Bilingual Aphasia Test) — at minimum the Russian and English modules, ideally Swahili via telemedicine. This gives a baseline across all three languages.
+Begin intensive speech therapy in Russian >=3 hours per week, combining: Melodic Intonation Therapy, Semantic Feature Analysis, Script Training on 5-10 meaningful phrases.
+Start training the main Russian-speaking family member in the communication-partner role.
+Maintain daily contact with English and Swahili: 15-30 minutes each day — conversation, news, music, video calls. Do NOT cram — the goal is emotional engagement and exposure.
+Install Constant Therapy or Lingraphica on a tablet for independent practice (target >=30 minutes a day).
+Weeks 8-24 (subacute period — the most productive)
+Add cross-language training once Russian plateaus: the same concept in Russian, then English, then Swahili in one session (training translation equivalents). This maximizes transfer.
+Repeat the BAT assessment every 8-12 weeks — for early detection of divergence in language recovery.
+Long-term (6 months and beyond)
+Transition to a maintenance regimen: 1-2 sessions with a speech therapist per week + daily app practice + family conversation. Recovery continues for years.
+Group conversational therapy in Russian (if available locally).
+What should change the plan
+No improvement on BAT after 6-8 weeks of Russian therapy -> increase intensity, change method, check for depression/hearing/new lesions
+English or Swahili begins to WORSEN (rare antagonistic recovery) -> add short maintenance sessions in that language
+Pathological language-mixing becomes noticeable and disruptive -> add language-control training
+IMPORTANT CAVEATS
+Most data on bilingual aphasia come from small studies and case reports. The meta-analyses by Goral (2023) and Lee & Faroqi-Shah (2024) are the most rigorous, but pool heterogeneous data.
+The 'Russian + English + Swahili' combination is essentially unstudied. Recommendations are extrapolated from a broader base (mainly Spanish-English, English-Hebrew, Indian languages, and the single Russian-English case of Kiran & Iakupova).
+The 'bilingual cognitive reserve' is disputed — the stroke data are observational, not replicated in Western populations. Treat as probable, not proven.
+Ribot's and Pitres' 'laws' are simplifications. The modern model accounts for many factors: age of acquisition, pre-stroke proficiency, language of the environment, emotional significance.
+The recovery picture may change over time — the profile at 1 month will not necessarily match the profile at 6 months. Reassess regularly.
+This document is for family information and rehabilitation planning. It does not replace assessment and treatment by a qualified bilingual speech therapist and rehabilitation team.
+Sources: Goral et al. (Brain & Language, 2023); Kuzmina et al. (Frontiers in Psychology, 2019); Lee & Faroqi-Shah (JSLHR, 2024); Kiran & Iakupova (2011); Ellis & Urban (2016); Alladi et al. (Stroke, 2016); Lahiri et al. (Aphasiology, 2021); Paradis (recovery classification); Bilingual Aphasia Test (Paradis & Libben, 1987). Not a medical opinion.
