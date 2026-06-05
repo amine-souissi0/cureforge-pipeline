@@ -13,7 +13,7 @@ from pathlib import Path
 from typing import Optional
 
 from patient_sim.models.patient import PatientModel
-from patient_sim.agents import ingestion_agent, cds_agent, recovery_agent, report_agent
+from patient_sim.agents import ingestion_agent, cds_agent, recovery_agent, report_agent, rehab_agent, vision_agent
 
 logger = logging.getLogger(__name__)
 
@@ -94,8 +94,24 @@ def run_analysis(progress_callback=None, coagulogram: Optional[str] = None) -> d
 
     time.sleep(8)  # Groq rate-limit buffer
 
+    # Agent 5 — Physical Rehabilitation
+    _cb("Agent 5/6 — Physical Rehabilitation Protocol", 82)
+    rehab = rehab_agent.run(summary, cds)
+    patient.outputs.recovery_result["rehab"] = rehab
+    _cb("Rehab protocol complete", 86)
+
+    time.sleep(5)
+
+    # Agent 6 — Computer Vision (design spec + recommendations)
+    _cb("Agent 6/6 — Computer Vision Movement Tracker", 88)
+    cv = vision_agent.run(summary, rehab)
+    patient.outputs.recovery_result["cv"] = cv
+    _cb("CV agent complete", 90)
+
+    time.sleep(5)
+
     # Agent 4 — Bilingual Report
-    _cb("Agent 4/4 — Generating bilingual report (EN + RU)", 80)
+    _cb("Agent 4/4 — Generating bilingual report (EN + RU)", 91)
     try:
         en_report, ru_report = report_agent.run(summary, ingestion, cds, recovery, AUDIT_FINDINGS)
         combined = f"# 🇬🇧 English Report — For Investors\n\n{en_report}\n\n---\n\n# 🇷🇺 Отчёт — Для врачей\n\n{ru_report}"
@@ -107,7 +123,7 @@ def run_analysis(progress_callback=None, coagulogram: Optional[str] = None) -> d
     patient.outputs.report_complete = bool(combined and len(combined) > 100)
     patient.outputs.report_markdown = combined
     patient.outputs.report_markdown_ru = ru_report
-    _cb("Report generated", 92)
+    _cb("Report generated", 97)
 
     # Persist
     duration = round(time.time() - start, 1)
@@ -142,6 +158,8 @@ def run_analysis(progress_callback=None, coagulogram: Optional[str] = None) -> d
         "patient":   patient,
         "cds":       cds,
         "recovery":  recovery,
+        "rehab":     rehab,
+        "cv":        cv,
         "report_md": combined,
         "report_md_ru": ru_report,
     }

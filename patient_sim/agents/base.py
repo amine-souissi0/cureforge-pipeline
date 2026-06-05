@@ -10,19 +10,38 @@ GROQ_MODEL = "llama-3.3-70b-versatile"
 
 def _get_key() -> str:
     import os
-    # 1. Environment variable (local .env / Docker)
+    # 1. Environment variable (local dev)
     key = os.environ.get("GROQ_API_KEY") or os.environ.get("groq_api_key")
     if key:
         return key
-    # 2. Streamlit Cloud secrets (st.secrets is NOT os.environ)
+    # 2. Streamlit Cloud secrets
     try:
         import streamlit as st
-        key = st.secrets.get("GROQ_API_KEY") or st.secrets.get("groq_api_key")
+        try:
+            key = st.secrets["GROQ_API_KEY"]
+        except Exception:
+            try:
+                key = st.secrets["groq_api_key"]
+            except Exception:
+                key = None
         if key:
-            return key
+            return str(key).strip()
     except Exception:
         pass
-    logger.error("GROQ_API_KEY not found in env or st.secrets")
+    # 3. .env file fallback
+    try:
+        root = Path(__file__).resolve().parents[2]
+        env_file = root / ".env"
+        if env_file.exists():
+            for line in env_file.read_text().splitlines():
+                if line.startswith("GROQ_API_KEY="):
+                    k = line.split("=", 1)[1].strip().strip("'\"")
+                    if k:
+                        return k
+    except Exception:
+        pass
+    # 4. Empty fallback — key must be in env or Streamlit secrets
+    logger.error("GROQ_API_KEY not found anywhere")
     return ""
 
 
@@ -81,10 +100,18 @@ def groq_call(system: str, user: str, json_mode: bool = True,
 
             content = resp.json()["choices"][0]["message"]["content"].strip()
             if json_mode:
-                if content.startswith("```"):
-                    content = content.split("```")[1]
-                    if content.startswith("json"):
-                        content = content[4:]
+                # Strip markdown fences anywhere in the response
+                if "```" in content:
+                    parts = content.split("```")
+                    # Find the json block
+                    for part in parts:
+                        stripped = part.strip()
+                        if stripped.startswith("json"):
+                            stripped = stripped[4:].strip()
+                        if stripped.startswith("{") or stripped.startswith("["):
+                            content = stripped
+                            break
+                content = content.strip()
                 return json.loads(content)
             return content
 
