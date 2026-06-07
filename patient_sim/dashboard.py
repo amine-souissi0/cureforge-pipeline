@@ -589,6 +589,43 @@ When NIHSS prediction reaches threshold → automated alert to neurology team fo
 При достижении порогового значения NIHSS → автоматическое уведомление неврологической команде о переходе на этап 3.
 """))
 
+    # ── Recording protocols + speech simulation ──────────────────────────────
+    st.divider()
+    gcol1, gcol2 = st.columns(2)
+    with gcol1:
+        with st.expander(T("📷 Camera Recording Protocol (arm + leg)","📷 Протокол съёмки (рука + нога)")):
+            try:
+                _p = Path(__file__).resolve().parent / "guides" / "camera_recording_protocol.md"
+                st.markdown(_p.read_text(encoding="utf-8"))
+            except Exception:
+                st.info("Guide file not found.")
+    with gcol2:
+        with st.expander(T("🗣️ Speech Recording Protocol (RU/EN/SW)","🗣️ Протокол записи речи (рус/англ/суахили)")):
+            try:
+                _p = Path(__file__).resolve().parent / "guides" / "speech_recording_protocol.md"
+                st.markdown(_p.read_text(encoding="utf-8"))
+            except Exception:
+                st.info("Guide file not found.")
+
+    st.subheader(T("🧠 Speech Recovery Simulation Model","🧠 Симуляция восстановления речи"))
+    try:
+        from patient_sim.agents.speech_sim_agent import get_simulation_spec
+        _sp = get_simulation_spec()
+        st.info(T(_sp["description_en"], _sp["description_ru"]))
+        sc1, sc2 = st.columns(2)
+        with sc1:
+            st.markdown(f"**{T('Languages (priority)','Языки (приоритет)')}:**")
+            for lname, ld in _sp["languages"].items():
+                st.markdown(f"- **{lname.title()}** (P{ld['priority']}): {T(ld['rationale_en'], ld['rationale_ru'])}")
+            st.markdown(f"**{T('Guidance loop','Цикл руководства')}:** {T(_sp['guidance_loop_en'], _sp['guidance_loop_ru'])}")
+        with sc2:
+            st.markdown(f"**{T('Milestones','Этапы')}:**")
+            for ms in _sp["milestones"]:
+                st.markdown(f"- W{ms['week']}: {T(ms['target_en'], ms['target_ru'])}")
+        st.success(T(_sp["where_it_ends_en"], _sp["where_it_ends_ru"]))
+    except Exception as _e:
+        st.info(f"Speech sim spec unavailable: {_e}")
+
     st.warning(T("🔒 Privacy: All video processed locally on device — no video stored or transmitted",
                  "🔒 Конфиденциальность: Всё видео обрабатывается локально — никакое видео не хранится и не передаётся"))
 

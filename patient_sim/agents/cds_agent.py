@@ -83,4 +83,4 @@ Ingestion findings:
 
 Generate bilingual (English + Russian) clinical decision support.
 Coagulogram status is critical — BLOCK anticoagulation if PENDING."""
-    return groq_call(SYSTEM, user, json_mode=True, max_tokens=2500)
+    return groq_call(SYSTEM, user, json_mode=True, max_tokens=1500)

@@ -90,6 +90,9 @@ def run_analysis(progress_callback=None, coagulogram: Optional[str] = None) -> d
     _cb("Agent 3/4 — Recovery & Longevity Planner", 60)
     recovery = recovery_agent.run(summary, cds)
     patient.outputs.recovery_complete = isinstance(recovery, dict) and "error" not in recovery
+    # Persist the recovery plan itself so the Recovery tab works on cold cache load
+    if isinstance(recovery, dict):
+        patient.outputs.recovery_result = dict(recovery)
     _cb("Recovery plan complete", 75)
 
     time.sleep(8)  # Groq rate-limit buffer

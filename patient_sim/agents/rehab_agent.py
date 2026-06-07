@@ -67,4 +67,4 @@ Right arm: paresis (makes fist, limited active movement)
 Right leg: nearly recovered (active movements present)
 Left foot amputated. Hip arthroplasty left side.
 Age 83 — conservative intensity, fall prevention priority."""
-    return groq_call(SYSTEM, user, json_mode=True, max_tokens=2500)
+    return groq_call(SYSTEM, user, json_mode=True, max_tokens=1500)

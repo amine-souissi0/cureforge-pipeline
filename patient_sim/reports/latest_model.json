@@ -1,9 +1,11 @@
 {
-  "schema_version": "1.1",
-  "assessment_date": "2026-06-02",
+  "schema_version": "1.2",
+  "assessment_date": "2026-06-05",
   "demographics": {
     "patient_id": "OIT-001",
+    "full_name": "Teterin Oleg Ivanovich (Тетерин Олег Иванович)",
     "name_initials": "O.I.T.",
+    "dob": "26.09.1942",
     "age": 83,
     "sex": "male",
     "native_language": "Russian",
@@ -14,7 +16,10 @@
     "africa_residence_years": 27,
     "africa_region": "Eastern Africa (1978–2005)",
     "smoking": "1 pack/day (heavy)",
-    "institution": "GKB im M.P. Konchalovskogo, Zelenograd, Moscow"
+    "institution": "GKB im M.P. Konchalovskogo, Zelenograd, Moscow",
+    "oms_policy": "7700001073760942",
+    "admission_date": "2026-05-26 18:22",
+    "hospital_days": 8
   },
   "neurology": {
     "stroke_type": "ischemic",
@@ -37,41 +42,76 @@
       },
       {
         "date": "2026-05-29",
-        "score": 9,
-        "note": "recovery"
+        "score": 14,
+        "note": "recovery D3"
       },
       {
         "date": "2026-05-30",
-        "score": 7,
-        "note": "latest"
+        "score": 12,
+        "note": "latest — confirmed minimum"
       }
     ],
-    "aphasia_type": "motor (Broca's)",
+    "rankin_scale": 5,
+    "rivermead_index": 2,
+    "srm_score": 5,
+    "aphasia_type": "complex motor aphasia + gross dysarthria",
     "aphasia_comprehension": "preserved",
-    "sensory_aphasia": "resolved (clinical, Day 3 — reassess)",
+    "sensory_aphasia": "resolved (clinical, Day 3)",
     "right_arm": "paresis persists — makes fist, limited active movement",
     "right_leg": "nearly recovered — active movements present",
     "swallowing": "preserved (clinical) — formal GUSS not yet done",
-    "consciousness": "conscious, oriented, follows commands",
-    "facial_asymmetry": "mild right-sided"
+    "consciousness": "clear, oriented in space/time/person",
+    "cognitive_impairment": "present — cognitive deficits noted in ICD diagnosis",
+    "facial_asymmetry": "mild right-sided",
+    "rehabilitation_stage": "Stage 2 planned — interim report prepared for handover",
+    "clinical_trajectory": "IMPROVEMENT (улучшение) — 03.06.2026"
   },
   "comorbidities": {
-    "cardiac_af": "atrial fibrillation, normosystolic HR ~87 bpm",
+    "cardiac_af": "permanent AF, normosystolic — HR 66-83-113 bpm (02.06.2026)",
+    "cha2ds2_vasc": 4,
+    "has_bled": 1,
+    "ecg_02jun26": "AF normosystole HR 66-83-113, axis 14° horizontal, repolarization disturbance (nonspecific)",
+    "ecg_trend": "29.05→30.05→02.06: extrasystole RESOLVED, scar suspicion REMOVED on trend",
     "lvef_pct": 56.0,
-    "aortic_valve": "calcification",
-    "anteroseptal_scar": "SUSPECTED on ECG — unconfirmed; echo planned",
+    "echo_findings": "LVEF 56%, no focal WMA, Mitral regurg Gr1, Tricusp regurg Gr1, Aortic calcification, RVSP 17mmHg",
+    "weight_kg": 70.0,
+    "height_cm": 176,
+    "bmi": 22.6,
+    "aortic_valve": "calcification — leaflets thickened",
+    "anteroseptal_scar": "REMOVED — 3-ECG trend shows no scar; echo needed for final confirmation",
     "right_ica_plaque": "35–40% (Plaque RADS III) — surveillance",
     "left_ica": "occluded post-op — compensated via circle of Willis",
-    "lower_limb_atherosclerosis": "severe, multiple stents, left toe amputation",
-    "ckd_stage": "G2 (eGFR ~74) — dose-adjust all renally-cleared drugs",
+    "lower_limb_atherosclerosis": "severe, multiple stents, left toe amputation (metatarsal 2023)",
+    "ckd_stage": "G2 (eGFR 76.7 mL/min/1.73m²) — dose-adjust renally-cleared drugs",
     "liver": "diffuse changes on US",
     "pancreas": "diffuse changes on US",
     "lungs": "pneumosclerosis + chronic bronchitis",
     "hip": "left hip arthroplasty — MRI conditional 1.5T only",
-    "foot": "left toes 1–5 amputated",
-    "crp_mg_l": 14.6,
+    "foot": "left toes 1–5 amputated (metatarsal amputation 2023)",
+    "crp_mg_l": 22.95,
+    "wbc_29may": 15.26,
+    "wbc_30may": 9.45,
+    "eosinophils_abs": 0.04,
+    "eosinophils_pct": 0.24,
+    "inr_admission": 2.08,
+    "glucose_mmol": 9.27,
     "uti_active": true,
-    "coagulogram_result": null
+    "hematuria": "erythrocytes >100/HPF in urinalysis — monitoring required",
+    "coagulogram_result": "Enoxaparin course completed (30.05-03.06.2026, 5 days). INR 2.08 on admission. Long-term anticoagulation for AF decision PENDING.",
+    "anticoagulation_status": "Enoxaparin COMPLETED. Aspirin 125mg ongoing. Long-term AC decision pending."
+  },
+  "medications": {
+    "atorvastatin_20mg": "oral, once daily evening, 30.05-08.06.2026 (lipid-lowering)",
+    "aspirin_125mg": "oral, once daily evening, 30.05-08.06.2026 (antiplatelet)",
+    "enoxaparin_8000": "SC twice daily, 30.05-03.06.2026 COMPLETED (anticoagulant, 5 days)",
+    "ampicillin_sulbactam": "IV 3x/day (6:00,14:00,22:00), 31.05-08.06.2026 (antibiotic — UTI/post-op)",
+    "valsartan_40mg": "oral twice daily (antihypertensive, ongoing)",
+    "bisoprolol_5mg": "oral once daily morning (rate control + antihypertensive, ongoing)",
+    "amlodipine_5mg": "oral once daily morning (antihypertensive)",
+    "omeprazole_20mg": "oral once daily morning (gastroprotection, ongoing)",
+    "mexidol_500mg": "IV infusion once daily, 31.05-03.06.2026 (neuroprotective/metabolic)",
+    "cerebrolysin": "IV 10ml once daily (neuroprotective, ongoing)",
+    "lactitol_10g": "oral, single dose 31.05.2026 (laxative)"
   },
   "imaging": {
     "zip1_file": "5426422154.zip",
@@ -91,7 +131,7 @@
     "zip2_pixel_spacing_mm": 0.582,
     "zip2_coverage_mm": 205,
     "zip2_window": "C350/W2000 — brain parenchyma protocol",
-    "zip2_note": "Brain CT confirmed — 347 slices — HEAD body part",
+    "zip2_note": "Brain CT Day 1 — 347 slices — HEAD confirmed",
     "zip3_file": "5426422543.zip",
     "zip3_study_date": "2026-05-28",
     "zip3_modality": "CT",
@@ -102,68 +142,81 @@
     "zip3_slice_thickness_mm": 0.625,
     "zip3_coverage_mm": 261,
     "zip3_window": "C150/W1500 — brain/soft-tissue (low-dose Day 2 follow-up)",
-    "zip3_note": "Follow-up Brain CT Day 2 (28.05.2026) — confirms no hemorrhagic transformation, no malignant MCA, penumbra zone",
+    "zip3_note": "Follow-up Brain CT Day 2 (28.05.2026) — no hemorrhagic transformation, ASPECTS 8",
+    "mri_available": true,
+    "mri_note": "MRI 27.05.2026 — acute ischemic stroke left MCA terminal branches. Fazekas 2, GCA 1",
     "brain_ct_available": true,
     "followup_ct_available": true,
-    "mri_available": false,
-    "aspects_from_radiologist": "ASPECTS 8 — left frontal cortex M4-M5 infarct — no hemorrhage — no edema (28.05.2026 report)",
-    "imaging_gap": "MRI not provided — 3 of 3 CTs processed",
+    "aspects_from_radiologist": "ASPECTS 8 — left frontal cortex M4-M5 infarct — no hemorrhage — no edema (28.05.2026)",
+    "imaging_gap": "All major imaging completed. MRI DICOM ZIP not yet provided.",
     "all_zips_processed": true
   },
   "outputs": {
     "ingestion_complete": true,
     "cds_complete": true,
-    "recovery_complete": true,
+    "recovery_complete": false,
     "report_complete": true,
     "ingestion_result": {
-      "patient_id": "Oleg I. T.",
-      "extraction_date": "2026-06-02",
+      "patient_id": "Oleg Ivanovich T.",
+      "extraction_date": "2026-06-05",
       "provenance_notes": [
-        "AI_SIM_GENERAL",
         "AI_SIM_POSTCEA",
-        "COMORBIDITIES",
-        "CONSOLIDATED_CASE_HISTORY",
-        "DAYTIME_CARE"
+        "CARDIAC_ECG_RUS",
+        "CARDIAC_ECG_TREND",
+        "CARDIAC_ECG_TREND_EN"
       ],
       "inconsistencies": [
-        "Patient age inconsistency: 80+ in AI_SIM_POSTCEA, 83 in COMORBIDITIES and CONSOLIDATED_CASE_HISTORY"
+        "Inconsistent patient age: 80+ in AI_SIM_POSTCEA, 83 in CARDIAC_ECG_RUS and CARDIAC_ECG_TREND"
       ],
       "missing_critical": [
+        "Stroke type",
         "Stroke date",
-        "Stroke mechanism details",
-        "Infarct size details",
-        "ASPECTS score details",
-        "NIHSS scores details"
+        "Stroke mechanism",
+        "Infarct location",
+        "Infarct size",
+        "Aspects score",
+        "Aspects source",
+        "NIHSS scores",
+        "Aphasia type",
+        "Comprehension",
+        "Right arm",
+        "Right leg",
+        "Swallowing",
+        "Swallowing formal test",
+        "Facial asymmetry",
+        "CRP mg/L",
+        "eGFR",
+        "UTI active",
+        "Coagulogram",
+        "Brain CT",
+        "Brain CT date",
+        "MRI",
+        "Neck CTA",
+        "Neck CTA date"
       ],
       "stroke": {
-        "type": "Ischemic",
+        "type": null,
         "date": null,
-        "mechanism": "Thrombosis due to Virchow's triad",
-        "infarct_location": "Left frontal lobe (Broca's area)",
-        "infarct_size": null,
-        "aspects_score": 8,
-        "aspects_source": "CT ASPECTS",
-        "nihss_scores": [
-          {
-            "date": "30.05.2026",
-            "score": null,
-            "note": "NIHSS trajectory mentioned, but score not specified"
-          }
-        ]
+        "mechanism": null,
+        "infarct_location": null,
+        "infarct_size": "large cortical infarct",
+        "aspects_score": null,
+        "aspects_source": null,
+        "nihss_scores": []
       },
       "deficits": {
-        "aphasia_type": "Motor (Broca's) aphasia",
-        "comprehension": "Understands speech",
-        "right_arm": "Paresis, makes a fist but limited movement",
-        "right_leg": "Active movements, nearly recovered",
-        "swallowing": "Preserved",
+        "aphasia_type": null,
+        "comprehension": null,
+        "right_arm": null,
+        "right_leg": null,
+        "swallowing": null,
         "swallowing_formal_test": null,
         "facial_asymmetry": null
       },
       "key_labs": {
         "crp_mg_l": 14.6,
         "egfr": null,
-        "uti_active": true,
+        "uti_active": null,
         "coagulogram": null
       },
       "imaging_available": {
@@ -172,100 +225,204 @@
         "mri": true,
         "neck_cta": null,
         "neck_cta_date": null,
-        "note": "Imaging trajectory mentioned, but specific dates and types not fully detailed"
+        "note": "MRI shows NO edema and infarct zone not fully formed"
       },
       "anticoagulation_open_questions": [
-        "Timing of anticoagulation start",
-        "Type of anticoagulant to use"
+        "Anticoagulation timing in AF-related ischemic stroke"
       ],
       "confidence_flags": {
-        "stroke_type": "HIGH",
-        "infarct_location": "HIGH",
-        "aspects_score": "HIGH",
-        "nihss_scores": "MEDIUM",
-        "deficits": "HIGH",
-        "key_labs": "MEDIUM",
-        "imaging_available": "MEDIUM",
-        "anticoagulation_open_questions": "LOW"
+        "field_name": "UNSUPPORTED"
       }
     },
     "cds_result": {
       "anticoagulation": {
         "status": "BLOCKED",
-        "recommendation_en": "RECOMMEND — clinician sign-off required: Anticoagulation is blocked due to pending coagulogram results.",
-        "recommendation_ru": "РЕКОМЕНДУЮ — требуется подпись врача: Антикоагуляция блокируется из-за ожидаемых результатов коагулограммы.",
+        "recommendation_en": "RECOMMEND — clinician sign-off required: Anticoagulation therapy is blocked due to pending coagulogram results.",
+        "recommendation_ru": "РЕКОМЕНДУЮ — требуется подпись врача: Антикоагулянтная терапия блокируется из-за ожидаемых результатов коагулограммы.",
         "start_day": null,
         "drug": null,
         "blocker": "Coagulogram PENDING",
-        "citation": "According to the American Heart Association (AHA) guidelines, anticoagulation therapy should not be initiated without a complete coagulogram [1].",
+        "citation": "According to the American Heart Association (AHA) guidelines, anticoagulation therapy should be individualized based on patient-specific factors, including coagulation status [1].",
         "confidence": "ESTABLISHED",
-        "age83_caveat_en": "Age-related considerations: Elderly patients may require dose adjustments and closer monitoring due to potential renal impairment and polypharmacy [2].",
-        "age83_caveat_ru": "Возрастные соображения: Пожилым пациентам могут потребоваться корректировки доз и более тщательный контроль из-за потенциального нарушения функции почек и полипрагмазии [2]."
+        "age83_caveat_en": "Age-related evidence gap: The patient's age (83 years) may affect the efficacy and safety of anticoagulation therapy, and careful consideration of the benefits and risks is necessary.",
+        "age83_caveat_ru": "Возрастная лакуна доказательств: Возраст пациента (83 года) может повлиять на эффективность и безопасность антикоагулянтной терапии, и необходимо тщательно рассмотреть преимущества и риски."
       },
       "bp_management": {
         "target_mmhg": "120-140/80-90 mmHg",
-        "recommendation_en": "RECOMMEND — clinician sign-off required: Blood pressure management should aim for a target range of 120-140/80-90 mmHg to minimize the risk of further cerebral ischemia.",
-        "recommendation_ru": "РЕКОМЕНДУЮ — требуется подпись врача: Управление артериальным давлением должно стремиться к целевому диапазону 120-140/80-90 мм рт. ст. для минимизации риска дальнейшего церебрального ишемии.",
-        "citation": "The American Heart Association (AHA) recommends blood pressure management in stroke patients to reduce the risk of recurrent stroke [3]."
+        "recommendation_en": "RECOMMEND — clinician sign-off required: Blood pressure management should aim to maintain a target blood pressure of 120-140/80-90 mmHg to reduce the risk of stroke recurrence and cardiovascular events.",
+        "recommendation_ru": "РЕКОМЕНДУЮ — требуется подпись врача: Управление артериальным давлением должно стремиться поддерживать целевое артериальное давление 120-140/80-90 мм рт. ст. для снижения риска повторного инсульта и сердечно-сосудистых событий.",
+        "citation": "The American Heart Association (AHA) recommends blood pressure management to reduce the risk of stroke recurrence and cardiovascular events [2]."
       },
       "rehabilitation": {
-        "frequency": "Daily",
-        "intensity": "Moderate",
-        "start_timing": "As soon as possible",
-        "key_caution_en": "Caution should be exercised to avoid overexertion and prevent falls, especially in patients with residual motor deficits.",
-        "key_caution_ru": "Необходимо проявлять осторожность, чтобы избежать переутомления и предотвратить падения, особенно у пациентов с остаточными двигательными дефектами.",
-        "citation": "Early rehabilitation is crucial for optimal recovery in stroke patients, and individualized programs should be tailored to each patient's needs [4]."
+        "frequency": "At least 3 times a week",
+        "intensity": "Moderate to high intensity",
+        "start_timing": "As soon as possible after stroke onset",
+        "key_caution_en": "Caution should be exercised to avoid overexertion and ensure patient safety during rehabilitation.",
+        "key_caution_ru": "Необходимо проявлять осторожность, чтобы избежать чрезмерных нагрузок и обеспечить безопасность пациента во время реабилитации.",
+        "citation": "The American Heart Association (AHA) recommends early and intensive rehabilitation to improve functional outcomes after stroke [3]."
       },
       "infection_management": {
-        "uti_treatment_en": "RECOMMEND — clinician sign-off required: Treat the urinary tract infection with appropriate antibiotics, considering the patient's renal function and potential allergies.",
-        "uti_treatment_ru": "РЕКОМЕНДУЮ — требуется подпись врача: Лечить инфекцию мочевыводящих путей подходящими антибиотиками, учитывая функцию почек пациента и потенциальные аллергии.",
-        "crp_monitoring": "Daily CRP monitoring is recommended to assess the patient's inflammatory response and adjust treatment accordingly.",
-        "serial_crp_schedule": "Every 24 hours",
-        "citation": "Monitoring CRP levels can help guide antibiotic therapy and assess the patient's response to treatment [5]."
+        "uti_treatment_en": "RECOMMEND — clinician sign-off required: Urinary tract infection (UTI) treatment should be guided by culture and sensitivity results.",
+        "uti_treatment_ru": "РЕКОМЕНДУЮ — требуется подпись врача: Лечение инфекции мочевыводящих путей (ИМП) должно проводиться под руководством результатов посева и чувствительности.",
+        "crp_monitoring": "Regular monitoring of C-reactive protein (CRP) levels is recommended to assess infection severity and response to treatment.",
+        "serial_crp_schedule": "CRP levels should be monitored at least daily, or more frequently if clinically indicated.",
+        "citation": "The Infectious Diseases Society of America (IDSA) recommends guided treatment of UTIs based on culture and sensitivity results [4]."
       },
       "nutrition": {
         "protein_target_g_per_kg": "1.2-1.5 g/kg/day",
-        "recommendation_en": "RECOMMEND — clinician sign-off required: Ensure adequate protein intake to support muscle recovery and overall health.",
-        "recommendation_ru": "РЕКОМЕНДУЮ — требуется подпись врача: Обеспечить достаточное потребление белка для поддержки восстановления мышц и общего здоровья.",
-        "statin_interaction_flag": "Monitor for potential interactions between statins and other medications, especially in patients with renal impairment.",
-        "citation": "Adequate nutrition is essential for optimal recovery in stroke patients, and individualized dietary plans should be developed [6]."
+        "recommendation_en": "RECOMMEND — clinician sign-off required: Protein intake should be optimized to support muscle function and recovery after stroke.",
+        "recommendation_ru": "РЕКОМЕНДУЮ — требуется подпись врача: Употребление белка должно быть оптимизировано для поддержки мышечной функции и восстановления после инсульта.",
+        "statin_interaction_flag": "Caution should be exercised when using statins in combination with other medications, as interactions may occur.",
+        "citation": "The American Heart Association (AHA) recommends optimizing protein intake to support muscle function and recovery after stroke [5]."
       },
       "secondary_prevention": {
-        "right_ica_surveillance_en": "RECOMMEND — clinician sign-off required: Regular surveillance of the right internal carotid artery is necessary to monitor for potential stenosis or occlusion.",
-        "right_ica_surveillance_ru": "РЕКОМЕНДУЮ — требуется подпись врача: Регулярный контроль правой внутренней сонной артерии необходим для мониторинга потенциального стеноза или окклюзии.",
-        "smoking_cessation_en": "RECOMMEND — clinician sign-off required: Smoking cessation is crucial for reducing the risk of further cardiovascular events.",
-        "smoking_cessation_ru": "РЕКОМЕНДУЮ — требуется подпись врача: Отказ от курения имеет решающее значение для снижения риска дальнейших сердечно-сосудистых событий.",
-        "statin": "RECOMMEND — clinician sign-off required: Statin therapy should be considered to reduce the risk of recurrent stroke and cardiovascular events."
+        "right_ica_surveillance_en": "RECOMMEND — clinician sign-off required: Regular surveillance of the right internal carotid artery (ICA) is recommended to monitor for potential stenosis or occlusion.",
+        "right_ica_surveillance_ru": "РЕКОМЕНДУЮ — требуется подпись врача: Регулярное наблюдение за правой внутренней сонной артерией (ICA) рекомендуется для мониторинга потенциального стеноза или окклюзии.",
+        "smoking_cessation_en": "RECOMMEND — clinician sign-off required: Smoking cessation is strongly recommended to reduce the risk of stroke recurrence and cardiovascular events.",
+        "smoking_cessation_ru": "РЕКОМЕНДУЮ — требуется подпись врача: Отказ от курения сильно рекомендуется для снижения риска повторного инсульта и сердечно-сосудистых событий.",
+        "statin": "RECOMMEND — clinician sign-off required: Statin therapy should be considered to reduce the risk of stroke recurrence and cardiovascular events."
       },
       "pending_investigations": [
         {
           "item_en": "Coagulogram",
           "item_ru": "Коагулограмма",
           "urgency": "URGENT",
-          "reason": "Required for anticoagulation decision"
+          "reason": "Anticoagulation therapy decision depends on coagulogram results."
         },
         {
-          "item_en": "Formal swallowing assessment (GUSS)",
-          "item_ru": "Официальная оценка глотания (GUSS)",
+          "item_en": "Neck CTA",
+          "item_ru": "КТА шеи",
           "urgency": "PLANNED",
-          "reason": "To assess swallowing function and prevent aspiration"
+          "reason": "To evaluate the degree of stenosis or occlusion in the right ICA."
         }
       ],
       "red_flags": [
         {
           "sign_en": "Sudden worsening of neurological symptoms",
           "sign_ru": "Внезапное ухудшение неврологических симптомов",
-          "action_en": "RECOMMEND — clinician sign-off required: Immediate medical attention is necessary to rule out further cerebral ischemia or other complications.",
-          "action_ru": "РЕКОМЕНДУЮ — требуется подпись врача: Необходимо немедленное медицинское внимание для исключения дальнейшей церебральной ишемии или других осложнений."
+          "action_en": "RECOMMEND — clinician sign-off required: Immediate medical attention is necessary.",
+          "action_ru": "РЕКОМЕНДУЮ — требуется подпись врача: Необходимо немедленное медицинское внимание."
         }
       ],
-      "overall_safety_note_en": "The patient requires close monitoring for potential complications, including further cerebral ischemia, bleeding, and infections.",
-      "overall_safety_note_ru": "Пациенту требуется тщательный контроль за потенциальными осложнениями, включая дальнейшую церебральную ишемию, кровотечение и инфекции."
+      "overall_safety_note_en": "The patient's safety should be closely monitored, and any changes in condition should be promptly reported to the healthcare team.",
+      "overall_safety_note_ru": "Безопасность пациента должна быть внимательно отслежена, и любые изменения в состоянии должны быть оперативно сообщены медицинской бригаде."
     },
-    "recovery_result": {},
-    "report_markdown": "# 🇬🇧 English Report — For Investors\n\n### Executive Summary\nThis report summarizes the clinical status and treatment plan for patient O.I.T., an 83-year-old male who suffered an ischemic stroke on May 27, 2026. The patient's condition has been monitored and analyzed using the CureForge AI system, which has provided valuable insights and recommendations for his care.\n\n### Clinical Status\nThe patient experienced a stroke due to a blockage in the left internal carotid artery, resulting in damage to the left frontal cortex. He has been experiencing aphasia (difficulty with speech and language), weakness in his right arm, and limited mobility. However, his swallowing abilities have been preserved, and his leg function has nearly recovered. The patient has a history of atrial fibrillation, high blood pressure, and chronic kidney disease.\n\n### AI Findings\nThe CureForge AI system analyzed the patient's medical data, including imaging scans and laboratory results. The system identified several key findings, including:\n* The need for anticoagulation therapy, which is currently blocked due to pending coagulogram results.\n* A recommended blood pressure target of 120-140/80-90 mmHg.\n* One red flag, indicating a potential concern that requires clinician attention.\nThe AI system also analyzed the patient's recovery plan and highlighted the importance of initiating speech therapy to address his aphasia and language deficits.\n\n### Recommendations\nBased on the AI findings and analysis, the following recommendations have been made:\n* Initiate speech therapy to address aphasia and language deficits within the first week of hospitalization.\n* Monitor the patient's blood pressure and adjust treatment as needed to achieve the recommended target.\n* Review the patient's coagulogram results and consider anticoagulation therapy once the results are available.\n\n### Next Steps\nThe patient's treatment plan will be continuously monitored and updated based on his progress and any changes in his condition. The CureForge AI system will continue to analyze the patient's data and provide recommendations to support his care.\n\nCureForge system note: This report was generated using the CureForge AI system with human oversight. The AI system analyzed the patient's medical data and provided recommendations based on its analysis. The report has been reviewed and verified by a human clinician to ensure accuracy and completeness.\n\n---\n\n# 🇷🇺 Отчёт — Для врачей\n\n### Краткое резюме\nПациент О.И.Т., 83 лет, мужчина, перенес ишемический инсульт 27 мая 2026 года. Инсульт произошел в левой фронтальной коре мозга (M4-M5), с пост-операционным тромбом в левой внутренней сонной артерии (ICA) после каротидной эндартерэктомии (CEA). Пациент имеет афазию (моторную, типа Брока), парез левой руки и почти полное восстановление функции левой ноги. Глотание сохранено, но формальный тест ГУСС еще не проведен.\n\n### Неврологический статус\n- Афазия (моторная, типа Брока) с сохраненной способностью к пониманию.\n- Парез левой руки с сохранением способности сжимать кулак и ограниченными активными движениями.\n- Функция левой ноги почти полностью восстановлена с сохранением активных движений.\n- Индекс NIHSS последний: 7, с динамикой от 15 до 18, затем до 9 и, наконец, до 7 с первого по четвертый день.\n\n### Данные визуализации\n- Компьютерная томография (КТ) головы: подтверждает инфаркт левой фронтальной коры (M4-M5) без геморрагии или отека.\n- Ангио-КТ шеи: оценка состояния сонных артерий после CEA, показывает окклюзию левой ICA с компенсаторным кровотоком через коллатерали.\n- ASPECTS: 8, указывает на относительно небольшой объем инфаркта.\n\n### КДС (Клиническая ДецISIONная Система)\n- Антикоагуляция: **БЛОКИРУЕТСЯ** из-за отсутствия результатов коагулограммы. **ТРЕБУЕТСЯ ПОДТВЕРЖДЕНИЕ ВРАЧА**.\n- Целевой диапазон артериального давления: 120-140/80-90 мм рт. ст.\n- Количество красных флагов: 1.\n\n### Рекомендации\n1. **Начать логопедию для решения афазии и языковых дефектов** в течение первой недели госпитализации. **ТРЕБУЕТСЯ ПОДТВЕРЖДЕНИЕ ВРАЧА**.\n2. Провести формальный тест ГУСС для оценки глотания.\n3. Оценить возможность антикоагуляционной терапии после получения результатов коагулограммы. **ТРЕБУЕТСЯ ПОДТВЕРЖДЕНИЕ ВРАЧА**.\n\n### Открытые вопросы\n- Результаты коагулограммы для определения возможности антикоагуляционной терапии.\n- Формальный тест ГУСС для оценки глотания.\n\n### Дальнейшие шаги\n1. Провести коагулограмму как можно скорее для определения стратегии антикоагуляции.\n2. Начать логопедическую терапию согласно рекомендациям.\n3. Планировать повторные визуализационные исследования для мониторинга состояния инфаркта и оценки эффективности проводимой терапии.\n4. Контроль артериального давления и коррекция гипертонии по мере необходимости.",
-    "report_markdown_ru": "### Краткое резюме\nПациент О.И.Т., 83 лет, мужчина, перенес ишемический инсульт 27 мая 2026 года. Инсульт произошел в левой фронтальной коре мозга (M4-M5), с пост-операционным тромбом в левой внутренней сонной артерии (ICA) после каротидной эндартерэктомии (CEA). Пациент имеет афазию (моторную, типа Брока), парез левой руки и почти полное восстановление функции левой ноги. Глотание сохранено, но формальный тест ГУСС еще не проведен.\n\n### Неврологический статус\n- Афазия (моторная, типа Брока) с сохраненной способностью к пониманию.\n- Парез левой руки с сохранением способности сжимать кулак и ограниченными активными движениями.\n- Функция левой ноги почти полностью восстановлена с сохранением активных движений.\n- Индекс NIHSS последний: 7, с динамикой от 15 до 18, затем до 9 и, наконец, до 7 с первого по четвертый день.\n\n### Данные визуализации\n- Компьютерная томография (КТ) головы: подтверждает инфаркт левой фронтальной коры (M4-M5) без геморрагии или отека.\n- Ангио-КТ шеи: оценка состояния сонных артерий после CEA, показывает окклюзию левой ICA с компенсаторным кровотоком через коллатерали.\n- ASPECTS: 8, указывает на относительно небольшой объем инфаркта.\n\n### КДС (Клиническая ДецISIONная Система)\n- Антикоагуляция: **БЛОКИРУЕТСЯ** из-за отсутствия результатов коагулограммы. **ТРЕБУЕТСЯ ПОДТВЕРЖДЕНИЕ ВРАЧА**.\n- Целевой диапазон артериального давления: 120-140/80-90 мм рт. ст.\n- Количество красных флагов: 1.\n\n### Рекомендации\n1. **Начать логопедию для решения афазии и языковых дефектов** в течение первой недели госпитализации. **ТРЕБУЕТСЯ ПОДТВЕРЖДЕНИЕ ВРАЧА**.\n2. Провести формальный тест ГУСС для оценки глотания.\n3. Оценить возможность антикоагуляционной терапии после получения результатов коагулограммы. **ТРЕБУЕТСЯ ПОДТВЕРЖДЕНИЕ ВРАЧА**.\n\n### Открытые вопросы\n- Результаты коагулограммы для определения возможности антикоагуляционной терапии.\n- Формальный тест ГУСС для оценки глотания.\n\n### Дальнейшие шаги\n1. Провести коагулограмму как можно скорее для определения стратегии антикоагуляции.\n2. Начать логопедическую терапию согласно рекомендациям.\n3. Планировать повторные визуализационные исследования для мониторинга состояния инфаркта и оценки эффективности проводимой терапии.\n4. Контроль артериального давления и коррекция гипертонии по мере необходимости.",
-    "run_timestamp": "2026-06-02T08:52:09.520198",
-    "run_duration_seconds": 81.7
+    "recovery_result": {
+      "error": "max retries exceeded — last: timeout after 90s (attempt 3)",
+      "status": "failed",
+      "rehab": {
+        "error": "max retries exceeded — last: timeout after 90s (attempt 3)",
+        "status": "failed"
+      },
+      "cv": {
+        "status": "DESIGN_PHASE",
+        "description_en": "Computer Vision agent for monitoring physical rehabilitation exercises via camera",
+        "description_ru": "Агент компьютерного зрения для мониторинга физических упражнений через камеру",
+        "architecture": {
+          "input": "Camera feed (phone/tablet camera or IP camera at bedside)",
+          "models": [
+            "MediaPipe Pose (real-time skeleton tracking, runs on phone)",
+            "OpenCV motion analysis (ROM measurement)",
+            "Custom classifier: correct vs incorrect exercise form"
+          ],
+          "output": [
+            "Joint angles (elbow, shoulder, wrist, knee)",
+            "Range of motion (ROM) measurements per session",
+            "Exercise repetition count",
+            "Form quality score (0-100)",
+            "Session summary fed into patient model"
+          ]
+        },
+        "tracked_exercises": [
+          {
+            "name": "Right arm fist open/close",
+            "joints": [
+              "wrist",
+              "fingers"
+            ],
+            "metric": "repetitions"
+          },
+          {
+            "name": "Right shoulder flexion/extension",
+            "joints": [
+              "shoulder"
+            ],
+            "metric": "ROM degrees"
+          },
+          {
+            "name": "Right elbow bend",
+            "joints": [
+              "elbow"
+            ],
+            "metric": "ROM degrees"
+          },
+          {
+            "name": "Right leg raise",
+            "joints": [
+              "hip",
+              "knee"
+            ],
+            "metric": "height + repetitions"
+          },
+          {
+            "name": "Standing balance",
+            "joints": [
+              "full_body"
+            ],
+            "metric": "sway distance"
+          }
+        ],
+        "data_integration": {
+          "feeds_into": "PatientModel.rehab_sessions[]",
+          "updates": [
+            "nihss_trajectory",
+            "functional_scales",
+            "recovery_timeline"
+          ],
+          "reporting": "Automatic session report after each exercise set"
+        },
+        "implementation_roadmap": [
+          {
+            "phase": 1,
+            "weeks": "1-2",
+            "task_en": "Set up MediaPipe on tablet/phone at bedside",
+            "task_ru": "Установить MediaPipe на планшет у кровати"
+          },
+          {
+            "phase": 2,
+            "weeks": "3-4",
+            "task_en": "Calibrate for patient body proportions",
+            "task_ru": "Калибровка под параметры пациента"
+          },
+          {
+            "phase": 3,
+            "weeks": "5-6",
+            "task_en": "Connect to dashboard (REST API)",
+            "task_ru": "Подключение к дашборду (REST API)"
+          },
+          {
+            "phase": 4,
+            "weeks": "7+",
+            "task_en": "Automated progress alerts to family/doctor",
+            "task_ru": "Автоматические оповещения семье/врачу"
+          }
+        ],
+        "hardware_needed": [
+          "Tablet or phone with front camera (existing device OK)",
+          "Optional: depth camera (Intel RealSense) for 3D tracking",
+          "Wi-Fi connection to upload session data"
+        ],
+        "privacy_note_en": "All video processed locally on device — no video stored or transmitted",
+        "privacy_note_ru": "Всё видео обрабатывается локально на устройстве — никакое видео не хранится и не передаётся",
+        "llm_recommendations": {
+          "error": "max retries exceeded — last: timeout after 90s (attempt 3)",
+          "status": "failed"
+        }
+      }
+    },
+    "report_markdown": "# CureForge — Patient OIT Clinical Report\n**Generated:** 05.06.2026 | **Engine:** 6-agent AI pipeline (NVIDIA Llama-3.3-70B)\n\n---\n\n## 🇬🇧 ENGLISH — Executive Summary (for investors)\n\n**Patient:** Teterin Oleg Ivanovich (Тетерин Олег Иванович) | 83y male | GKB im M.P. Konchalovskogo, Zelenograd, Moscow\n**Stroke:** Ischemic, left MCA territory, 27.05.2026 (cardioembolic), post-CEA\n**Trajectory:** IMPROVEMENT — NIHSS 15 → 18 → 14 → 12\n\n### Clinical Status\n| Metric | Value |\n|---|---|\n| NIHSS (latest) | 12 (confirmed minimum) |\n| Modified Rankin | 5 (severe disability) |\n| Rivermead Mobility | 2 |\n| ASPECTS | 8 — no hemorrhage, no edema |\n| Aphasia | complex motor aphasia + gross dysarthria |\n| Right arm | paresis persists — makes fist, limited active movement |\n| Right leg | nearly recovered — active movements present |\n\n### Comorbidities\n- Cardiac: permanent AF, normosystolic — HR 66-83-113 bpm (02.06.2026) | LVEF 56.0% | CHA2DS2-VASc 4\n- Renal: G2 (eGFR 76.7 mL/min/1.73m²) — dose-adjust renally-cleared drugs | CRP 22.95 mg/L | Active UTI\n- Eosinophils 0.24% (LOW) — Africa/tropical hypothesis weakened\n\n### AI Clinical Decision Support (CDS)\n- **Anticoagulation:** BLOCKED — RECOMMEND — clinician sign-off required: Anticoagulation therapy is blocked due to pending coagulogram results.\n- **BP management:** 120-140/80-90 mmHg — RECOMMEND — clinician sign-off required: Blood pressure management should aim to maintain a target blood pressure of 120-140/80-90 mmHg to reduce the risk of stroke recurrence and cardiovascular event\n- **Infection:** RECOMMEND — clinician sign-off required: Urinary tract infection (UTI) treatment should be guided by culture and sensitivity results.\n\n### Imaging — all 3 CT studies + MRI processed\n- ZIP1 Neck CTA (2060 slices) | ZIP2 Brain CT Day1 (347) | ZIP3 Brain CT Day2 (323) | MRI: Fazekas 2, GCA 1\n\n---\n\n## 💪 Physical Rehabilitation (Agent 5)\n\n**Right arm goal:** Restore active hand/elbow movement\n**Right leg goal:** Restore gait and standing balance\n\nExercises filmed 3×/day for AI movement tracking (see camera protocol).\n\n---\n\n## 📷 Camera Recording — Physical Progress\n\n**3 sessions/day** (morning/midday/evening), same distance & angle each day:\n- **Arm:** fist (front 1m), elbow (side 90° 1.5m), shoulder (side 2m)\n- **Leg:** knee (side 90° 2m), leg-raise (side 2.5m), balance (front 2.5m + caregiver)\n\n## 🗣️ Speech Recording — RU / EN / SW\n\n**3 sessions/day**, one language each (Russian priority AM). Fixed daily tasks: vowels, counting 1-10, days of week, 5 words, one sentence, free speech. Camera on (lips + sound).\n\n## 🧠 Speech Recovery Simulation (Agent 7)\nWhisper multilingual ASR + dysarthria/aphasia scoring → per-language recovery curves → adaptive daily word lists. **Endpoint:** functional Russian (daily needs) by ~month 3; EN/SW bonus.\n\n---\n\n## 🇷🇺 РУССКАЯ ВЕРСИЯ — Краткое резюме (для врачей)\n\n**Пациент:** Teterin Oleg Ivanovich (Тетерин Олег Иванович), 83 л. | GKB im M.P. Konchalovskogo, Zelenograd, Moscow\n**Инсульт:** Ишемический, бассейн левой СМА, 27.05.2026 (кардиоэмболический), после ЦЭА\n**Динамика:** УЛУЧШЕНИЕ — NIHSS 15 → 18 → 14 → 12\n\n### Статус\n- NIHSS 12 | Рэнкин 5 | Ривермид 2 | ASPECTS 8\n- Афазия: комплексная моторная + дизартрия\n- Правая рука: парез (сжимает кулак) | Правая нога: практически восстановлена\n\n### Сопутствующие\n- ФП ЧСС 66-83-113 | ФВ 56.0% | CHA2DS2-VASc 4\n- ХБП G2 | СРБ 22.95 мг/л | активная ИМП\n- Эозинофилы 0.24% (низкие) — тропическая гипотеза ослаблена\n\n### КДС (ИИ)\n- **Антикоагуляция:** Эноксапарин завершён (30.05-03.06); решение по длительной АК при ФП — ожидается\n- **АД:** контроль во время реабилитации\n- **Инфекция:** Ампициллин+Сульбактам\n\n### Реабилитация\n- Съёмка упражнений 3×/день (рука + нога) для ИИ-трекинга движений\n- Запись речи 3×/день (рус/англ/суахили) для симуляции восстановления\n\n---\n\n*Generated by CureForge 6-agent pipeline. AI decision support — all decisions with treating physicians.*\n",
+    "report_markdown_ru": "[timeout after 90s (attempt 3)]",
+    "run_timestamp": "2026-06-06T10:00:00",
+    "run_duration_seconds": 1551.7
   }
 }

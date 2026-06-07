@@ -77,4 +77,4 @@ Build bilingual recovery plan. Special focus on:
 - Africa-residence tropical exposure differential
 - Age-83 evidence gaps
 - Family guide in both English and Russian"""
-    return groq_call(SYSTEM, user, json_mode=True, max_tokens=2500)
+    return groq_call(SYSTEM, user, json_mode=True, max_tokens=1200)
