@@ -1,0 +1,83 @@
+# Environment & secrets
+.env
+*.env
+.env.*
+!.env.example
+.streamlit/secrets.toml
+
+# Virtual environment
+.venv/
+venv/
+env/
+ENV/
+
+# Database files
+*.db
+*.sqlite
+*.sqlite3
+
+# Python cache
+__pycache__/
+*.py[cod]
+*$py.class
+*.pyo
+*.pyd
+.Python
+
+# Agent outputs (patent drafts — gated, no auto-publish)
+output/
+
+# Distribution / packaging
+dist/
+build/
+*.egg-info/
+*.egg
+.eggs/
+
+# Pytest / coverage
+.pytest_cache/
+.coverage
+coverage.xml
+htmlcov/
+.tox/
+
+# Jupyter / IPython
+.ipynb_checkpoints/
+*.ipynb
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# Editor / IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Logs
+*.log
+logs/
+
+# Streamlit cache
+.streamlit/
+
+# Resend / API response dumps
+data/replies/
+data/raw_webhooks/
+
+# Investor CSV with real data (keep only the sample)
+data/investors.csv
+
+# GCP service account key
+secrets/
+
+# Patient PHI / clinical outputs — NEVER commit (corp policy)
+patient_sim/data/*.zip
+patient_sim/reports/continuous/*
+!patient_sim/reports/continuous/engine_state.example.json
+patient_sim/reports/latest_*
+patient_sim/reports/patient_model_*.json
+patient_sim/reports/report_*.md

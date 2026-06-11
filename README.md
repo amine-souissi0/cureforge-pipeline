@@ -2,6 +2,8 @@
 
 AI-powered engineering recruiting pipeline. Automates candidate intake through offer drafting using Claude API, with a finite state machine governing every transition.
 
+> **Corp multi-agent stack (ClickUp 86exvcaq5):** This repo also contains the **outreach** and **Ukhvat news decomposition** agents under `packages/`, plus this root app (recruiting + CEO gate). See **[docs/CORP_AGENTS_RUNBOOK.md](docs/CORP_AGENTS_RUNBOOK.md)** for how to run all three.
+
 ## Architecture
 
 ```

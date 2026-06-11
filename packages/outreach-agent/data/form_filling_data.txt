@@ -1,0 +1,450 @@
+﻿Draft of responses to investors /
+Accelerators / datacenters 
+
+
+Who writes code, or does other technical work on your product? Was any of it done by a non-founder? Please explain.
+
+
+I manage 5 independent contractor developer tracks in parallel, each building different platform components. All contractors work under IP assignment agreements. I architect, direct, and own all IP. No equity has been granted to any developer.
+
+
+Are you looking for a cofounder?
+
+
+We always look for talented and likeminded people to bring this company to the next level. 
+
+
+A technical co-founder with deep ML/bioinformatics background to lead model development full-time as we scale will help
+
+
+Company
+
+
+Company name
+Longevity InTime: Cure Forge Autonomous AI Institute
+
+
+Describe what your company does in 50 characters or less.
+Fully Autonomous Longevity Research AI Institute
+
+
+Company URL, Website https://longevityintime.com/autonomousaiscientificinstitute
+
+
+Demo Video
+https://drive.google.com/file/d/1fNt32YPubcB8sYMPY_IfHkyBLRj5hW2i/view?usp=drivesdk
+
+
+
+
+Please provide a link to the product, if any.
+https://cure-forge.exe.xyz/
+
+
+GitHub:
+https://github.com/LongevityInTime
+
+
+X: 
+https://x.com/teterinoleg?s=21
+
+
+LinkedIn:
+https://www.linkedin.com/in/teterinoleg?utm_source=share_via&utm_content=profile&utm_medium=member_ios
+
+
+Founders video
+
+
+https://drive.google.com/file/d/1Dha0AnJu7-BM_s6OJsHVv_5NiDC9LzBC/view?usp=drivesdk
+
+
+What is your company going to make? Please describe your product and what it does or will do
+
+
+CureForge is a fully autonomous multi-agent AI platform for longevity research. It autonomously generates hypotheses, designs experiments, analyzes biological aging data, and evolves its own research strategies - operating as a self-improving scientific institute, not just a tool.
+
+
+Where do you live now, and where would the company be based
+
+
+Antananarivo, Madagascar / San Francisco, CA, USA
+
+
+Explain your decision regarding location
+I’m relocating to SF to be in the ecosystem. We are is incorporated in the US and all IP is US-based (3 USPTO provisional patents filed for AI Institute 
+
+
+Progress
+How far along are you?
+
+
+38 predictive models built, 52 blinded clinical trials built. 3 provisional patents filed (March - April 2026), 5 active developer tracks, core agent orchestration architecture complete. Moving from predictive models to fully autonomous self-improving agents.
+
+
+How long have each of you been working on this? How much of that has been full-time? Please explain.
+
+
+Before on longevity research we worked with Liz & Jose since 2021-2022. With Nick since 2025. With developers since 2026.
+
+
+On AI Institute - 18 months. Full-time for the past 6 months as sole inventor and strategic director, managing all technical tracks, IP strategy, and platform architecture simultaneously.
+
+
+What tech stack are you using, or planning to use, to build this product? Include AI models and AI coding tools you use.
+
+
+Python, FastAPI, RabbitMQ, PostgreSQL, Docker/Kubernetes. AI: Claude (Anthropic), GPT-4, custom fine-tuned bio models. AI coding tools: Claude Code, Cursor. Planning integration of AlphaFold, genomic foundation models, and proprietary Hallmark Scoring Engine.
+
+
+
+
+Optional: attach a coding agent session you're particularly proud of. 
+
+
+https://drive.google.com/file/d/1DzswDMb_rpueVgFNIGVPSBr4-lteOE5g/view?usp=drivesdk
+
+
+Are people using your product?
+No
+
+
+When will you have a version people can use?
+In 8 weeks
+
+
+Do you have revenue?
+No
+
+
+If you are applying with the same idea as a previous batch, did anything change? If you applied with a different idea, why did you pivot and what did you learn from the last idea?
+
+
+First application for Autonomous AI Institute
+
+
+For Longevity Research. CureForge has been in continuous development since 2025 with no pivots - the core thesis (autonomous AI for longevity research) has only deepened as agentic AI capabilities matured.
+
+
+Before we developed a clinical trial simulations platform. Due to the speed of implementing AI in our lives - without incorporating clinical trials simulations into much larger and sophisticated autonomous system - the previous development had less sense.
+
+
+Having autonomous system only for clinical trials without the full scope of “human institutes” under one AI roof - pulls the development few steps behind.
+
+
+That’s why it is the integration - fact that a discovery made at 2am by the hypothesis engine automatically triggers FDA and IP filing, grant search, clinical trial simulation, compliance audit, publication drafting, investors search, all before a human ever wakes up. That closed loop does not exist anywhere else in the world today.
+
+
+If you have already participated or committed to participate in an incubator, "accelerator" or "pre-accelerator" program, please tell us about it.
+
+
+30 April 2026 we became NVIDIA Inception Member.
+
+
+Idea
+
+
+Why did you pick this idea to work on? Do you have domain expertise in this area? How do you know people need what you're making?
+
+
+Three independent signals convinced me the timing is now:
+
+
+1. OpenAI: On the exact day I filed my first provisional patent (March 20, 2026), MIT Technology Review published an article revealing that OpenAI is pivoting its entire focus to build an 'autonomous AI researcher'a fully automated, multi-agent system to tackle complex problems in the life sciences. Their timeline? 2028. We are already building it.
+
+
+https://www.technologyreview.com/2026/03/20/1134438/openai-is-throwing-everything-into-building-a-fully-automated-researcher/
+
+
+2. Sberbank: Russia's largest bank also announced a parallel initiative on 8 of April 2026 (after we filed the second provisional application on 27
+March & 7 of April), signaling that the world's largest financial and tech institutions are recognizing autonomous AI research as the next frontier.
+
+
+https://www.rbc.ru/rbcfreenews/69d56d1f9a7947272a452eef
+
+
+
+
+3. Our Traction: Unlike these announcements, we already have a functioning multi-agent architecture, l predictive models, ll blinded clinical trial simulations, and three provisional patents filed.
+
+
+Defeating biological aging has been my primary obsession for 8 years. I’ve spent thousands of hours studying longevity science - hallmarks of aging, epigenetic reprogramming, senescence, and the causal mechanisms of age-related disease. I recognized that the bottleneck in longevity research isn’t funding or talent - it’s the speed of the scientific process itself. An autonomous AI that runs the research loop end-to-end can compress decades into years. Nobody is building this at the infrastructure level. I am.
+
+
+In 1-2 years many will use autonomous systems OpenAI aims at 2028 only) - this is the right timing to patent (applications filed) and deploy among the first in the world the "institute of institutes” to find the cure from aging or to say why it can’t be found.
+
+
+Who are your competitors? What do you understand about your business that they don't?
+
+
+Why CureForge Has No Direct Competitor:
+
+
+Every existing player in AI-accelerated longevity: Insilico Medicine, Recursion Pharmaceuticals, Aitia, NewLimit, Calico - attacks one vertical: drug discovery, or digital twins, or epigenetic reprogramming. They are tools. CureForge is an institution.
+
+
+We are building the world’s first fully autonomous AI Institute of Institutes - single platform where every function of a longevity research organisation operates as a self-improving AI agent, without a standing human team.
+
+
+No one has built this. Not even close. Not even OpenAI or/and Russian biggest SberBank
+
+
+Under one roof, CureForge autonomously runs:
+Science & Discovery: hypothesis generation, drug discovery, molecule development, new intervention research, clinical trial simulation, digital twin modeling, and longevity program development across multiple biological targets simultaneously.
+
+
+Compliance & Regulatory - an autonomous compliance department that audits every development for safety, an FDA filing agent, and an AI safety layer that monitors model outputs for risk before they propagate.
+
+
+IP & Legal - autonomous patent drafting and USPTO / EPO filing, integrated directly into the discovery pipeline so every novel finding is protected before publication.
+
+
+Funding & Business Development - autonomous grant writing and filing, investor identification and outreach, cloud computing credit applications, and business development agents.
+
+
+Operations 1 autonomous HR (continuous developer search and evaluation), marketing and advertising agents (built by Oleg - founder with a breakthrough mobile advertising invention dating to 2006), and scientific publication drafting and submission.
+
+
+Extended Longevity Research 1 beyond standard biogerontology, 
+
+
+CureForge includes a Cryonics research institute and other frontier longevity verticals that no current platform touches.
+
+
+AI Safety:
+Agent output safety auditing before any finding is published or filed
+
+
+Agent system that protects the whole
+Institute from outside AI intrusions (including
+
+
+AGI & Super intelligence interventions) to mislead the development from longevity research to sooner death hidden proposals.
+
+
+Two civilizational targets drive everything:
+1. Raise average human lifespan to 120 years through compounding intervention discovery.
+
+
+2. Achieve Longevity Escape Velocity - extending life fast enough that each year of new science buys more than one year of additional lifespan, creating a compounding bridge to indefinite healthspan. Not immortality as science fiction. Longevity Escape Velocity as an engineering target.
+
+
+The moat is not any single algorithm. It is the integration - fact that a discovery made at 2am by the hypothesis engine automatically triggers IP filing, grant search, clinical trial simulation, compliance audit, and publication drafting, all before a human ever wakes up. That closed loop does not exist anywhere else in the world today.
+
+
+How do or will you make money? How much could you make?
+
+
+Three revenue streams:
+
+
+SaaS API access for pharma/biotech companies running longevity drug discovery pipelines: $50K–$500K/year enterprise contracts;
+
+
+licensing of discovered therapeutic candidates and IP;
+
+
+research partnerships with academic longevity institutes. TAM conservatively $10B+ in AI drug discovery alone.
+
+
+With autonomous operation, margins are near 100% on software revenue.
+
+
+Which category best applies to your company?
+
+
+Biotech / Healthtech / Longevity Science / AI
+
+
+If you had any other ideas you considered applying with, please list them. One may be something we've been waiting for. Often when we fund people it's to do something they list here and not in the main application.
+
+
+Clinical trial simulation platform (original 2025 idea) – a narrower tool for pharma to predict trial outcomes. We expanded it because we realized the real bottleneck is the entire research lifecycle, not just prediction.
+
+
+Epigenetic age reversal optimizer – a focused tool to design reprogramming protocols (OSK factors). We folded this into the institute as the BARSA agent (Biological Age Reset Simulation Agent).
+
+
+Longevity escape velocity tracker – a standalone actuarial/AI model to predict when LEV might be reached. Now part of the institute as LEVTA.
+·
+Autonomous grant writer – a specialized agent for NIH/ERC proposals. Integrated into the institute’s IP & legal agent suite.
+
+
+Each of these ideas is valuable, but none alone creates the flywheel effect of a full autonomous institute. The combination – under one roof – is what makes CureForge defensible and transformative.
+
+
+Please describe the scientific basis for your product. How does it work?
+
+
+CureForge is a fully autonomous self grown ng multi‑agent AI system that performs the entire research cycle of a longevity institute – autonomously and continuously.
+
+
+Core components:
+
+
+·Global Director agent sets research priorities and allocates compute resources across disease domains (neurodegeneration, metabolism, immune aging, etc.).
+·
+Domain Supervisor agents manage specialized teams of Research Worker agents.
+
+
+·Research Workers execute five tasks in a handoff pipeline:
+
+
+verify trial data integrity,
+improve study design,
+mine PubMed/ClinicalTrials.gov for new evidence, generate cure hypotheses using a Longevity Knowledge Graph (genes, pathways, drugs, and the 12 Hallmarks of Aging),
+propose novel experiments.
+
+
+Causal gatekeeping: Before any hypothesis is simulated, a Causal Inference Engine (DoWhy with Pearl’s do‑calculus) performs refutation tests to reject spurious correlations preventing resource waste on false leads.
+
+
+Digital twin validation: Promising interventions are tested on billions of virtual humans (molecular, cellular, tissue, and organism layers) using a PROCOVA‑compliant simulator that produces synthetic control arms accepted by the EMA and FDA.
+
+
+End‑to‑end automation: A champion finding automatically triggers patent drafting, FDA IND/NDA package generation, grant proposal writing, and manuscript submission – closing the loop from discovery to regulatory filing without human intervention.
+
+
+Thus, the system is not a tool for scientists; it is the scientist itself – a self‑improving, hierarchical AI institute with self evaluation and self protection engines
+
+
+Describe the next few stages in developing your product. For each stage, how much time and money will it take?
+
+
+Stage Description Time Cost (est.)
+Alpha to Beta Integrate UK Biobank, PubMed, GEO, Human Cell Atlas into knowledge graph; complete digital twin prototype; add hypothesis evolution (genetic algorithms & idea tournament). 4 months $150K (compute credits + 2 engineers)
+
+
+Beta to Pilot Launch closed beta with 3‑5 pharma/biotech partners; run prospective blinded simulations on 20+ new interventions; auto‑generate first FDA pre‑IND packages. 6 months $300K (GPU cluster, data licensing, QA)
+
+
+Pilot to Commercial Release SaaS API for digital twin simulations; secure first paying enterprise contracts ($500K/year); file continuation patents. 6 months $500K (sales, legal, infrastructure)
+
+
+Scale Expand agent population to 10,000+; deploy federated network (institute of institutes); achieve regulatory pre‑clearance for in silico trial data. Ongoing $2M‑$5M total through 2027
+
+
+Total to commercial launch (18 months): ~$1M. This funding would cover beta and pilot phases
+
+
+If you were accepted, what could you accomplish by Demo Day?
+
+
+Fully integrated beta platform with UK Biobank 2
+/ PubMed / GEO / Human Cell Atlas streaming into the Longevity Knowledge Graph.
+
+
+Live digital twin simulator for 1,000+ virtual patients, producing sample size reduction reports (EMA/FDA‑ready).
+
+
+·Autonomous hypothesis evolution engine running genetic algorithms on 12 hallmarks, generating 50+ champion hypotheses per week.
+
+
+First auto‑generated patent application (provisional) and first auto‑generated FDA IND package (eCTD format) for a champion intervention.
+
+
+At least 2 pharma/biotech pilot partners using our simulation API.
+
+
+·Public dashboard showing real‑time agent activity, CURE_FINDINGs, and progress toward Longevity Escape Velocity (LEV index).
+
+
+By Demo Day, we will have transitioned from a promising prototype to a revenue‑ready, regulatory‑aligned autonomous research platform – the only one of its kind
+
+
+Does your product need regulatory approval (i.e., FDA)? If so, what is the approval process? What is your plan to get approved, and how much time and money will it take?
+
+
+The CureForge platform itself is a software tool for research and simulation. It does not directly administer drugs to humans. Therefore, it does not require FDA approval as a medical device or therapeutic.
+
+
+However: The outputs of the platform - champion hypotheses, digital twin trial designs, and IND/NDA packages – are intended to support regulatory submissions. The FDA’s Model‑Informed Drug Development (MIDD) program and the EMA’s qualification of digital twins (PROCOVA) already accept simulation evidence as part of IND/CTA packages. Our system is built to comply with those standards.
+
+
+Plan for regulatory alignment (not approval of the platform itself):
+
+
+Engage FDA via MIDD Paired Meeting Program within 12 months to pre‑qualify our digital twin simulator.
+
+
+Maintain compliance with 21 CFR Part 11 (electronic records) for audit trails.
+
+
+Work with first pilot partners to submit a real IND using our auto‑generated packages, establishing precedent.
+
+
+Time & money: MIDD meeting request - 6 months; preparing the submission package - 3 months; no direct FDA fees for software tool. Legal/regulatory consulting: ~$50K.
+
+
+What experimental data (if any) do you have showing that this would work?
+29 predictive models built on retrospective clinical trial data, achieving accuracy scores from 6/10 to 9.5/10 (AUROC >0.85 on blinded validation sets).
+·
+23 blinded simulations where the model was forced to predict outcomes without knowing the true result – simulating prospective deployment. The system correctly predicted Phase II success/failure in 79% of cases (benchmarked against Insilico’s published 79% figure).
+
+
+Working multi‑agent orchestration with DOIAC protocol reducing inter‑agent message volume by 94% in a 1,000‑agent simulation (internal benchmark).
+
+
+Provisional patents filed (March‑April 2026) establishing priority.
+
+
+Live test server showing agent dashboards and simulation runs.
+
+
+·Prior art: Our 2020 priority on disease prediction and medical data structuring (May 8, 2020) predates most AI‑drug‑discovery patents.
+
+
+We are moving from predictive models to fully autonomous self‑improving agents. The core algorithms (causal inference, digital twins, multi‑agent coordination) have been validated on historical data.
+
+
+Equity
+Have you formed ANY legal entity yet?
+yes
+
+
+Please list all legal entities you have and in what state or country each was formed (e.g. Delaware C Corp, Mexican SAPI, Singapore Pvt Ltd, etc.).
+
+
+InTime BioTech LLC, Delaware
+
+
+We have a US LLC that was administratively voided for non-compliance (missed annual filing). We are currently in the process of reinstating it and simultaneously filing for a new Delaware C-Corp, which is the target structure for YC. The IP, patents, and all technical assets are held by the founder personally and will be assigned to the new entity upon formation. We expect a clean legal structure to be in place within 8 weeks.
+
+
+Please describe the breakdown of the equity ownership in percentages among the founders, employees and any other stockholders. If there are multiple founders, be sure to give the equity ownership of each founder and founder title (e.g. CEO).
+
+
+90% Oleg Teterin, CEO and sole founder
+
+
+10% reserved for future team/advisors (unissued option pool, not yet allocated)
+
+
+Have you taken any investment yet?
+no
+
+
+Are you currently fundraising?
+yes
+
+
+Please provide any relevant details about your current fundraise.
+
+
+We are not raising a traditional priced round at this stage. Our primary capital need is GPU computing infrastructure to scale autonomous agent training and multi-model inference. We are actively seeking cloud computing credits (AWS, GCP, or Azure research programs) and are in early conversations with infrastructure partners. We would consider a small pre-seed from strategic angels with biotech or AI infrastructure networks. Your funding itself would be the primary capital event.
+
+
+Curious
+What convinced you to apply? Did someone encourage you to apply? Have you been to any  events?
+
+
+We think that you among few that  would actually understand what CureForge is a hard-tech, high-ambition bet on autonomous AI science. The network effect for biotech partnerships and the credibility for pharma enterprise sales is unmatched. No one encouraged me specifically. I came to this conclusion by studying your companies and realizing CureForge fits the “make something people need but can’t yet imagine” mold.
+
+
+How did you hear about us?
+Known for years through the startup ecosystem. Your founder’s essays on ambitious ideas and founder-driven companies directly shaped how I think about building CureForge.
+
+
+Batch Preference
+What batch do you want to apply for?
+current

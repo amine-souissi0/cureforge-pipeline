@@ -1,0 +1,13 @@
+Funding Opportunity: {{ opportunity.get('title', 'N/A') }}
+Agency: {{ opportunity.get('agency', 'N/A') }}
+Award Ceiling: {{ opportunity.get('award_ceiling', 'N/A') }}
+{% if opportunity.get('synopsis') %}
+Synopsis (excerpt): {{ opportunity.get('synopsis', '')[:800] }}
+{% endif %}
+
+Project Title: {{ project_info.get('title', '') }}
+Central Hypothesis: {{ project_info.get('hypothesis', '') }}
+Approach / Methods: {{ project_info.get('approach', '') }}
+Innovation: {{ project_info.get('innovation', '') }}
+Team: {{ project_info.get('team', '') }}
+Preliminary Data: {{ project_info.get('preliminary_data', '') }}

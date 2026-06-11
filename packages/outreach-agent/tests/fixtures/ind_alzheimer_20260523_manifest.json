@@ -1,0 +1,68 @@
+{
+  "hypothesis_id": "cee29462-e59e-49a7-9be8-893ccbe32605",
+  "disease": "alzheimer",
+  "phase": "1",
+  "public_renderable": false,
+  "validation_status": "not_validated",
+  "drugs": [
+    {
+      "id": "drug_1",
+      "is_placeholder": true,
+      "mechanism": "LOXL2 inhibitor",
+      "hallmark_target": "ECM_stiffening",
+      "dose": "33 mg BID"
+    },
+    {
+      "id": "drug_2",
+      "is_placeholder": true,
+      "mechanism": "HSF1 activator",
+      "hallmark_target": "loss_of_proteostasis",
+      "dose": "21 mg BID"
+    },
+    {
+      "id": "drug_3",
+      "is_placeholder": true,
+      "mechanism": "IL-6R antagonist",
+      "hallmark_target": "altered_intercellular_communication",
+      "dose": "12 mg BID"
+    }
+  ],
+  "claims": [
+    {
+      "field": "primary_efficacy_p_value",
+      "value": 0.0042,
+      "study_stage": "preclinical",
+      "provenance": "model_derived"
+    }
+  ],
+  "identifiers": [
+    {"type": "NCT", "value": "NCT05606341", "provenance": "placeholder"},
+    {"type": "NCT", "value": "NCT06547099", "provenance": "placeholder"},
+    {"type": "NCT", "value": "NCT00874783", "provenance": "placeholder"}
+  ],
+  "sections": [
+    {"id": "2.2", "status": "present"},
+    {"id": "2.3", "status": "present"},
+    {"id": "5.3", "status": "present"},
+    {"id": "2.4_CMC", "status": "omitted"},
+    {"id": "3.0", "status": "omitted"}
+  ],
+  "statistics": [
+    {
+      "label": "primary_efficacy",
+      "value": "p=0.0042",
+      "study_stage": "completed Phase 2",
+      "phase": "Phase 1"
+    }
+  ],
+  "hallmark_targets": [],
+  "aging_coverage_score": 0.0,
+  "selected_hypothesis": {"id": "cee29462", "acs": 0.0},
+  "alternatives": [
+    {"id": "urolithin_butyrate", "acs": 0.3889},
+    {"id": "rdq_combo", "acs": 0.3692}
+  ],
+  "signatories": [
+    {"name": "Dr. Elena M. Rossi", "verified": false}
+  ]
+}
