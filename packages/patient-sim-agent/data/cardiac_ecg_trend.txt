@@ -1,0 +1,59 @@
+CARDIAC TREND ON ECG
+ECG of 29.05, 30.05 and 02.06.2026
+Patient: Oleg I. T., 83 years | Atrial Fibrillation
+Addendum to the consolidated case history
+BOTTOM LINE — STABLY GOOD TREND
+A third consecutive ECG (30.05 and 02.06) confirms: the concerning 29.05 findings (ventricular extrasystole and scar suspicion) no longer appear. These were very likely transient acute-phase phenomena. The rhythm has been stably controlled for four days: normosystolic, HR ~83. No acute cardiac concern.
+1. COMPARISON OF THREE ECGs
+Parameter
+29.05.2026
+30.05.2026
+02.06.2026
+Rhythm
+AF, normosys.
+AF, normosys.
+AF, normosys.
+HR (min-mean-max)
+63-87-114
+77-87-110
+66-83-113
+Electrical axis
+−21° (left)
+−15° (left)
+14° (horiz.)
+Ventricular extrasystole
+PRESENT
+ABSENT
+ABSENT
+Scar changes
+'cannot excl.'
+none
+none
+Repolarization
+diffuse dist.
+diffuse dist.
+disturbance
+Low-amplitude
+present
+none
+none
+2. INTERPRETATION
+2.1 Extrasystole and scar — confirmed transient
+The ventricular extrasystole and scar suspicion noted on 29.05 are absent on the two subsequent ECGs (30.05 and 02.06). Three trend points provide confidence: these were transient acute-phase phenomena, not persistent pathology.
+2.2 Rhythm stably controlled
+All three ECGs show normosystolic AF with HR around 83-87. Rate control is stable. The electrical axis returned to a horizontal (normal) position.
+2.3 What remains under observation
+Repolarization disturbance persists on all ECGs — a nonspecific background sign (age, AF, hypertension) requiring no urgent action but noted by cardiology.
+3. RECOMMENDATIONS
+Cardiology consult — planned. Follow-up echo for a final answer on the scar (though two ECGs have already removed the suspicion).
+Holter if feasible — for completeness (captures what a single ECG misses).
+Electrolyte check (potassium, magnesium) — routine.
+HR and BP monitoring during rehabilitation exertion.
+Impact on center choice
+The cardiac background is calm. The argument for a center with cardiac support remains as a 'safety margin' but is no longer critical. The overall favorable prognosis is unchanged.
+IMPORTANT CAVEATS
+A single ECG captures only the moment of recording; three points improve reliability, but a Holter would give the full 24-hour picture.
+The old-scar suspicion is removed on ECG trend, but only a cardiologist via echo can definitively confirm/exclude it.
+Interpretation is based on ECG text conclusions, without access to the tracings.
+This document is an analysis of ECG data, not a medical opinion. All decisions with the treating physicians.
+Addendum to the consolidated case history. Based on ECG conclusions of 29.05, 30.05 and 02.06.2026. Not a medical opinion.

@@ -1,0 +1,86 @@
+DEVELOPER BRIEF
+Multi-Agent AI System for Personalized Recovery & Longevity
+Target case: post-stroke elderly patient, 83 y/o, multilingual, complex comorbidity
+Longevity InTime AI Research Institute | Engineering specification v1.0
+Contents
+1. Objective and success criteria
+2. Patient model (structured input for this case)
+3. System architecture — 6 agents
+4. Agent specifications (I/O, tools, prompts)
+5. Orchestration and message schema
+6. Data ingestion (scans + reports)
+7. Knowledge base and retrieval
+8. Safety, guardrails, evaluation
+9. Tech stack and milestones
+10. Open questions and caveats
+1. OBJECTIVE AND SUCCESS CRITERIA
+Build a multi-agent system that ingests a single complex patient's data (imaging, labs, discharge summaries), constructs a longitudinal patient model, and generates ranked, evidence-grounded recovery and longevity pathways with explicit uncertainty. The system serves three audiences: the clinical team, the family/caregivers, and the institute's research loop.
+What 'success' means (measurable)
+2. PATIENT MODEL (THIS CASE)
+The structured input below is the canonical patient object. It is assembled by the ingestion pipeline (Section 6) from the uploaded scans and reports, then frozen as a versioned snapshot per assessment date.
+2.1 Demographics and exposures
+2.2 Active neurological problem
+Ischemic stroke, terminal branches of left MCA, after left CEA (27.05.2026) complicated by 10 cm ICA thrombus.
+CT 28.05: cortical infarct left frontal (M4-M5) up to 15 mm; ASPECTS 8; no hemorrhage; no edema.
+Motor (Broca's) aphasia; sensory aphasia resolved; right hemiparesis (arm > leg). NIHSS 15→18→9→7.
+2.3 Comorbidity vector (drives multi-organ reasoning)
+Cardiac: atrial fibrillation (normosystolic, HR ~87), LVEF 56%, aortic valve calcification, ?old anteroseptal scar (unconfirmed).
+Vascular: right ICA plaque 35-40% (RADS III); left ICA occluded post-op; severe lower-limb atherosclerosis, multiple stents, left toe amputation.
+Renal: CKD G2 (eGFR ~74) → drug-dose gate. Hepatic/pancreatic diffuse changes. Pulmonary: pneumosclerosis + chronic bronchitis.
+Inflammatory: CRP 14.6 mg/L (3x high) + active UTI → confounder and modifiable target. Orthopedic: left hip arthroplasty (MRI-conditional 1.5T).
+2.4 Africa-residence differential (do not skip)
+3. SYSTEM ARCHITECTURE — 6 AGENTS
+A supervisor-orchestrated multi-agent system. The original design (post-CEA stroke knowledge base) is generalized: agents are now case-agnostic and parameterized by the patient model, with two new agents added for this mandate — a Differential/Hypothesis Generator and a Longevity/Recovery-Pathway Planner.
+A seventh non-agent component, the Research & Audit Module, logs every decision, citation, and clinician override into the institute's research loop (lab-in-the-loop).
+4. AGENT SPECIFICATIONS
+4.1 Ingestion & Imaging (ING)
+Input: DICOM (CT/MRI), PDF/text reports (EMIAS exports), ECG text, lab tables.
+Output: validated patient-model JSON (Section 2 schema) + per-finding provenance.
+Tools: vision model for scan triage (NOT diagnostic read — extracts ASPECTS/zone text from radiologist report, flags images for human read); table parser for labs; ECG-text normalizer.
+Guardrail: ING never invents a radiology finding; it extracts the human radiologist's stated conclusion and links the source page.
+4.2 Differential & Hypothesis Generator (DHG)
+The 'find better pathways' engine. Produces two ranked lists: (a) differentials for unresolved findings (e.g., the ?anteroseptal scar, diffuse hepatic/renal changes), (b) recovery-optimization hypotheses.
+4.3 Clinical Decision Support (CDS)
+Carried from original design. Core logic unchanged: anticoagulation timing (1-3-6-12 / ELAN-CATALYST), BP band (default <140 mmHg; 100-130 only if CHS confirmed), rehab dose (AVERT III — short frequent, not high-intensity-early).
+Generalization: thresholds are now config-driven, not hard-coded to one patient, and gated by the comorbidity vector (e.g., eGFR gates DOAC dose).
+4.4 Recovery & Longevity Planner (RLP)
+Builds the prioritized, multi-organ pathway: neuro-recovery + secondary prevention (statin/LDL<1.8, BP, rate control) + nutrition (protein 1.2-1.5 g/kg; statin-grapefruit/pomelo contraindication flag) + smoking cessation + inflammation reduction (treat UTI, serial CRP).
+Treats the four longevity goals as simultaneous, not sequential: inflammation reduction, circulation, arrhythmia/stroke prevention, overall longevity.
+4.5 Rehab Coach / Multilingual (RCM)
+Patient/family-facing daily scripts adapted to NIHSS, preserved function, aphasia type.
+i18n: Russian primary (therapy base), English secondary; Swahili best-effort phrasebook with explicit 'not clinically validated for Swahili' banner.
+Aphasia mode: short closed prompts, picture-card hooks, MIT/SFA/script-training session templates.
+5. ORCHESTRATION & MESSAGE SCHEMA
+Supervisor pattern. ORC decomposes the case into tasks, dispatches to agents, resolves conflicts by evidence tier, and refuses to finalize if any clinical claim is uncited.
+6. DATA INGESTION (SCANS + REPORTS)
+Sources for this case: 16 EMIAS studies (CT x3, MRI, CT-angio, echo, ECG series, vascular/abdominal/renal US, discharge summary).
+Pipeline: file → type detection → (DICOM: metadata + linked radiologist report) / (PDF: layout-aware text extract) → entity normalization → patient-model JSON → human verification gate → frozen snapshot.
+Privacy: de-identify before any external LLM call; keep PHI in a local store; log every external call.
+Versioning: each assessment date is an immutable snapshot; the longitudinal trajectory (NIHSS, ASPECTS, ECG, CRP) is a first-class object for trend reasoning.
+7. KNOWLEDGE BASE & RETRIEVAL
+Curated evidence store: ESVS 2023, AHA/ASA 2016, ESO 2025, ELAN/OPTIMAS/CATALYST, AVERT, PROT-AGE, ESPEN, CRP-outcome papers, multilingual-aphasia corpus (Paradis, Goral 2023, Kuzmina 2019, Kiran & Iakupova).
+RAG with citation enforcement: retrieval returns source spans; generation must attach span IDs; uncited clinical sentences are blocked at output.
+Tropical-medicine sub-corpus added for the Africa-residence branch (strongyloides reactivation, schistosomiasis sequelae).
+8. SAFETY, GUARDRAILS, EVALUATION
+8.1 Evaluation
+Gold set: clinician-board-adjudicated answers for the 5 scenarios from the original design + 5 new multi-organ/longevity scenarios.
+Metrics: grounding rate, citation precision, calibration (does confidence match correctness), unsafe-action rate (must be 0), hypothesis usefulness (clinician-rated).
+No patient-facing deployment before prospective validation on a held-out, board-adjudicated test set.
+9. TECH STACK & MILESTONES
+LLM: Claude (Sonnet for high-throughput agents, Opus for DHG/CDS reasoning) via API; deterministic temperature for clinical agents.
+Orchestration: supervisor graph (e.g., LangGraph-style state machine); typed message bus; local PHI store + de-id proxy.
+Retrieval: vector store over the curated corpus with span-level citation IDs.
+Milestones: (M1) ingestion + patient model on this case; (M2) CDS + RLP with citation gate; (M3) DHG with tropical branch + hypothesis log; (M4) RCM multilingual + aphasia mode; (M5) eval harness + board adjudication; (M6) prospective validation design.
+10. OPEN QUESTIONS & CAVEATS
+Open questions for the product owner
+'Find the cure' — confirm operational scope = ranked evidence-grounded pathways + hypothesis generation, NOT autonomous treatment. (Assumed yes in this brief.)
+Is real Swahili clinical localization required, or is best-effort phrasebook + flag acceptable for v1? (Assumed best-effort.)
+Will the system have live access to EMIAS, or only manual uploads per assessment? (Affects M1 scope.)
+Target deployment: research sandbox only, or clinician-facing pilot? (Gates the validation bar.)
+Caveats (carry into the build)
+Age 83 evidence gap: AVERT, ELAN, OPTIMAS, craniectomy trials under-recruit octogenarians — wider uncertainty band, mandatory shared decision-making.
+Tropical-exposure branch is hypothesis-generation, not diagnosis; resolves only via clinician-ordered tests (eosinophils, serology).
+Anticoagulation trials did not enroll post-CEA active surgical sites; extrapolation must be co-decided with vascular surgery.
+?Old anteroseptal scar is unconfirmed (ECG-only, not seen 30.05); needs echo before entering any reasoning as fact.
+This is a design/engineering brief, not a validated clinical tool. No prescribing. Board validation precedes any deployment.
+Developer brief compiled by Longevity InTime AI Research Institute. Generalizes the post-CEA stroke AI system design to a case-agnostic, comorbidity-gated, multilingual multi-agent architecture for the 83-year-old patient. Decision-support and hypothesis-generation only; not a validated clinical tool; no autonomous prescribing.

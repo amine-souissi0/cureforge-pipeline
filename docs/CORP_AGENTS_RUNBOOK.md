@@ -1,6 +1,6 @@
 # CureForge Corp Agents — Runbook (ClickUp 86exvcaq5)
 
-Three multi-agent systems live in this repository. Use this guide to run and verify each one.
+Four multi-agent systems live in this repository. Use this guide to run and verify each one.
 
 ## Repository layout
 
@@ -9,6 +9,7 @@ Three multi-agent systems live in this repository. Use this guide to run and ver
 | **1. Outreach / Communication** | `packages/outreach-agent/` | This repo | Investor outreach (Resend email, webhook intent, Streamlit dashboard) |
 | **2. Ukhvat news decomposition** | `packages/ukhvat-news-agent/` | This repo | @UkhvatNews → LLM parse → ClickUp tasks (+ bridge to outreach) |
 | **3. Recruiting pipeline + CEO gate** | `app/` (repo root) | This repo `main` | Gmail intake → evaluate → founder/CEO review gate → offer |
+| **4. Patient medical AI (father's case)** | `packages/patient-sim-agent/` | This repo | 7-agent pipeline, EN/RU report, camera + speech protocols (ClickUp 86exv176h) |
 
 ---
 
@@ -93,6 +94,24 @@ uvicorn app.main:app --reload --port 8000
 
 ---
 
+## Agent 4 — Patient medical AI (7 agents, father's case)
+
+**What it does:** Post-CEA stroke recovery — bilingual EN/RU clinical report, Agents 5–7 (rehab, CV tracker, speech sim), camera + speech protocols.
+
+```bash
+cd packages/patient-sim-agent
+pip install -r ../outreach-agent/requirements.txt   # shared deps
+streamlit run streamlit_app.py
+```
+
+**Protocols (WHERE / WHEN / WHAT):**
+- Camera: `guides/camera_recording_protocol.md` — 08:00 / 13:00 / 18:00, exercises A1→L3
+- Speech: `guides/speech_recording_protocol.md` — RU 09:30 / EN 15:00 / SW 19:30
+
+**ClickUp deliverable:** task [86exv176h](https://app.clickup.com/t/86exv176h) — full report posted in task comments.
+
+---
+
 ## Verification checklist (for ops / Oleg)
 
 - [ ] `packages/outreach-agent`: `pytest tests/ -q` passes
@@ -100,6 +119,7 @@ uvicorn app.main:app --reload --port 8000
 - [ ] Root recruiting pipeline: `pytest tests/ -q` passes
 - [ ] Outreach dashboard loads (`streamlit run packages/outreach-agent/dashboard/app.py`)
 - [ ] CEO gate UI loads at `/ui` on deployed recruiting instance
+- [ ] `packages/patient-sim-agent`: `streamlit run streamlit_app.py` loads; guides present under `guides/`
 
 ---
 

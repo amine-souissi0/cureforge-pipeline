@@ -1,0 +1,85 @@
+INTERIM MEDICAL REPORT (ЭТАПНЫЙ ЭПИКРИЗ)
+Date: 03.06.2026 11:56
+Patient: Teterin Oleg Ivanovich (Тетерин Олег Иванович), DOB 26.09.1942, 83 years
+Admission: 26.05.2026 18:22 | Days: 6 days
+
+MAIN DIAGNOSIS:
+I63.4 Ischemic stroke left MCA territory, 27.05.2026, cardioembolic subtype.
+Complex motor aphasia, dysarthria (gross), moderate right-sided hemiparesis, cognitive impairment.
+
+BACKGROUND:
+I11.0 Hypertension Grade 3, Stage 3, Risk 4
+I48.1 Permanent atrial fibrillation, normosystolic. CHA2DS2-VASc: 4, HAS-BLED: 1
+
+OPERATIONS 27.05.2026:
+1. Eversion carotid endarterectomy left (I65.2)
+2. Thrombectomy from left ICA (thrombus 10cm)
+
+FUNCTIONAL SCALES (03.06.2026):
+NIHSS: 12
+Modified Rankin Scale (mRS): 5
+Stroke Rehabilitation Measure (SRM): 5
+Rivermead Mobility Index: 2
+
+NEUROLOGICAL STATUS (03.06.2026):
+- Consciousness: clear, oriented in space/time/person
+- Complex motor aphasia (complex, not isolated Broca's)
+- Gross dysarthria
+- Eye movements: difficult to assess
+- Pupils: equal, reactive D=S
+- Meningeal syndrome: negative
+- General trajectory: IMPROVEMENT
+
+CARDIAC (ECG 02.06.2026):
+AF normosystole, HR 66-83-113 bpm. Axis 14° horizontal.
+Repolarization disturbance (nonspecific, no scar on trend, no extrasystole).
+
+ECHO (27.05.2026):
+LVEF 56% (Simpson). Height 176cm, Weight 70kg, BMI 22.6, BSA 1.856m²
+LV: no focal wall motion abnormality. LA normal. No pericardial effusion.
+Mitral regurgitation grade 1, Tricuspid regurgitation grade 1.
+Aortic valve: calcification, leaflets thickened. RVSP 17 mmHg.
+
+KEY LABS:
+27.05.2026: INR 1.71→2.08 (elevated), APTT 29.0s, Prothrombin 39.9-48.2%
+           WBC 17.4 x10^9/L (elevated), Neutrophils 90.6%, Glucose 9.27-9.7 mmol/L
+           Albumin 45.11 g/L, ALT 9.15, AST 41.77, Creatinine 81.27 umol/L
+           eGFR 76.7 mL/min/1.73m²
+
+29.05.2026: CRP 22.95 mg/L (elevated), WBC 15.26, Eosinophils 0.04x10^9/L (0.24% - LOW)
+           Lactate 2.5 mmol/L, Total protein 59.62 g/L (low), Urea 9.72 mmol/L
+
+30.05.2026: WBC 9.45 (improving), Leukocytes normalizing
+
+URINALYSIS 27.05: Leukocytes 30-50 (UTI confirmed), Erythrocytes >100 (hematuria)
+
+IMAGING:
+CT 28.05.2026: Infarction in M4, M5 left frontal lobe, up to 15mm. No hemorrhage. ASPECTS 8.
+MRI 27.05.2026: Acute ischemic stroke in terminal branches left MCA territory.
+               Fazekas 2 (microangiopathy), GCA 1 (mild cerebral atrophy)
+
+CURRENT MEDICATIONS (as of 03.06.2026):
+1. Atorvastatin 20mg - oral, once daily evening (lipid-lowering), 30.05-08.06
+2. Aspirin 125mg - oral, once daily evening (antiplatelet), 30.05-08.06
+3. Enoxaparin 8000 anti-Xa IU - SC twice daily (anticoagulant), 30.05-03.06 (5 days, COMPLETED)
+4. Ampicillin + Sulbactam 1fl - IV 3x/day (antibiotic for UTI/post-op), 31.05-08.06.2026
+5. Valsartan 40mg - oral twice daily (antihypertensive, ongoing)
+6. Bisoprolol 5mg - oral once daily morning (rate control + antihypertensive, ongoing)
+7. Amlodipine 5mg - oral once daily morning (antihypertensive)
+8. Omeprazole 20mg - oral once daily morning (gastroprotection, ongoing)
+9. Mexidol (Ethylmethylhydroxypyridine succinate) 500mg IV - metabolic, 31.05-03.06
+10. Cerebrolysin (cerebral peptide complex) 10ml IV - neuroprotective, ongoing
+11. Lactitol 10g - laxative, single dose
+
+COAGULOGRAM:
+Note: Anticoagulation (Enoxaparin) was STARTED 30.05.2026 - 03.06.2026 (5 days completed).
+INR on admission was 1.71-2.08. Current anticoagulation status: transitional (aspirin now, pending decision on long-term anticoagulation for AF).
+
+EOSINOPHILS:
+0.04 x10^9/L, 0.24% (BELOW normal range 0.04-0.44). LOW — weakens tropical/Africa hypothesis.
+
+SECOND REHABILITATION STAGE: planned. Document prepared for handover.
+Treating neurologist: Yusov Vladimir Sergeyevich
+Head of neurology: Vladimirova Elena Evgenyevna
+
+PROGNOSIS: Improvement. Continued inpatient stay indicated.

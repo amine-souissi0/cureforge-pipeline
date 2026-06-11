@@ -1,0 +1,23 @@
+CARDIAC TREND ON ECG
+ECG of 29.05, 30.05 and 02.06.2026
+Patient: Oleg I. T., 83 years | Atrial Fibrillation
+Addendum to the consolidated case history
+1. COMPARISON OF THREE ECGs
+2. INTERPRETATION
+2.1 Extrasystole and scar — confirmed transient
+The ventricular extrasystole and scar suspicion noted on 29.05 are absent on the two subsequent ECGs (30.05 and 02.06). Three trend points provide confidence: these were transient acute-phase phenomena, not persistent pathology.
+2.2 Rhythm stably controlled
+All three ECGs show normosystolic AF with HR around 83-87. Rate control is stable. The electrical axis returned to a horizontal (normal) position.
+2.3 What remains under observation
+Repolarization disturbance persists on all ECGs — a nonspecific background sign (age, AF, hypertension) requiring no urgent action but noted by cardiology.
+3. RECOMMENDATIONS
+Cardiology consult — planned. Follow-up echo for a final answer on the scar (though two ECGs have already removed the suspicion).
+Holter if feasible — for completeness (captures what a single ECG misses).
+Electrolyte check (potassium, magnesium) — routine.
+HR and BP monitoring during rehabilitation exertion.
+IMPORTANT CAVEATS
+A single ECG captures only the moment of recording; three points improve reliability, but a Holter would give the full 24-hour picture.
+The old-scar suspicion is removed on ECG trend, but only a cardiologist via echo can definitively confirm/exclude it.
+Interpretation is based on ECG text conclusions, without access to the tracings.
+This document is an analysis of ECG data, not a medical opinion. All decisions with the treating physicians.
+Addendum to the consolidated case history. Based on ECG conclusions of 29.05, 30.05 and 02.06.2026. Not a medical opinion.

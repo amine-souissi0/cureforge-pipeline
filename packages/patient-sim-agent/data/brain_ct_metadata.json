@@ -1,0 +1,23 @@
+{
+  "zip_file": "brain_ct_20260527.zip",
+  "zip_file_original": "5426422151.zip",
+  "study_date": "2026-05-27",
+  "modality": "CT",
+  "body_part": "HEAD",
+  "institution": "GKB im M P Konchalovskogo",
+  "manufacturer": "GE MEDICAL SYSTEMS",
+  "manufacturer_model": "GE Revolution Maxima",
+  "kvp": 120,
+  "pixel_spacing_mm": 0.582,
+  "slice_thickness_mm": 0.625,
+  "total_slices": 347,
+  "series_count": 2,
+  "slice_range_mm": {
+    "superior": 4.6,
+    "inferior": -200.4
+  },
+  "coverage_mm": 205,
+  "window_center": 350,
+  "window_width": 2000,
+  "audit_note": "HEAD CT \u2014 GE Revolution Maxima \u2014 confirmed brain scan. Window settings (C350/W2000) consistent with brain parenchyma protocol."
+}

@@ -1,0 +1,19 @@
+{
+  "zip_file": "5426422543.zip",
+  "study_date": "20260528",
+  "modality": "CT",
+  "body_part": "HEAD",
+  "institution": "GKB im M P Konchalovskogo",
+  "manufacturer": "GE Revolution Maxima",
+  "kvp": 80,
+  "pixel_spacing_mm": [
+    0.545,
+    0.635
+  ],
+  "slice_thickness_mm": 0.625,
+  "total_slices": 323,
+  "coverage_mm": 261,
+  "window_center": 150,
+  "window_width": 1500,
+  "note": "Follow-up Brain CT Day 2 (28.05.2026) \u2014 Low-dose (KVP 80) \u2014 Brain/soft-tissue window (C150/W1500)"
+}
